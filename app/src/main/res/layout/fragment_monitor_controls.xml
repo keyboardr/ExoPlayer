@@ -42,8 +42,8 @@
 
     <ImageView
         android:id="@+id/monitor_play_pause"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:background="?android:selectableItemBackgroundBorderless"
         android:padding="8dp"
         android:src="@drawable/ic_play_arrow"
@@ -52,14 +52,12 @@
         android:layout_marginTop="8dp" />
 
     <SeekBar
-        android:layout_width="0dp"
+        android:id="@+id/monitor_seek"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
         app:layout_constraintLeft_toRightOf="@+id/monitor_play_pause"
-        tools:layout_constraintLeft_creator="1"
         app:layout_constraintTop_toTopOf="@+id/monitor_play_pause"
-        tools:layout_constraintTop_creator="1"
         app:layout_constraintRight_toRightOf="@+id/monitor_layout"
-        tools:layout_constraintRight_creator="1"
         app:layout_constraintBottom_toBottomOf="@+id/monitor_play_pause"
-        tools:layout_constraintBottom_creator="1" />
+        app:layout_constraintHorizontal_bias="1.0" />
 </android.support.constraint.ConstraintLayout>

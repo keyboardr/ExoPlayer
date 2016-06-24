@@ -8,6 +8,7 @@ import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -59,10 +60,28 @@ public abstract class RecyclerFragment<VH extends RecyclerView.ViewHolder, L> ex
         View view = inflater.inflate(R.layout.fragment_recycler, container, false);
         switcher = (ViewAnimator) view.findViewById(R.id.library_switcher);
         RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.library_recycler);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(),
-                LinearLayoutManager.VERTICAL, false));
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
+                LinearLayoutManager.VERTICAL, false);
+        recyclerView.setLayoutManager(layoutManager);
+        new ItemTouchHelper(getItemTouchHelperCallback()).attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(getAdapter());
         return view;
+    }
+
+    @SuppressWarnings("WeakerAccess")
+    @NonNull
+    protected ItemTouchHelper.Callback getItemTouchHelperCallback() {
+        return new ItemTouchHelper.SimpleCallback(0,0) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+
+            }
+        };
     }
 
     @Override

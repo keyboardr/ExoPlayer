@@ -1,5 +1,6 @@
 package com.keyboardr.dancedj;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -9,10 +10,17 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 
+import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.ui.MediaCursorAdapter;
+import com.keyboardr.dancedj.ui.MediaViewHolder;
 import com.keyboardr.dancedj.ui.RecyclerFragment;
+import com.keyboardr.dancedj.util.FragmentUtils;
 
-public class LibraryFragment extends RecyclerFragment {
+public class LibraryFragment extends RecyclerFragment implements MediaViewHolder.OnMediaItemSelectedListener {
+
+    public interface LibraryFragmentHolder {
+        void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
+    }
 
     public static LibraryFragment newInstance() {
         return new LibraryFragment();
@@ -36,7 +44,7 @@ public class LibraryFragment extends RecyclerFragment {
         }
     };
 
-    private final MediaCursorAdapter adapter = new MediaCursorAdapter(null);
+    private final MediaCursorAdapter adapter = new MediaCursorAdapter(null, this);
 
     @NonNull
     @Override
@@ -48,5 +56,23 @@ public class LibraryFragment extends RecyclerFragment {
     @Override
     protected RecyclerView.Adapter getAdapter() {
         return adapter;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        FragmentUtils.checkParent(this, LibraryFragmentHolder.class);
+    }
+
+    @NonNull
+    protected LibraryFragmentHolder getParent() {
+        // Checked in #onAttach(Context)
+        //noinspection ConstantConditions
+        return FragmentUtils.getParent(this, LibraryFragmentHolder.class);
+    }
+
+    @Override
+    public void onMediaItemSelected(MediaItem mediaItem) {
+        getParent().playMediaItemOnMonitor(mediaItem);
     }
 }
