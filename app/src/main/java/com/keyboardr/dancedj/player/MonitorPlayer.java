@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj;
+package com.keyboardr.dancedj.player;
 
 import android.content.Context;
 import android.os.Handler;
@@ -125,6 +125,7 @@ public class MonitorPlayer {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void resume() {
         if (player != null) {
             if (player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
@@ -134,6 +135,7 @@ public class MonitorPlayer {
         }
     }
 
+    @SuppressWarnings("WeakerAccess")
     public void pause() {
         if (player != null) {
             player.setPlayWhenReady(false);
@@ -148,6 +150,7 @@ public class MonitorPlayer {
         }
     }
 
+    @SuppressWarnings("unused")
     public void stop() {
         if (player != null) {
             player.stop();
@@ -158,14 +161,17 @@ public class MonitorPlayer {
         return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && player.getPlayWhenReady();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public boolean isPaused() {
         return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && !player.getPlayWhenReady();
     }
 
+    @SuppressWarnings("unused")
     public boolean isLoading() {
         return player != null && (player.isLoading() || player.getPlaybackState() == ExoPlayer.STATE_BUFFERING);
     }
 
+    @SuppressWarnings("WeakerAccess")
     public boolean isStopped() {
         return player == null || player.getPlaybackState() == ExoPlayer.STATE_IDLE || player.getPlaybackState() == ExoPlayer.STATE_ENDED;
     }

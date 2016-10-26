@@ -12,6 +12,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
+import com.keyboardr.dancedj.player.MonitorPlayer;
 import com.keyboardr.dancedj.util.MathUtil;
 
 public class MonitorControlsFragment extends Fragment {

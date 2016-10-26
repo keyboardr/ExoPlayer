@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 public class MediaItem {
     public final CharSequence title;
     public final CharSequence artist;
+    @SuppressWarnings("WeakerAccess")
     public final String path;
 
     public static Builder build() {
@@ -27,6 +28,7 @@ public class MediaItem {
        return new Uri.Builder().scheme(ContentResolver.SCHEME_FILE).path(path).build();
     }
 
+    @SuppressWarnings("WeakerAccess")
     public static class Builder {
         private CharSequence title;
         private CharSequence artist;
