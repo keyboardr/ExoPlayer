@@ -1,7 +1,11 @@
 package com.keyboardr.dancedj.model;
 
+import android.content.ContentResolver;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+
 /**
- * Created by keyboardr on 6/23/16.
+ * Represents a piece of media to be played
  */
 public class MediaItem {
     public final CharSequence title;
@@ -16,6 +20,11 @@ public class MediaItem {
         this.title = title;
         this.artist = artist;
         this.path = path;
+    }
+
+    @NonNull
+    public Uri toUri() {
+       return new Uri.Builder().scheme(ContentResolver.SCHEME_FILE).path(path).build();
     }
 
     public static class Builder {
