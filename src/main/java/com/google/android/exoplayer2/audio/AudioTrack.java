@@ -505,7 +505,7 @@ public final class AudioTrack {
   }
 
   private void applyPreferredOutputDevice() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && audioTrack != null) {
         audioTrack.setPreferredDevice(getPreferredOutputDevice());
     }
   }
