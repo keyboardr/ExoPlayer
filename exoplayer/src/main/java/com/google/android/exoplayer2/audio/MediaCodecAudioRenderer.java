@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.audio;
 
 import android.annotation.TargetApi;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
@@ -24,6 +25,8 @@ import android.media.PlaybackParams;
 import android.media.audiofx.Virtualizer;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -137,6 +140,14 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     audioSessionId = AudioTrack.SESSION_ID_NOT_SET;
     audioTrack = new AudioTrack(audioCapabilities, streamType);
     eventDispatcher = new EventDispatcher(eventHandler, eventListener);
+  }
+
+  public void setPreferredAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    audioTrack.setPreferredOutputDevice(audioDeviceInfo);
+  }
+
+  public @Nullable AudioDeviceInfo getPreferredAudioOutput() {
+    return audioTrack.getPreferredOutputDevice();
   }
 
   @Override

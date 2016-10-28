@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.audio;
 
 import android.annotation.TargetApi;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioTimestamp;
 import android.media.PlaybackParams;
@@ -241,6 +242,8 @@ public final class AudioTrack {
   private ByteBuffer resampledBuffer;
   private boolean useResampledBuffer;
 
+  private AudioDeviceInfo preferredOutputDevice;
+
   /**
    * @param audioCapabilities The current audio capabilities.
    * @param streamType The type of audio stream for the underlying {@link android.media.AudioTrack}.
@@ -459,6 +462,7 @@ public final class AudioTrack {
           targetEncoding, bufferSize, android.media.AudioTrack.MODE_STREAM, sessionId);
     }
     checkAudioTrackInitialized();
+    applyPreferredOutputDevice();
 
     sessionId = audioTrack.getAudioSessionId();
     if (enablePreV21AudioSessionWorkaround) {
@@ -483,6 +487,19 @@ public final class AudioTrack {
     audioTrackUtil.reconfigure(audioTrack, needsPassthroughWorkarounds());
     setAudioTrackVolume();
     return sessionId;
+  }
+
+  public AudioDeviceInfo getPreferredOutputDevice() {
+    return preferredOutputDevice;
+  }
+
+  public void setPreferredOutputDevice(AudioDeviceInfo preferredOutputDevice) {
+    this.preferredOutputDevice = preferredOutputDevice;
+    applyPreferredOutputDevice();
+  }
+
+  private void applyPreferredOutputDevice() {
+    audioTrack.setPreferredDevice(preferredOutputDevice);
   }
 
   /**

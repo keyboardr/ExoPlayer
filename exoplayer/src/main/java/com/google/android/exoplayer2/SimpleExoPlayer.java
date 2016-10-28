@@ -18,10 +18,12 @@ package com.google.android.exoplayer2;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -396,6 +398,19 @@ public final class SimpleExoPlayer implements ExoPlayer {
    */
   public void setId3Output(MetadataRenderer.Output<List<Id3Frame>> output) {
     id3Output = output;
+  }
+
+  /**
+   * Sets the preferred audio output.
+   *
+   * @param audioDeviceInfo The preferred audio output or null to use the default output.
+     */
+  public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    for (Renderer renderer : renderers) {
+      if (renderer instanceof MediaCodecAudioRenderer) {
+        ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
+      }
+    }
   }
 
   // ExoPlayer implementation
