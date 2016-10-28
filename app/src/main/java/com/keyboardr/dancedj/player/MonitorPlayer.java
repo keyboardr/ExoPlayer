@@ -1,6 +1,7 @@
 package com.keyboardr.dancedj.player;
 
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -97,7 +98,7 @@ public class MonitorPlayer {
     }
 
     @NonNull
-    private ExoPlayer ensurePlayer() {
+    private SimpleExoPlayer ensurePlayer() {
         if (player != null) return player;
         player = ExoPlayerFactory.newSimpleInstance(context,
                 new DefaultTrackSelector(mainHandler),
@@ -108,6 +109,18 @@ public class MonitorPlayer {
 
     public void setPlaybackListener(@Nullable PlaybackListener playbackListener) {
         this.playbackListener = playbackListener;
+    }
+
+    public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+        ensurePlayer().setAudioOutput(audioDeviceInfo);
+    }
+
+    @Nullable
+    public AudioDeviceInfo getAudioOutput() {
+        if (player == null) {
+            return null;
+        }
+        return player.getAudioOutput();
     }
 
     public void play(MediaItem mediaItem, boolean playWhenReady) {
