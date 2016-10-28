@@ -23,7 +23,7 @@ android {
         // devices. However, please note that the core video playback
         // functionality provided by the library requires API level 16 or
         // greater.
-        minSdkVersion 23
+        minSdkVersion 9
         targetSdkVersion project.ext.targetSdkVersion
     }
 
@@ -40,17 +40,8 @@ android {
     lintOptions {
         abortOnError false
     }
-
-    sourceSets {
-        androidTest {
-            java.srcDirs += "../testutils/src/main/java/"
-        }
-    }
 }
 
 dependencies {
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.2'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.2'
-    androidTestCompile 'org.mockito:mockito-core:1.9.5'
     compile 'com.android.support:support-annotations:25.0.0'
 }
