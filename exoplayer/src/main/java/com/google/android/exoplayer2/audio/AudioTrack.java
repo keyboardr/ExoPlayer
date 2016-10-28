@@ -20,13 +20,17 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioTimestamp;
 import android.media.PlaybackParams;
+import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.util.Log;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
+
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
@@ -242,7 +246,7 @@ public final class AudioTrack {
   private ByteBuffer resampledBuffer;
   private boolean useResampledBuffer;
 
-  private AudioDeviceInfo preferredOutputDevice;
+  private AudioDeviceInfoHolder preferredOutputDevice;
 
   /**
    * @param audioCapabilities The current audio capabilities.
@@ -489,17 +493,21 @@ public final class AudioTrack {
     return sessionId;
   }
 
-  public AudioDeviceInfo getPreferredOutputDevice() {
-    return preferredOutputDevice;
+  @TargetApi(23)
+  public @Nullable AudioDeviceInfo getPreferredOutputDevice() {
+    return preferredOutputDevice == null ? null : preferredOutputDevice.audioDeviceInfo;
   }
 
+  @TargetApi(23)
   public void setPreferredOutputDevice(AudioDeviceInfo preferredOutputDevice) {
-    this.preferredOutputDevice = preferredOutputDevice;
+    this.preferredOutputDevice = new AudioDeviceInfoHolder(preferredOutputDevice);
     applyPreferredOutputDevice();
   }
 
   private void applyPreferredOutputDevice() {
-    audioTrack.setPreferredDevice(preferredOutputDevice);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        audioTrack.setPreferredDevice(getPreferredOutputDevice());
+    }
   }
 
   /**
@@ -1346,6 +1354,15 @@ public final class AudioTrack {
       }
     }
 
+  }
+
+  @TargetApi(23)
+  private class AudioDeviceInfoHolder {
+    public final AudioDeviceInfo audioDeviceInfo;
+
+    public AudioDeviceInfoHolder(AudioDeviceInfo audioDeviceInfo) {
+      this.audioDeviceInfo = audioDeviceInfo;
+    }
   }
 
 }

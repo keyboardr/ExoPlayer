@@ -405,6 +405,7 @@ public final class SimpleExoPlayer implements ExoPlayer {
    *
    * @param audioDeviceInfo The preferred audio output or null to use the default output.
      */
+  @TargetApi(23)
   public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
     for (Renderer renderer : renderers) {
       if (renderer instanceof MediaCodecAudioRenderer) {
@@ -412,6 +413,17 @@ public final class SimpleExoPlayer implements ExoPlayer {
       }
     }
   }
+
+  @Nullable
+  @TargetApi(23)
+  public AudioDeviceInfo getAudioOutput() {
+    for (Renderer renderer : renderers) {
+      if (renderer instanceof MediaCodecAudioRenderer) {
+        return ((MediaCodecAudioRenderer) renderer).getPreferredAudioOutput();
+      }
+    }
+    return null;
+  };
 
   // ExoPlayer implementation
 

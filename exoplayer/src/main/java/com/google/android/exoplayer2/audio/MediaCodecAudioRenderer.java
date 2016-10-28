@@ -142,10 +142,12 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     eventDispatcher = new EventDispatcher(eventHandler, eventListener);
   }
 
+  @TargetApi(23)
   public void setPreferredAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
     audioTrack.setPreferredOutputDevice(audioDeviceInfo);
   }
 
+  @TargetApi(23)
   public @Nullable AudioDeviceInfo getPreferredAudioOutput() {
     return audioTrack.getPreferredOutputDevice();
   }
