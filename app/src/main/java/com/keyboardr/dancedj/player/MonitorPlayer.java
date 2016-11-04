@@ -38,6 +38,7 @@ public class MonitorPlayer extends Player {
         ensurePlayer().setPlayWhenReady(false);
     }
 
+    @Override
     public void togglePlayPause() {
         if (isPaused() || isStopped()) {
             resume();

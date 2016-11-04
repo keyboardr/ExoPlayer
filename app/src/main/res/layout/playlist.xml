@@ -6,29 +6,29 @@
     android:orientation="vertical"
     tools:context="com.keyboardr.dancedj.PlaybackActivity">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:colorBackgroundFloating"
+        android:elevation="16dp"
+        android:paddingBottom="24dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="16dp">
+
+        <fragment
+            android:id="@+id/playlist_control_fragment"
+            android:name="com.keyboardr.dancedj.PlaylistControlsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/fragment_playback_controls" />
+    </FrameLayout>
+
     <fragment
         android:id="@+id/playlist_fragment"
         android:name="com.keyboardr.dancedj.PlaylistFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:elevation="16dp"
-        android:background="?android:colorBackgroundFloating"
-        android:paddingLeft="24dp"
-        android:paddingRight="24dp"
-        android:paddingBottom="24dp"
-        android:paddingTop="16dp">
-
-        <fragment
-            android:id="@+id/monitor_fragment"
-            android:name="com.keyboardr.dancedj.PlaylistControlsFragment"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:layout="@layout/fragment_monitor_controls" />
-    </FrameLayout>
+        android:layout_weight="1" />
 
 </LinearLayout>

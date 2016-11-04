@@ -138,6 +138,8 @@ public abstract class Player {
         }
     }
 
+    public abstract void togglePlayPause();
+
     public boolean isPlaying() {
         return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && player.getPlayWhenReady();
     }

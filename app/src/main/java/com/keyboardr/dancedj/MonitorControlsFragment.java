@@ -11,23 +11,17 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager;
-import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.MonitorPlayer;
-import com.keyboardr.dancedj.player.Player;
 import com.keyboardr.dancedj.util.CachedLoader;
-import com.keyboardr.dancedj.util.MathUtil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -81,7 +75,7 @@ public class MonitorControlsFragment extends Fragment {
         return new MonitorControlsFragment();
     }
 
-    private UiUpdater uiUpdater = new UiUpdater();
+    private PlayerControlsUpdater uiUpdater;
     private MonitorPlayer player;
     private AudioOutputAdapter audioOutputAdapter;
     private
@@ -106,7 +100,7 @@ public class MonitorControlsFragment extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        audioDeviceSpinner = (Spinner) view.findViewById(R.id.spinner);
+        audioDeviceSpinner = (Spinner) view.findViewById(R.id.controls_spinner);
         audioOutputAdapter = new AudioOutputAdapter();
         audioManager.registerAudioDeviceCallback(audioDeviceCallback, handler);
         setDevices(devices);
@@ -122,7 +116,7 @@ public class MonitorControlsFragment extends Fragment {
                 player.setAudioOutput(null);
             }
         });
-        uiUpdater.attach(player);
+        uiUpdater = new PlayerControlsUpdater(view, player, getLoaderManager());
     }
 
     @Override
@@ -148,156 +142,6 @@ public class MonitorControlsFragment extends Fragment {
         if (audioOutputAdapter != null) {
             audioOutputAdapter.notifyDataSetChanged();
         }
-    }
-
-    private class UiUpdater implements Player.PlaybackListener {
-
-        private static final String ARG_MEDIA_ITEM = "mediaItem";
-        private Handler seekHandler = new Handler();
-
-        @Nullable
-        private MediaItem mediaItem;
-
-        private ImageView playPause;
-        private ImageView albumArt;
-        private SeekBar seekBar;
-        private TextView title;
-        private TextView artist;
-        private Runnable seekRunnable;
-
-        private Bitmap albumArtData;
-
-        private LoaderManager.LoaderCallbacks<Bitmap> albumArtCalbacks = new LoaderManager.LoaderCallbacks<Bitmap>() {
-            @Override
-            public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
-                return new AlbumArtLoader(getContext(), (MediaItem) args.getParcelable(ARG_MEDIA_ITEM));
-            }
-
-            @Override
-            public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
-                albumArtData = data;
-                if (albumArt != null) {
-                    albumArt.setImageBitmap(albumArtData);
-                }
-            }
-
-            @Override
-            public void onLoaderReset(Loader<Bitmap> loader) {
-                albumArtData = null;
-            }
-        };
-
-        void onMetaData(@Nullable MediaItem item) {
-            boolean itemChanged = mediaItem != item;
-            this.mediaItem = item;
-            if (getView() != null) {
-                title.setText(mediaItem == null ? "" : mediaItem.title);
-                artist.setText(mediaItem == null ? "" : mediaItem.artist);
-
-                playPause.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-                seekBar.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-                title.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-                artist.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-                albumArt.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-
-                albumArt.setImageBitmap(albumArtData);
-
-                Bundle loaderArgs = new Bundle();
-                loaderArgs.putParcelable(ARG_MEDIA_ITEM, item);
-
-                if (!itemChanged) {
-                    getLoaderManager().initLoader(0, loaderArgs, albumArtCalbacks);
-                } else {
-                    getLoaderManager().restartLoader(0, loaderArgs, albumArtCalbacks);
-                }
-            }
-        }
-
-        @Override
-        public void onSeekComplete(Player player) {
-            float currentPosition = player.getCurrentPosition();
-            float duration = player.getDuration();
-            float max = seekBar.getMax();
-            int progress = duration == 0 ? 0 : MathUtil.clamp(
-                    (int) ((currentPosition / duration) * max + .5f),
-                    0, seekBar.getMax());
-            seekBar.setProgress(progress);
-        }
-
-        @Override
-        public void onPlayStateChanged(Player player) {
-            updatePlayState();
-        }
-
-        void attach(final MonitorPlayer player) {
-            player.setPlaybackListener(this);
-
-            if (getView() == null) {
-                throw new IllegalStateException();
-            }
-
-            title = ((TextView) getView().findViewById(R.id.monitor_title));
-            artist = ((TextView) getView().findViewById(R.id.monitor_artist));
-            seekBar = (SeekBar) getView().findViewById(R.id.monitor_seek);
-            playPause = ((ImageView) getView().findViewById(R.id.monitor_play_pause));
-            albumArt = (ImageView) getView().findViewById(R.id.monitor_album_art);
-
-            onMetaData(mediaItem);
-
-            playPause.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (mediaItem != null) {
-                        player.togglePlayPause();
-                    }
-                }
-            });
-            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser && player.getDuration() > 0) {
-                        seekTo((int) (((float) progress) * ((float) player.getDuration())
-                                / (float) seekBar.getMax()));
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
-        }
-
-        void detach() {
-            player.setPlaybackListener(null);
-            seekHandler.removeCallbacks(seekRunnable);
-        }
-
-        void updatePlayState() {
-            playPause.setImageResource(player.isPlaying() ?
-                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
-            if (player.isPlaying()) {
-                seekRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        onSeekComplete(player);
-                        seekHandler.postDelayed(this, player.getDuration() / seekBar.getMax());
-                    }
-                };
-                seekHandler.post(seekRunnable);
-            } else {
-                seekHandler.removeCallbacks(seekRunnable);
-            }
-        }
-    }
-
-    private void seekTo(int duration) {
-        player.seekTo(duration);
     }
 
     private class AudioOutputAdapter extends BaseAdapter {
