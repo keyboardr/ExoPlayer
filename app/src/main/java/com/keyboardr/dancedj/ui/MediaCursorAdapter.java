@@ -23,9 +23,15 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
     @Nullable
     private final MediaViewHolder.OnMediaItemSelectedListener mediaItemSelectedListener;
 
-    public MediaCursorAdapter(@Nullable Cursor cursor, @Nullable MediaViewHolder.OnMediaItemSelectedListener mediaItemSelectedListener) {
+    @Nullable
+    private final MediaViewHolder.MediaViewDecorator mediaViewDecorator;
+
+    public MediaCursorAdapter(@Nullable Cursor cursor,
+                              @Nullable MediaViewHolder.OnMediaItemSelectedListener mediaItemSelectedListener,
+                              @Nullable MediaViewHolder.MediaViewDecorator mediaViewDecorator) {
         super(cursor);
         this.mediaItemSelectedListener = mediaItemSelectedListener;
+        this.mediaViewDecorator = mediaViewDecorator;
     }
 
     @Override
@@ -49,6 +55,6 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
 
     @Override
     public MediaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new MediaViewHolder(parent, mediaItemSelectedListener);
+        return new MediaViewHolder(parent, mediaItemSelectedListener, mediaViewDecorator);
     }
 }

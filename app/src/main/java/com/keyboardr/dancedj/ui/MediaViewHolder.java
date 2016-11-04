@@ -1,6 +1,7 @@
 package com.keyboardr.dancedj.ui;
 
 import android.graphics.Typeface;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +10,7 @@ import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.keyboardr.dancedj.R;
@@ -23,17 +25,33 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         void onMediaItemSelected(MediaItem mediaItem);
     }
 
+
+    public interface MediaViewDecorator {
+        @DrawableRes
+        int getIconForItem(MediaItem mediaItem);
+
+        void onDecoratorSelected(MediaItem mediaItem);
+    }
+
     private final TextView title;
     private final TextView artist;
 
+    private final ImageView icon;
+
     private MediaItem mediaItem;
 
+    private final MediaViewDecorator mediaViewDecorator;
+
     public MediaViewHolder(@NonNull ViewGroup parent,
-                           @Nullable final OnMediaItemSelectedListener onMediaItemSelectedListener) {
+                           @Nullable final OnMediaItemSelectedListener onMediaItemSelectedListener,
+                           @Nullable final MediaViewDecorator mediaViewDecorator) {
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_media,
                 parent, false));
         title = (TextView) itemView.findViewById(R.id.media_item_title);
         artist = (TextView) itemView.findViewById(R.id.media_item_artist);
+        icon = ((ImageView) itemView.findViewById(R.id.media_item_icon));
+
+        this.mediaViewDecorator = mediaViewDecorator;
 
         if (onMediaItemSelectedListener != null) {
             itemView.setOnClickListener(new View.OnClickListener() {
@@ -44,6 +62,14 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
             });
         }
 
+        if (mediaViewDecorator != null) {
+            icon.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    mediaViewDecorator.onDecoratorSelected(mediaItem);
+                }
+            });
+        }
     }
 
     public void bindMediaItem(@NonNull MediaItem mediaItem, boolean selected, boolean enabled) {
@@ -53,6 +79,18 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         titleString.setSpan(new StyleSpan(selected ? Typeface.BOLD : Typeface.NORMAL), 0, titleString.length(), 0);
         title.setText(titleString);
         artist.setText(mediaItem.artist);
+
+        if (mediaViewDecorator != null) {
+            int iconForItem = mediaViewDecorator.getIconForItem(mediaItem);
+            if (iconForItem <= 0) {
+                icon.setVisibility(View.GONE);
+            } else {
+                icon.setVisibility(View.VISIBLE);
+                icon.setImageResource(iconForItem);
+            }
+        } else {
+            icon.setVisibility(View.GONE);
+        }
         this.mediaItem = mediaItem;
     }
 }

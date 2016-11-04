@@ -4,26 +4,40 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:selectableItemBackground"
-    android:orientation="vertical"
+    android:orientation="horizontal"
     android:paddingBottom="16dp"
     android:paddingLeft="24dp"
     android:paddingRight="24dp"
     android:paddingTop="16dp">
 
-    <TextView
-        android:id="@+id/media_item_title"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content"
-        android:duplicateParentState="true"
-        android:textAppearance="?android:textAppearanceListItem"
-        tools:text="Song Name" />
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/media_item_artist"
+        <TextView
+            android:id="@+id/media_item_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:textAppearance="?android:textAppearanceListItem"
+            tools:text="Song Name" />
+
+        <TextView
+            android:id="@+id/media_item_artist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:duplicateParentState="true"
+            android:textAppearance="?android:textAppearanceListItemSecondary"
+            android:textColor="?android:textColorSecondary"
+            tools:text="Song Name" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/media_item_icon"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:duplicateParentState="true"
-        android:textAppearance="?android:textAppearanceListItemSecondary"
-        android:textColor="?android:textColorSecondary"
-        tools:text="Song Name" />
+        android:layout_height="match_parent"
+        android:layout_marginStart="16dp"
+        tools:src="@drawable/ic_playlist_add"
+        android:background="?android:selectableItemBackgroundBorderless"/>
 </LinearLayout>

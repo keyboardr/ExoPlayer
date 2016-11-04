@@ -73,7 +73,7 @@ public class PlaylistFragment extends Fragment {
 
         @Override
         public MediaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new MediaViewHolder(parent, null);
+            return new MediaViewHolder(parent, null, null);
         }
 
         @Override

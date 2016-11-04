@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -16,15 +17,12 @@ import com.keyboardr.dancedj.ui.MediaViewHolder;
 import com.keyboardr.dancedj.ui.RecyclerFragment;
 import com.keyboardr.dancedj.util.FragmentUtils;
 
-public class LibraryFragment extends RecyclerFragment implements MediaViewHolder.OnMediaItemSelectedListener {
+public class LibraryFragment extends RecyclerFragment implements MediaViewHolder.OnMediaItemSelectedListener, MediaViewHolder.MediaViewDecorator {
 
     public interface LibraryFragmentHolder {
         void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
-        void addToQueue(@NonNull MediaItem mediaItem);
-    }
 
-    public static LibraryFragment newInstance() {
-        return new LibraryFragment();
+        void addToQueue(@NonNull MediaItem mediaItem);
     }
 
     private final LoaderManager.LoaderCallbacks<Cursor> mediaLoaderCallbacks
@@ -45,7 +43,7 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
         }
     };
 
-    private final MediaCursorAdapter adapter = new MediaCursorAdapter(null, this);
+    private final MediaCursorAdapter adapter = new MediaCursorAdapter(null, this, this);
 
     @NonNull
     @Override
@@ -74,6 +72,17 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
 
     @Override
     public void onMediaItemSelected(MediaItem mediaItem) {
+        getParent().playMediaItemOnMonitor(mediaItem);
+    }
+
+    @Override
+    @DrawableRes
+    public int getIconForItem(MediaItem mediaItem) {
+        return R.drawable.ic_playlist_add;
+    }
+
+    @Override
+    public void onDecoratorSelected(MediaItem mediaItem) {
         getParent().addToQueue(mediaItem);
     }
 }
