@@ -21,6 +21,7 @@ import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.MonitorPlayer;
+import com.keyboardr.dancedj.player.Player;
 import com.keyboardr.dancedj.util.MathUtil;
 
 import java.util.ArrayList;
@@ -144,7 +145,7 @@ public class MonitorControlsFragment extends Fragment {
         }
     }
 
-    private class UiUpdater implements MonitorPlayer.PlaybackListener {
+    private class UiUpdater implements Player.PlaybackListener {
 
         private Handler seekHandler = new Handler();
 
@@ -166,7 +167,7 @@ public class MonitorControlsFragment extends Fragment {
         }
 
         @Override
-        public void onSeekComplete(MonitorPlayer player) {
+        public void onSeekComplete(Player player) {
             float currentPosition = player.getCurrentPosition();
             float duration = player.getDuration();
             float max = seekBar.getMax();
@@ -177,7 +178,7 @@ public class MonitorControlsFragment extends Fragment {
         }
 
         @Override
-        public void onPlayStateChanged(MonitorPlayer player) {
+        public void onPlayStateChanged(Player player) {
             updatePlayState();
         }
 

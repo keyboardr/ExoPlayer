@@ -7,5 +7,7 @@
     <string name="audio_output_builtin_speaker">Speaker</string>
     <string name="audio_output_wired_headset">Wired headset</string>
     <string name="audio_output_builtin_earpiece">Earpice</string>
+    <string name="show_playlist">Show playlist</string>
+    <string name="hide_playlist">Hide playlist</string>
 
 </resources>

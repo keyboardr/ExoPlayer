@@ -1,0 +1,34 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/monitor"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.keyboardr.dancedj.PlaybackActivity">
+
+    <fragment
+        android:id="@+id/library_fragment"
+        android:name="com.keyboardr.dancedj.LibraryFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="16dp"
+        android:background="?android:colorBackgroundFloating"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingBottom="24dp"
+        android:paddingTop="16dp">
+
+        <fragment
+            android:id="@+id/monitor_fragment"
+            android:name="com.keyboardr.dancedj.MonitorControlsFragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:layout="@layout/fragment_monitor_controls" />
+    </FrameLayout>
+
+</LinearLayout>
