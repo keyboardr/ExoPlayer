@@ -18,6 +18,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
     private int titleColumn;
     private int albumIdColumn;
     private int dataColumn;
+    private int mediaIdColumn;
 
     @Nullable
     private final MediaViewHolder.OnMediaItemSelectedListener mediaItemSelectedListener;
@@ -33,6 +34,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
         titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
         albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID);
         dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+        mediaIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
     }
 
     @Override
@@ -42,7 +44,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
                 .setTitle(cursor.getString(titleColumn))
                 .setAlbumId(cursor.getLong(albumIdColumn))
                 .setPath(cursor.getString(dataColumn))
-                .make());
+                .make(cursor.getLong(mediaIdColumn)));
     }
 
     @Override

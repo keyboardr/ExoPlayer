@@ -26,16 +26,18 @@ public class MediaItem implements Parcelable {
     public final CharSequence artist;
     private final long albumId;
     private final String path;
+    private final long transientMediaId;
 
     public static Builder build() {
         return new Builder();
     }
 
-    private MediaItem(CharSequence title, CharSequence artist, long albumId, String path) {
+    private MediaItem(CharSequence title, CharSequence artist, long albumId, String path, long transientMediaId) {
         this.title = title;
         this.artist = artist;
         this.albumId = albumId;
         this.path = path;
+        this.transientMediaId = transientMediaId;
     }
 
     @NonNull
@@ -102,8 +104,8 @@ public class MediaItem implements Parcelable {
             return this;
         }
 
-        public MediaItem make() {
-            return new MediaItem(title, artist, albumId, path);
+        public MediaItem make(long transientMediaId) {
+            return new MediaItem(title, artist, albumId, path, transientMediaId);
         }
     }
 
@@ -118,6 +120,7 @@ public class MediaItem implements Parcelable {
         TextUtils.writeToParcel(this.artist, dest, flags);
         dest.writeLong(this.albumId);
         dest.writeString(this.path);
+        dest.writeLong(this.transientMediaId);
     }
 
     protected MediaItem(Parcel in) {
@@ -125,6 +128,7 @@ public class MediaItem implements Parcelable {
         this.artist = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
         this.albumId = in.readLong();
         this.path = in.readString();
+        this.transientMediaId = in.readLong();
     }
 
     public static final Parcelable.Creator<MediaItem> CREATOR = new Parcelable.Creator<MediaItem>() {
