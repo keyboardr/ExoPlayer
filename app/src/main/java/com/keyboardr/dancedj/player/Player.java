@@ -140,6 +140,8 @@ public abstract class Player {
 
     public abstract void togglePlayPause();
 
+    public abstract MediaItem getCurrentMediaItem();
+
     public abstract boolean canPause();
 
     public boolean isPlaying() {

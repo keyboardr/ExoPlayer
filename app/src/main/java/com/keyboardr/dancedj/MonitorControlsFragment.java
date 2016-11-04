@@ -128,7 +128,7 @@ public class MonitorControlsFragment extends Fragment {
 
     public void playMedia(MediaItem mediaItem) {
         player.play(mediaItem, true);
-        uiUpdater.onMetaData(mediaItem);
+        uiUpdater.onMetaData();
     }
 
     @Override

@@ -15,6 +15,8 @@ public class MonitorPlayer extends Player {
 
     private static final String TAG = "MonitorPlayer";
 
+    private MediaItem currentItem;
+
     public MonitorPlayer(@NonNull Context context) {
         super(context);
     }
@@ -23,6 +25,7 @@ public class MonitorPlayer extends Player {
     public void play(MediaItem mediaItem, boolean playWhenReady) {
         SimpleExoPlayer player = ensurePlayer();
         player.prepare(getMediaSource(mediaItem));
+        currentItem = mediaItem;
         player.setPlayWhenReady(playWhenReady);
     }
 
@@ -52,6 +55,11 @@ public class MonitorPlayer extends Player {
         } else {
             pause();
         }
+    }
+
+    @Override
+    public MediaItem getCurrentMediaItem() {
+        return currentItem;
     }
 
     @SuppressWarnings("unused")

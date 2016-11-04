@@ -20,7 +20,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
-import com.keyboardr.dancedj.player.MonitorPlayer;
+import com.keyboardr.dancedj.player.PlaylistPlayer;
 import com.keyboardr.dancedj.util.CachedLoader;
 
 import java.util.ArrayList;
@@ -76,7 +76,7 @@ public class PlaylistControlsFragment extends Fragment {
     }
 
     private PlayerControlsUpdater uiUpdater;
-    private MonitorPlayer player;
+    private PlaylistPlayer player;
     private AudioOutputAdapter audioOutputAdapter;
     private
     @Nullable
@@ -88,7 +88,7 @@ public class PlaylistControlsFragment extends Fragment {
         super.onCreate(savedInstanceState);
         handler = new Handler();
         audioManager = getContext().getSystemService(AudioManager.class);
-        player = new MonitorPlayer(getContext());
+        player = new PlaylistPlayer(getContext());
     }
 
     @Override
@@ -126,9 +126,9 @@ public class PlaylistControlsFragment extends Fragment {
         super.onDestroyView();
     }
 
-    public void playMedia(MediaItem mediaItem) {
-        player.play(mediaItem, true);
-        uiUpdater.onMetaData(mediaItem);
+    public void addToQueue(MediaItem mediaItem) {
+        player.addToQueue(mediaItem);
+        uiUpdater.onMetaData();
     }
 
     @Override

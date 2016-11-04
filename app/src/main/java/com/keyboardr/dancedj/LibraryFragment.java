@@ -20,6 +20,7 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
 
     public interface LibraryFragmentHolder {
         void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
+        void addToQueue(@NonNull MediaItem mediaItem);
     }
 
     public static LibraryFragment newInstance() {
@@ -73,6 +74,6 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
 
     @Override
     public void onMediaItemSelected(MediaItem mediaItem) {
-        getParent().playMediaItemOnMonitor(mediaItem);
+        getParent().addToQueue(mediaItem);
     }
 }

@@ -36,8 +36,7 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
     @NonNull
     private final LoaderManager loaderManager;
 
-    @Nullable
-    private MediaItem mediaItem;
+    private MediaItem lastMediaItem;
 
     private final Player player;
 
@@ -81,28 +80,33 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
         attachPlayer();
     }
 
-    void onMetaData(@Nullable MediaItem item) {
-        boolean itemChanged = mediaItem != item;
-        this.mediaItem = item;
+    void onMetaData() {
+        MediaItem mediaItem = player.getCurrentMediaItem();
+        boolean itemChanged = lastMediaItem != mediaItem;
+        lastMediaItem = mediaItem;
         title.setText(mediaItem == null ? "" : mediaItem.title);
         artist.setText(mediaItem == null ? "" : mediaItem.artist);
 
-        playPause.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        seekBar.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        title.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        artist.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        albumArt.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+        updateVisibility(mediaItem);
 
         albumArt.setImageBitmap(albumArtData);
 
         Bundle loaderArgs = new Bundle();
-        loaderArgs.putParcelable(ARG_MEDIA_ITEM, item);
+        loaderArgs.putParcelable(ARG_MEDIA_ITEM, mediaItem);
 
         if (!itemChanged) {
             loaderManager.initLoader(0, loaderArgs, albumArtCalbacks);
         } else {
             loaderManager.restartLoader(0, loaderArgs, albumArtCalbacks);
         }
+    }
+
+    private void updateVisibility(@Nullable MediaItem item) {
+        playPause.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+        seekBar.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+        title.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+        artist.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+        albumArt.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
     }
 
     @Override
@@ -124,12 +128,12 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
     private void attachPlayer() {
         player.setPlaybackListener(this);
 
-        onMetaData(mediaItem);
+        onMetaData();
 
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mediaItem != null) {
+                if (player.getCurrentMediaItem() != null) {
                     player.togglePlayPause();
                 }
             }

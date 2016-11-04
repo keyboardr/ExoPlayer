@@ -41,6 +41,11 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     }
 
     @Override
+    public void addToQueue(@NonNull MediaItem mediaItem) {
+        ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).addToQueue(mediaItem);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
         getMenuInflater().inflate(R.menu.main, menu);
