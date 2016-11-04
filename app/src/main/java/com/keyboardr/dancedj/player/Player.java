@@ -15,6 +15,7 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
+import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
@@ -123,11 +124,10 @@ public abstract class Player {
         return player.getAudioOutput();
     }
 
-    protected SimpleExoPlayer prepareMedia(MediaItem mediaItem) {
-        SimpleExoPlayer player = ensurePlayer();
-        player.prepare(new ExtractorMediaSource(mediaItem.toUri(), defaultDataSourceFactory,
-                defaultExtractorsFactory, mainHandler, extractorListener));
-        return player;
+    @NonNull
+    protected MediaSource getMediaSource(MediaItem mediaItem) {
+        return new ExtractorMediaSource(mediaItem.toUri(), defaultDataSourceFactory,
+                defaultExtractorsFactory, mainHandler, extractorListener);
     }
 
     public void release() {
@@ -139,6 +139,8 @@ public abstract class Player {
     }
 
     public abstract void togglePlayPause();
+
+    public abstract boolean canPause();
 
     public boolean isPlaying() {
         return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && player.getPlayWhenReady();

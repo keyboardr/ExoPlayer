@@ -21,7 +21,9 @@ public class MonitorPlayer extends Player {
 
 
     public void play(MediaItem mediaItem, boolean playWhenReady) {
-        prepareMedia(mediaItem).setPlayWhenReady(playWhenReady);
+        SimpleExoPlayer player = ensurePlayer();
+        player.prepare(getMediaSource(mediaItem));
+        player.setPlayWhenReady(playWhenReady);
     }
 
     @SuppressWarnings("WeakerAccess")
@@ -31,6 +33,11 @@ public class MonitorPlayer extends Player {
             player.seekTo(0);
         }
         player.setPlayWhenReady(true);
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
     }
 
     @SuppressWarnings("WeakerAccess")

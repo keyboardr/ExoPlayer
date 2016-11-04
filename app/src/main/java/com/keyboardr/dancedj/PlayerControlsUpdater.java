@@ -163,8 +163,13 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
     }
 
     void updatePlayState() {
-        playPause.setImageResource(player.isPlaying() ?
-                R.drawable.ic_pause : R.drawable.ic_play_arrow);
+        if (player.canPause()) {
+            playPause.setImageResource(player.isPlaying() ?
+                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
+        } else {
+            playPause.setImageResource(R.drawable.ic_play_arrow);
+            playPause.setEnabled(player.isPaused());
+        }
         if (player.isPlaying()) {
             seekRunnable = new Runnable() {
                 @Override
