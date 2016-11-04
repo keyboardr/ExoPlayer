@@ -1,7 +1,5 @@
 package com.keyboardr.dancedj;
 
-import android.content.Context;
-import android.graphics.Bitmap;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -21,7 +19,6 @@ import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
-import com.keyboardr.dancedj.util.CachedLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,11 +66,6 @@ public class PlaylistControlsFragment extends Fragment {
         }
     };
     private Handler handler;
-
-    @SuppressWarnings("unused")
-    public static MonitorControlsFragment newInstance() {
-        return new MonitorControlsFragment();
-    }
 
     private PlayerControlsUpdater uiUpdater;
     private PlaylistPlayer player;
@@ -218,23 +210,5 @@ public class PlaylistControlsFragment extends Fragment {
         }
 
 
-    }
-
-    public static class AlbumArtLoader extends CachedLoader<Bitmap> {
-
-        private final MediaItem mediaItem;
-
-        public AlbumArtLoader(Context context, MediaItem item) {
-            super(context);
-            this.mediaItem = item;
-        }
-
-        @Override
-        public Bitmap loadInBackground() {
-            if (mediaItem == null) {
-                return null;
-            }
-            return mediaItem.getAlbumArt(getContext());
-        }
     }
 }
