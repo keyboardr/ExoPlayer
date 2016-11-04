@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -63,6 +64,7 @@ public abstract class RecyclerFragment<VH extends RecyclerView.ViewHolder, L> ex
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
                 LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
+        recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
         new ItemTouchHelper(getItemTouchHelperCallback()).attachToRecyclerView(recyclerView);
         recyclerView.setAdapter(getAdapter());
         return view;
@@ -71,7 +73,7 @@ public abstract class RecyclerFragment<VH extends RecyclerView.ViewHolder, L> ex
     @SuppressWarnings("WeakerAccess")
     @NonNull
     protected ItemTouchHelper.Callback getItemTouchHelperCallback() {
-        return new ItemTouchHelper.SimpleCallback(0,0) {
+        return new ItemTouchHelper.SimpleCallback(0, 0) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
                 return false;

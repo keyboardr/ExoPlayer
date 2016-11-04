@@ -19,11 +19,13 @@ import android.widget.TextView;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
+import com.keyboardr.dancedj.util.FragmentUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment {
+public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer.PlaylistChangedListener {
 
     private AudioManager audioManager;
     private AudioDeviceCallback audioDeviceCallback = new AudioDeviceCallback() {
@@ -81,6 +83,7 @@ public class PlaylistControlsFragment extends Fragment {
         handler = new Handler();
         audioManager = getContext().getSystemService(AudioManager.class);
         player = new PlaylistPlayer(getContext());
+        player.addPlaylistChangedListener(this);
     }
 
     @Override
@@ -134,6 +137,28 @@ public class PlaylistControlsFragment extends Fragment {
         if (audioOutputAdapter != null) {
             audioOutputAdapter.notifyDataSetChanged();
         }
+    }
+
+    public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
+        return player.getMediaList();
+    }
+
+    public int getCurrentTrackIndex() {
+        return player.getCurrentMediaIndex();
+    }
+
+    private PlaylistPlayer.PlaylistChangedListener getParent() {
+        return FragmentUtils.getParent(this, PlaylistPlayer.PlaylistChangedListener.class);
+    }
+
+    @Override
+    public void onTrackAdded(int index) {
+        getParent().onTrackAdded(index);
+    }
+
+    @Override
+    public void onIndexChanged(int oldIndex, int newIndex) {
+        getParent().onIndexChanged(oldIndex, newIndex);
     }
 
     private class AudioOutputAdapter extends BaseAdapter {

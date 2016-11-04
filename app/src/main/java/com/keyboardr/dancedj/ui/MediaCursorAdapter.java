@@ -44,7 +44,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
                 .setTitle(cursor.getString(titleColumn))
                 .setAlbumId(cursor.getLong(albumIdColumn))
                 .setPath(cursor.getString(dataColumn))
-                .make(cursor.getLong(mediaIdColumn)));
+                .make(cursor.getLong(mediaIdColumn)), false, true);
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.keyboardr.dancedj.player;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -13,8 +14,17 @@ import java.util.List;
 
 public class PlaylistPlayer extends Player {
 
-    private List<MediaItem> mediaItems = new ArrayList<>();
+    public interface PlaylistChangedListener {
+        void onTrackAdded(int index);
+
+        void onIndexChanged(int oldIndex, int newIndex);
+    }
+
+    private List<PlaylistItem> mediaItems = new ArrayList<>();
     private int currentIndex;
+    private int nextId;
+    @Nullable
+    private PlaylistChangedListener playlistChangedListener;
 
     public PlaylistPlayer(@NonNull Context context) {
         super(context);
@@ -28,7 +38,10 @@ public class PlaylistPlayer extends Player {
                 if (playbackState == ExoPlayer.STATE_ENDED && playWhenReady) {
                     currentIndex++;
                     if (mediaItems.size() > currentIndex) {
-                        ensurePlayer().prepare(getMediaSource(mediaItems.get(currentIndex)));
+                        ensurePlayer().prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
+                    }
+                    if (playlistChangedListener != null) {
+                        playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
                     }
                 }
             }
@@ -48,10 +61,17 @@ public class PlaylistPlayer extends Player {
         ensurePlayer().addListener(eventListener);
     }
 
+    public void addPlaylistChangedListener(@Nullable PlaylistChangedListener playlistChangedListener) {
+        this.playlistChangedListener = playlistChangedListener;
+    }
+
     public void addToQueue(@NonNull MediaItem mediaItem) {
-        mediaItems.add(mediaItem);
+        mediaItems.add(new PlaylistItem(mediaItem, nextId++));
         if (ensurePlayer().getPlaybackState() == ExoPlayer.STATE_IDLE) {
-            ensurePlayer().prepare(getMediaSource(mediaItems.get(0)));
+            ensurePlayer().prepare(getMediaSource(mediaItems.get(0).mediaItem));
+        }
+        if (playlistChangedListener != null) {
+            playlistChangedListener.onTrackAdded(mediaItems.size() - 1);
         }
     }
 
@@ -60,7 +80,7 @@ public class PlaylistPlayer extends Player {
         if (mediaItems.size() == 0) {
             return null;
         }
-        return mediaItems.get(getCurrentMediaIndex());
+        return mediaItems.get(getCurrentMediaIndex()).mediaItem;
     }
 
     public int getCurrentMediaIndex() {
@@ -75,5 +95,19 @@ public class PlaylistPlayer extends Player {
     @Override
     public void togglePlayPause() {
         ensurePlayer().setPlayWhenReady(true);
+    }
+
+    public List<PlaylistItem> getMediaList() {
+        return new ArrayList<>(mediaItems);
+    }
+
+    public static class PlaylistItem {
+        public final MediaItem mediaItem;
+        public final long id;
+
+        public PlaylistItem(MediaItem mediaItem, long id) {
+            this.mediaItem = mediaItem;
+            this.id = id;
+        }
     }
 }

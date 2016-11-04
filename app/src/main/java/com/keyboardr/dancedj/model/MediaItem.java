@@ -77,6 +77,10 @@ public class MediaItem implements Parcelable {
         return null;
     }
 
+    public long getTransientId() {
+        return transientMediaId;
+    }
+
     @SuppressWarnings("WeakerAccess")
     public static class Builder {
         private CharSequence title;

@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:background="?android:selectableItemBackground"
+    android:orientation="vertical"
     android:paddingBottom="16dp"
     android:paddingLeft="24dp"
     android:paddingRight="24dp"
@@ -14,6 +14,7 @@
         android:id="@+id/media_item_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItem"
         tools:text="Song Name" />
 
@@ -21,6 +22,7 @@
         android:id="@+id/media_item_artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItemSecondary"
         android:textColor="?android:textColorSecondary"
         tools:text="Song Name" />

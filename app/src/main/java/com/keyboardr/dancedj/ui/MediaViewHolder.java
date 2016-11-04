@@ -1,8 +1,11 @@
 package com.keyboardr.dancedj.ui;
 
+import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
+import android.text.SpannableString;
+import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,8 +46,12 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    public void bindMediaItem(@NonNull MediaItem mediaItem) {
-        title.setText(mediaItem.title);
+    public void bindMediaItem(@NonNull MediaItem mediaItem, boolean selected, boolean enabled) {
+        itemView.setSelected(selected);
+        itemView.setEnabled(enabled);
+        SpannableString titleString = new SpannableString(mediaItem.title);
+        titleString.setSpan(new StyleSpan(selected ? Typeface.BOLD : Typeface.NORMAL), 0, titleString.length(), 0);
+        title.setText(titleString);
         artist.setText(mediaItem.artist);
         this.mediaItem = mediaItem;
     }

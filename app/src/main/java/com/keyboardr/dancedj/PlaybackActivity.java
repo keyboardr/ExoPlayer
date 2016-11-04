@@ -11,8 +11,11 @@ import android.view.MenuItem;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.dancedj.model.MediaItem;
+import com.keyboardr.dancedj.player.PlaylistPlayer;
 
-public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder {
+import java.util.List;
+
+public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder, PlaylistFragment.Holder, PlaylistPlayer.PlaylistChangedListener {
 
     private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
     @Nullable
@@ -84,5 +87,25 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
+        return ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).getPlaylist();
+    }
+
+    @Override
+    public int getCurrentTrackIndex() {
+        return ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).getCurrentTrackIndex();
+    }
+
+    @Override
+    public void onTrackAdded(int index) {
+        ((PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment)).onTrackAdded(index);
+    }
+
+    @Override
+    public void onIndexChanged(int oldIndex, int newIndex) {
+        ((PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment)).onIndexChanged(oldIndex, newIndex);
     }
 }
