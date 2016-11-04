@@ -42,7 +42,7 @@ public abstract class Player {
     private final Handler mainHandler;
 
     @Nullable
-    private PlaybackListener playbackListener;
+    protected PlaybackListener playbackListener;
 
     private final DefaultDataSourceFactory defaultDataSourceFactory;
     private final DefaultExtractorsFactory defaultExtractorsFactory;
@@ -56,6 +56,7 @@ public abstract class Player {
 
         @Override
         public void onLoadingChanged(boolean isLoading) {
+            Log.d(TAG, "onLoadingChanged() called with: isLoading = [" + isLoading + "]");
             if (playbackListener != null) {
                 playbackListener.onPlayStateChanged(Player.this);
             }
@@ -63,6 +64,7 @@ public abstract class Player {
 
         @Override
         public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
+            Log.d(TAG, "onPlayerStateChanged() called with: playWhenReady = [" + playWhenReady + "], playbackState = [" + playbackState + "]");
             if (playbackListener != null) {
                 playbackListener.onPlayStateChanged(Player.this);
             }
@@ -70,7 +72,9 @@ public abstract class Player {
 
         @Override
         public void onTimelineChanged(Timeline timeline, Object manifest) {
+            Log.d(TAG, "onTimelineChanged() called with: timeline = [" + timeline + "], manifest = [" + manifest + "]");
             if (playbackListener != null) {
+                playbackListener.onPlayStateChanged(Player.this);
                 playbackListener.onSeekComplete(Player.this);
             }
         }
@@ -82,7 +86,9 @@ public abstract class Player {
 
         @Override
         public void onPositionDiscontinuity() {
+            Log.d(TAG, "onPositionDiscontinuity() called");
             if (playbackListener != null) {
+                playbackListener.onPlayStateChanged(Player.this);
                 playbackListener.onSeekComplete(Player.this);
             }
         }
