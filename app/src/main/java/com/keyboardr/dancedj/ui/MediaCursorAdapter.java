@@ -16,6 +16,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
 
     private int artistColumn;
     private int titleColumn;
+    private int albumIdColumn;
     private int dataColumn;
 
     @Nullable
@@ -30,6 +31,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
     protected void onNewCursor(@NonNull Cursor cursor) {
         artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
         titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
+        albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID);
         dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
     }
 
@@ -38,6 +40,7 @@ public class MediaCursorAdapter extends CursorRecyclerAdapter<MediaViewHolder> {
         viewHolder.bindMediaItem(MediaItem.build()
                 .setArtist(cursor.getString(artistColumn))
                 .setTitle(cursor.getString(titleColumn))
+                .setAlbumId(cursor.getLong(albumIdColumn))
                 .setPath(cursor.getString(dataColumn))
                 .make());
     }

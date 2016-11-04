@@ -31,7 +31,7 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
         @Override
         public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
             return new CursorLoader(getContext(), MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    null, null, null, null);
+                    null, MediaStore.Audio.Media.IS_MUSIC + "=1", null, null);
         }
 
         @Override

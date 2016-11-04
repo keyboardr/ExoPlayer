@@ -4,65 +4,78 @@
     android:id="@+id/monitor_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:animateLayoutChanges="true"
     tools:context="com.keyboardr.dancedj.LibraryFragment">
 
     <TextView
         android:id="@+id/monitor_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceLarge"
-        tools:text="Song Name"
-        app:layout_constraintLeft_toRightOf="@+id/monitor_album_art"
         android:layout_marginStart="8dp"
+        android:textAppearance="?android:textAppearanceLarge"
+        android:visibility="invisible"
+        app:layout_constraintLeft_toRightOf="@+id/monitor_album_art"
+        app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@+id/monitor_album_art"
-        app:layout_constraintRight_toRightOf="parent" />
+        tools:text="Song Name"
+        tools:visibility="visible" />
 
     <TextView
         android:id="@+id/monitor_artist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:textAppearanceMedium"
-        tools:text="Artist Name"
-        app:layout_constraintLeft_toLeftOf="@+id/monitor_title"
-        app:layout_constraintTop_toBottomOf="@+id/monitor_title"
         android:layout_marginTop="4dp"
-        app:layout_constraintRight_toRightOf="parent" />
+        android:textAppearance="?android:textAppearanceMedium"
+        android:visibility="invisible"
+        app:layout_constraintLeft_toLeftOf="@+id/monitor_title"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/monitor_title"
+        tools:text="Artist Name"
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/monitor_album_art"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_marginTop="8dp"
+        android:background="@drawable/album_art_outline"
+        android:visibility="invisible"
         app:layout_constraintLeft_creator="1"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/spinner"
         tools:src="@mipmap/ic_launcher"
-        app:layout_constraintLeft_toLeftOf="parent"/>
+        tools:visibility="visible" />
 
     <ImageView
         android:id="@+id/monitor_play_pause"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginTop="8dp"
         android:background="?android:selectableItemBackgroundBorderless"
         android:padding="8dp"
         android:src="@drawable/ic_play_arrow"
+        android:visibility="invisible"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/monitor_album_art"
-        android:layout_marginTop="8dp" />
+        tools:visibility="visible" />
 
     <SeekBar
         android:id="@+id/monitor_seek"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintLeft_toRightOf="@+id/monitor_play_pause"
-        app:layout_constraintTop_toTopOf="@+id/monitor_play_pause"
-        app:layout_constraintRight_toRightOf="parent"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/monitor_play_pause"
-        app:layout_constraintHorizontal_bias="1.0" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintLeft_toRightOf="@+id/monitor_play_pause"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/monitor_play_pause"
+        tools:visibility="visible" />
 
     <Spinner
+        android:id="@+id/spinner"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:id="@+id/spinner"
+        app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent" />
+        tools:layout_editor_absoluteY="0dp" />
 </android.support.constraint.ConstraintLayout>

@@ -1,5 +1,7 @@
 package com.keyboardr.dancedj;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -9,6 +11,8 @@ import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.Loader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,6 +26,7 @@ import android.widget.TextView;
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.MonitorPlayer;
 import com.keyboardr.dancedj.player.Player;
+import com.keyboardr.dancedj.util.CachedLoader;
 import com.keyboardr.dancedj.util.MathUtil;
 
 import java.util.ArrayList;
@@ -147,22 +152,64 @@ public class MonitorControlsFragment extends Fragment {
 
     private class UiUpdater implements Player.PlaybackListener {
 
+        private static final String ARG_MEDIA_ITEM = "mediaItem";
         private Handler seekHandler = new Handler();
 
         @Nullable
         private MediaItem mediaItem;
 
         private ImageView playPause;
+        private ImageView albumArt;
         private SeekBar seekBar;
         private TextView title;
         private TextView artist;
         private Runnable seekRunnable;
 
+        private Bitmap albumArtData;
+
+        private LoaderManager.LoaderCallbacks<Bitmap> albumArtCalbacks = new LoaderManager.LoaderCallbacks<Bitmap>() {
+            @Override
+            public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
+                return new AlbumArtLoader(getContext(), (MediaItem) args.getParcelable(ARG_MEDIA_ITEM));
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
+                albumArtData = data;
+                if (albumArt != null) {
+                    albumArt.setImageBitmap(albumArtData);
+                }
+            }
+
+            @Override
+            public void onLoaderReset(Loader<Bitmap> loader) {
+                albumArtData = null;
+            }
+        };
+
         void onMetaData(@Nullable MediaItem item) {
+            boolean itemChanged = mediaItem != item;
             this.mediaItem = item;
             if (getView() != null) {
                 title.setText(mediaItem == null ? "" : mediaItem.title);
                 artist.setText(mediaItem == null ? "" : mediaItem.artist);
+
+                playPause.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+                seekBar.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+                title.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+                artist.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+                albumArt.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+
+                albumArt.setImageBitmap(albumArtData);
+
+                Bundle loaderArgs = new Bundle();
+                loaderArgs.putParcelable(ARG_MEDIA_ITEM, item);
+
+                if (!itemChanged) {
+                    getLoaderManager().initLoader(0, loaderArgs, albumArtCalbacks);
+                } else {
+                    getLoaderManager().restartLoader(0, loaderArgs, albumArtCalbacks);
+                }
             }
         }
 
@@ -193,6 +240,7 @@ public class MonitorControlsFragment extends Fragment {
             artist = ((TextView) getView().findViewById(R.id.monitor_artist));
             seekBar = (SeekBar) getView().findViewById(R.id.monitor_seek);
             playPause = ((ImageView) getView().findViewById(R.id.monitor_play_pause));
+            albumArt = (ImageView) getView().findViewById(R.id.monitor_album_art);
 
             onMetaData(mediaItem);
 
@@ -323,6 +371,26 @@ public class MonitorControlsFragment extends Fragment {
                 return getText(res);
             }
             return item.getProductName();
+        }
+
+
+    }
+
+    public static class AlbumArtLoader extends CachedLoader<Bitmap> {
+
+        private final MediaItem mediaItem;
+
+        public AlbumArtLoader(Context context, MediaItem item) {
+            super(context);
+            this.mediaItem = item;
+        }
+
+        @Override
+        public Bitmap loadInBackground() {
+            if (mediaItem == null) {
+                return null;
+            }
+            return mediaItem.getAlbumArt(getContext());
         }
     }
 }
