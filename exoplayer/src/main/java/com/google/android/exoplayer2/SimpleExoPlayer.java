@@ -19,7 +19,6 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
 import android.media.AudioDeviceInfo;
-import android.media.AudioManager;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
 import android.os.Handler;
@@ -29,6 +28,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
+
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.audio.AudioTrack;
@@ -47,6 +47,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelections;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,6 +105,7 @@ public final class SimpleExoPlayer implements ExoPlayer {
   private final Handler mainHandler;
   private final int videoRendererCount;
   private final int audioRendererCount;
+  private final int audioStreamType;
 
   private boolean videoTracksEnabled;
   private Format videoFormat;
@@ -126,10 +128,11 @@ public final class SimpleExoPlayer implements ExoPlayer {
 
   /* package */ SimpleExoPlayer(Context context, TrackSelector<?> trackSelector,
       LoadControl loadControl, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
-      boolean preferExtensionDecoders, long allowedVideoJoiningTimeMs) {
+      boolean preferExtensionDecoders, long allowedVideoJoiningTimeMs, int audioStreamType) {
     mainHandler = new Handler();
     componentListener = new ComponentListener();
     trackSelector.addListener(componentListener);
+    this.audioStreamType = audioStreamType;
 
     // Build the renderers.
     ArrayList<Renderer> renderersList = new ArrayList<>();
@@ -567,7 +570,7 @@ public final class SimpleExoPlayer implements ExoPlayer {
 
     Renderer audioRenderer = new MediaCodecAudioRenderer(MediaCodecSelector.DEFAULT,
         drmSessionManager, true, mainHandler, componentListener,
-        AudioCapabilities.getCapabilities(context), AudioManager.STREAM_MUSIC);
+        AudioCapabilities.getCapabilities(context), audioStreamType);
     renderersList.add(audioRenderer);
 
     Renderer textRenderer = new TextRenderer(componentListener, mainHandler.getLooper());

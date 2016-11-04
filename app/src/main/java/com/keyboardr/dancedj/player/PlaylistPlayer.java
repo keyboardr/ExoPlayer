@@ -1,6 +1,7 @@
 package com.keyboardr.dancedj.player;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -27,7 +28,7 @@ public class PlaylistPlayer extends Player {
     private PlaylistChangedListener playlistChangedListener;
 
     public PlaylistPlayer(@NonNull Context context) {
-        super(context);
+        super(context, AudioManager.STREAM_MUSIC);
         ExoPlayer.EventListener eventListener = new ExoPlayer.EventListener() {
             @Override
             public void onLoadingChanged(boolean isLoading) {

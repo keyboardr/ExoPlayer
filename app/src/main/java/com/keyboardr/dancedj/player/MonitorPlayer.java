@@ -1,6 +1,7 @@
 package com.keyboardr.dancedj.player;
 
 import android.content.Context;
+import android.media.AudioManager;
 import android.support.annotation.NonNull;
 
 import com.google.android.exoplayer2.ExoPlayer;
@@ -18,7 +19,7 @@ public class MonitorPlayer extends Player {
     private MediaItem currentItem;
 
     public MonitorPlayer(@NonNull Context context) {
-        super(context);
+        super(context, AudioManager.STREAM_VOICE_CALL);
     }
 
 

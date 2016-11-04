@@ -40,6 +40,7 @@ public abstract class Player {
     @NonNull
     private final Context context;
     private final Handler mainHandler;
+    private final int audioStreamType;
 
     @Nullable
     protected PlaybackListener playbackListener;
@@ -96,8 +97,9 @@ public abstract class Player {
     @Nullable
     private SimpleExoPlayer player;
 
-    public Player(@NonNull Context context) {
+    public Player(@NonNull Context context, int audioStreamType) {
         this.context = context;
+        this.audioStreamType = audioStreamType;
         mainHandler = new Handler();
         defaultDataSourceFactory = new DefaultDataSourceFactory(context, Util.getUserAgent(context, "DanceDJ"));
         defaultExtractorsFactory = new DefaultExtractorsFactory();
@@ -109,7 +111,7 @@ public abstract class Player {
         if (player != null) return player;
         player = ExoPlayerFactory.newSimpleInstance(context,
                 new DefaultTrackSelector(mainHandler),
-                new DefaultLoadControl());
+                new DefaultLoadControl(), audioStreamType);
         player.addListener(playerListener);
         return player;
     }
