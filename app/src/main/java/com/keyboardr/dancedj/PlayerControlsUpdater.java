@@ -122,6 +122,7 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
 
     @Override
     public void onPlayStateChanged(Player player) {
+        onMetaData();
         updatePlayState();
     }
 
