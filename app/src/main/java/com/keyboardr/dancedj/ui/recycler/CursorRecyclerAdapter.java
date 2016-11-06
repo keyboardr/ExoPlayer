@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj.ui;
+package com.keyboardr.dancedj.ui.recycler;
 
 import android.database.Cursor;
 import android.database.DataSetObserver;

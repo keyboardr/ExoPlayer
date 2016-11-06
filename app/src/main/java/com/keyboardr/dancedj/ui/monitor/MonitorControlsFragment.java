@@ -1,5 +1,7 @@
-package com.keyboardr.dancedj;
+package com.keyboardr.dancedj.ui.monitor;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.media.AudioDeviceCallback;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
@@ -17,15 +19,16 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.keyboardr.dancedj.ui.PlayerControlsUpdater;
+import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
-import com.keyboardr.dancedj.player.PlaylistPlayer;
-import com.keyboardr.dancedj.util.FragmentUtils;
+import com.keyboardr.dancedj.player.MonitorPlayer;
+import com.keyboardr.dancedj.util.CachedLoader;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer.PlaylistChangedListener {
+public class MonitorControlsFragment extends Fragment {
 
     private AudioManager audioManager;
     private AudioDeviceCallback audioDeviceCallback = new AudioDeviceCallback() {
@@ -69,8 +72,13 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
     };
     private Handler handler;
 
+    @SuppressWarnings("unused")
+    public static MonitorControlsFragment newInstance() {
+        return new MonitorControlsFragment();
+    }
+
     private PlayerControlsUpdater uiUpdater;
-    private PlaylistPlayer player;
+    private MonitorPlayer player;
     private AudioOutputAdapter audioOutputAdapter;
     private
     @Nullable
@@ -82,14 +90,13 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         super.onCreate(savedInstanceState);
         handler = new Handler();
         audioManager = getContext().getSystemService(AudioManager.class);
-        player = new PlaylistPlayer(getContext());
-        player.addPlaylistChangedListener(this);
+        player = new MonitorPlayer(getContext());
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_playlist_controls, container, false);
+        return inflater.inflate(R.layout.fragment_monitor_controls, container, false);
     }
 
     @Override
@@ -121,8 +128,8 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         super.onDestroyView();
     }
 
-    public void addToQueue(MediaItem mediaItem) {
-        player.addToQueue(mediaItem);
+    public void playMedia(MediaItem mediaItem) {
+        player.play(mediaItem, true);
         uiUpdater.onMetaData();
     }
 
@@ -137,28 +144,6 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         if (audioOutputAdapter != null) {
             audioOutputAdapter.notifyDataSetChanged();
         }
-    }
-
-    public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
-        return player.getMediaList();
-    }
-
-    public int getCurrentTrackIndex() {
-        return player.getCurrentMediaIndex();
-    }
-
-    private PlaylistPlayer.PlaylistChangedListener getParent() {
-        return FragmentUtils.getParent(this, PlaylistPlayer.PlaylistChangedListener.class);
-    }
-
-    @Override
-    public void onTrackAdded(int index) {
-        getParent().onTrackAdded(index);
-    }
-
-    @Override
-    public void onIndexChanged(int oldIndex, int newIndex) {
-        getParent().onIndexChanged(oldIndex, newIndex);
     }
 
     private class AudioOutputAdapter extends BaseAdapter {
@@ -235,5 +220,23 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         }
 
 
+    }
+
+    public static class AlbumArtLoader extends CachedLoader<Bitmap> {
+
+        private final MediaItem mediaItem;
+
+        public AlbumArtLoader(Context context, MediaItem item) {
+            super(context);
+            this.mediaItem = item;
+        }
+
+        @Override
+        public Bitmap loadInBackground() {
+            if (mediaItem == null) {
+                return null;
+            }
+            return mediaItem.getAlbumArt(getContext());
+        }
     }
 }

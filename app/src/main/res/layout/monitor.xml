@@ -18,7 +18,7 @@
 
         <fragment
             android:id="@+id/monitor_fragment"
-            android:name="com.keyboardr.dancedj.MonitorControlsFragment"
+            android:name="com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:layout="@layout/fragment_monitor_controls" />
@@ -26,7 +26,7 @@
 
     <fragment
         android:id="@+id/library_fragment"
-        android:name="com.keyboardr.dancedj.LibraryFragment"
+        android:name="com.keyboardr.dancedj.ui.monitor.LibraryFragment"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />

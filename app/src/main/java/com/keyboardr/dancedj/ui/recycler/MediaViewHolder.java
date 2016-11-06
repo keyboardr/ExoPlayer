@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj.ui;
+package com.keyboardr.dancedj.ui.recycler;
 
 import android.graphics.Typeface;
 import android.support.annotation.DrawableRes;

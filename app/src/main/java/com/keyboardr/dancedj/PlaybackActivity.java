@@ -12,6 +12,10 @@ import android.widget.ViewSwitcher;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
+import com.keyboardr.dancedj.ui.monitor.LibraryFragment;
+import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
+import com.keyboardr.dancedj.ui.playlist.PlaylistControlsFragment;
+import com.keyboardr.dancedj.ui.playlist.PlaylistFragment;
 
 import java.util.List;
 

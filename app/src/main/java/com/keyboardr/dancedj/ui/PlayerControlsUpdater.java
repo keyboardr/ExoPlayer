@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj;
+package com.keyboardr.dancedj.ui;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -13,15 +13,17 @@ import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.MonitorPlayer;
 import com.keyboardr.dancedj.player.Player;
+import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.dancedj.util.MathUtil;
 
 /**
  * Responsible for updating the UI of a controller
  */
-class PlayerControlsUpdater implements Player.PlaybackListener {
+public class PlayerControlsUpdater implements Player.PlaybackListener {
 
     private static final String ARG_MEDIA_ITEM = "mediaItem";
 
@@ -80,7 +82,7 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
         attachPlayer();
     }
 
-    void onMetaData() {
+    public void onMetaData() {
         MediaItem mediaItem = player.getCurrentMediaItem();
         boolean itemChanged = lastMediaItem != mediaItem;
         lastMediaItem = mediaItem;
@@ -162,12 +164,12 @@ class PlayerControlsUpdater implements Player.PlaybackListener {
         }
     }
 
-    void detach() {
+    public void detach() {
         player.setPlaybackListener(null);
         seekHandler.removeCallbacks(seekRunnable);
     }
 
-    void updatePlayState() {
+    public void updatePlayState() {
         if (player.canPause()) {
             playPause.setImageResource(player.isPlaying() ?
                     R.drawable.ic_pause : R.drawable.ic_play_arrow);

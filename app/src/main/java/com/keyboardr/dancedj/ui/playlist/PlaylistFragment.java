@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj;
+package com.keyboardr.dancedj.ui.playlist;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -11,8 +11,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ViewAnimator;
 
+import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
-import com.keyboardr.dancedj.ui.MediaViewHolder;
+import com.keyboardr.dancedj.ui.recycler.MediaViewHolder;
 import com.keyboardr.dancedj.util.FragmentUtils;
 
 import java.util.List;

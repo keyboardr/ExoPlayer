@@ -1,4 +1,4 @@
-package com.keyboardr.dancedj;
+package com.keyboardr.dancedj.ui.monitor;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -11,10 +11,11 @@ import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.RecyclerView;
 
+import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
-import com.keyboardr.dancedj.ui.MediaCursorAdapter;
-import com.keyboardr.dancedj.ui.MediaViewHolder;
-import com.keyboardr.dancedj.ui.RecyclerFragment;
+import com.keyboardr.dancedj.ui.recycler.MediaCursorAdapter;
+import com.keyboardr.dancedj.ui.recycler.MediaViewHolder;
+import com.keyboardr.dancedj.ui.recycler.RecyclerFragment;
 import com.keyboardr.dancedj.util.FragmentUtils;
 
 public class LibraryFragment extends RecyclerFragment implements MediaViewHolder.OnMediaItemSelectedListener, MediaViewHolder.MediaViewDecorator {
