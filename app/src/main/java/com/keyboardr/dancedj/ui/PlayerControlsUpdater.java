@@ -133,6 +133,7 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
         player.setPlaybackListener(this);
 
         onMetaData();
+        updatePlayState();
 
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override

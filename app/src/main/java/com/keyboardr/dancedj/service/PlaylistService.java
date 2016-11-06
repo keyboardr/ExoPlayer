@@ -141,6 +141,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
                 case ServiceMessage.ADD_TO_QUEUE:
                     //noinspection ConstantConditions
                     player.addToQueue(((MediaItem) msg.getData().getParcelable(DATA_MEDIA_ITEM)));
+                    break;
                 default:
                     super.handleMessage(msg);
             }
@@ -154,15 +155,16 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
             client.send(Message.obtain(null, ClientMessage.INDEX_CHANGED,
                     player.getCurrentMediaIndex(), player.getCurrentMediaIndex()));
 
+            sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
             long currentPosition = player.getCurrentPosition();
             client.send(Message.obtain(null, ClientMessage.SET_CURRENT_POSITION,
                     (int) (currentPosition >> 32), (int) currentPosition));
 
-            client.send(Message.obtain(null, ClientMessage.SET_PLAY_STATE, player.getPlayState()));
+            int playState = player.getPlayState();
+            client.send(Message.obtain(null, ClientMessage.SET_PLAY_STATE, playState, 0));
 
-            client.send(Message.obtain(null, ClientMessage.SET_OUTPUT_ID, player.getAudioOutputId()));
+            client.send(Message.obtain(null, ClientMessage.SET_OUTPUT_ID, player.getAudioOutputId(), 0));
 
-            sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
         } catch (RemoteException e) {
             e.printStackTrace();
         }
@@ -187,6 +189,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
 
     @Override
     public void onPlayStateChanged(Player player) {
+        sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
         sendMessageToClients(ClientMessage.SET_PLAY_STATE, player.getPlayState());
     }
 

@@ -33,6 +33,7 @@ import java.util.List;
 public class PlaylistControlsFragment extends Fragment {
 
     public interface Holder extends PlaylistPlayer.PlaylistChangedListener {
+        void onMediaListLoaded();
     }
 
     private AudioManager audioManager;
@@ -145,7 +146,11 @@ public class PlaylistControlsFragment extends Fragment {
             @Override
             public void onIndexChanged(int oldIndex, int newIndex) {
                 getParent().onIndexChanged(oldIndex, newIndex);
+            }
 
+            @Override
+            public void onMediaListLoaded() {
+                getParent().onMediaListLoaded();
             }
         };
         updateView();

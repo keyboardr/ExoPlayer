@@ -20,6 +20,8 @@ import java.util.List;
 
 public class PlaylistFragment extends Fragment {
 
+    private RecyclerView recyclerView;
+
     public interface Holder {
 
         List<PlaylistPlayer.PlaylistItem> getPlaylist();
@@ -43,13 +45,11 @@ public class PlaylistFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         switcher = ((ViewAnimator) view.findViewById(R.id.playlist_switcher));
         playlistAdapter = new PlaylistAdapter();
-        RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
+        recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
                 LinearLayoutManager.VERTICAL, false);
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager.getOrientation()));
-        recyclerView.setAdapter(playlistAdapter);
-        switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
     }
 
     private Holder getParent() {
@@ -64,6 +64,11 @@ public class PlaylistFragment extends Fragment {
     public void onIndexChanged(int oldIndex, int newIndex) {
         playlistAdapter.notifyItemChanged(oldIndex);
         playlistAdapter.notifyItemChanged(newIndex);
+    }
+
+    public void onMediaListLoaded() {
+        recyclerView.setAdapter(playlistAdapter);
+        switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
     }
 
     private class PlaylistAdapter extends RecyclerView.Adapter<MediaViewHolder> {

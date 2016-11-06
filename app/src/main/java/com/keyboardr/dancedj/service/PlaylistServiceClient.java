@@ -20,7 +20,7 @@ import com.keyboardr.dancedj.service.PlaylistService.ServiceMessage;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -61,13 +61,23 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
                 case ClientMessage.SET_CURRENT_POSITION:
                     lastPosition = (((long) msg.arg1) << 32) | (msg.arg2 & 0xffffffffL);
                     lastPositionTime = SystemClock.elapsedRealtime();
+                    if (playbackListener != null) {
+                        playbackListener.onSeekComplete(PlaylistServiceClient.this);
+                    }
                     break;
                 case ClientMessage.SET_MEDIA_LIST:
+                    boolean wasNull = mediaList == null;
                     mediaList = msg.getData().getParcelableArrayList(DATA_MEDIA_LIST);
+                    if (wasNull) {
+                        onMediaListLoaded();
+                    }
                     break;
                 case ClientMessage.SET_PLAY_STATE:
                     //noinspection WrongConstant
                     playState = msg.arg1;
+                    if (playbackListener != null) {
+                        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
+                    }
                     break;
                 case ClientMessage.SET_OUTPUT_ID:
                     outputId = msg.arg1;
@@ -87,7 +97,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     private long lastPosition;
     private long lastPositionTime;
     private long duration;
-    private List<PlaylistPlayer.PlaylistItem> mediaList = new ArrayList<>();
+    private List<PlaylistPlayer.PlaylistItem> mediaList = null;
     private int index;
     @PlayState
     private int playState;
@@ -141,7 +151,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
 
     @Override
     public MediaItem getCurrentMediaItem() {
-        if (mediaList.isEmpty()) {
+        if (mediaList == null || mediaList.isEmpty()) {
             return null;
         }
         return mediaList.get(index).mediaItem;
@@ -210,10 +220,12 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     }
 
     public List<PlaylistPlayer.PlaylistItem> getMediaList() {
-        return mediaList;
+        return mediaList == null ? Collections.<PlaylistPlayer.PlaylistItem>emptyList() : mediaList;
     }
 
     public int getCurrentMediaIndex() {
         return index;
     }
+
+    public abstract void onMediaListLoaded();
 }

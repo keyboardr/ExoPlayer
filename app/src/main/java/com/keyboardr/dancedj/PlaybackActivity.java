@@ -122,6 +122,10 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         return (PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment);
     }
 
+    private PlaylistFragment getPlaylistFragment() {
+        return (PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment);
+    }
+
     @Override
     public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
         return getPlaylistControlsFragment().getPlaylist();
@@ -134,11 +138,16 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
     @Override
     public void onTrackAdded(int index) {
-        ((PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment)).onTrackAdded(index);
+        getPlaylistFragment().onTrackAdded(index);
     }
 
     @Override
     public void onIndexChanged(int oldIndex, int newIndex) {
-        ((PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment)).onIndexChanged(oldIndex, newIndex);
+        getPlaylistFragment().onIndexChanged(oldIndex, newIndex);
+    }
+
+    @Override
+    public void onMediaListLoaded() {
+        getPlaylistFragment().onMediaListLoaded();
     }
 }
