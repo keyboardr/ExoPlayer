@@ -5,6 +5,7 @@ import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,17 +18,22 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.keyboardr.dancedj.ui.PlayerControlsUpdater;
 import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
+import com.keyboardr.dancedj.service.PlaylistServiceClient;
+import com.keyboardr.dancedj.ui.PlayerControlsUpdater;
 import com.keyboardr.dancedj.util.FragmentUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer.PlaylistChangedListener {
+public class PlaylistControlsFragment extends Fragment {
+
+    public interface Holder extends PlaylistPlayer.PlaylistChangedListener {
+    }
 
     private AudioManager audioManager;
     private AudioDeviceCallback audioDeviceCallback = new AudioDeviceCallback() {
@@ -49,12 +55,12 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
             ArrayList<AudioDeviceInfo> newDevices = (devices == null)
                     ? new ArrayList<AudioDeviceInfo>() : new ArrayList<>(Arrays.asList(devices));
             boolean currentRemoved = false;
-            AudioDeviceInfo audioOutput = player.getAudioOutput();
+            int audioOutput = player != null ? player.getAudioOutputId() : -1;
             for (AudioDeviceInfo device : removedDevices) {
                 for (int i = newDevices.size() - 1; i >= 0; i--) {
                     if (device.getId() == newDevices.get(i).getId()) {
                         newDevices.remove(i);
-                        if (audioOutput != null && audioOutput.getId() == device.getId()) {
+                        if (audioOutput != -1 && audioOutput == device.getId()) {
                             currentRemoved = true;
                         }
                     }
@@ -70,9 +76,10 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         }
     };
     private Handler handler;
-
+    @Nullable
+    private PlaylistServiceClient player;
+    @Nullable
     private PlayerControlsUpdater uiUpdater;
-    private PlaylistPlayer player;
     private AudioOutputAdapter audioOutputAdapter;
     private
     @Nullable
@@ -84,8 +91,6 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         super.onCreate(savedInstanceState);
         handler = new Handler();
         audioManager = getContext().getSystemService(AudioManager.class);
-        player = new PlaylistPlayer(getContext());
-        player.addPlaylistChangedListener(this);
     }
 
     @Override
@@ -105,33 +110,86 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
         audioDeviceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int position, long l) {
-                player.setAudioOutput((AudioDeviceInfo) adapterView.getItemAtPosition(position));
+                if (player != null) {
+                    player.setAudioOutput((AudioDeviceInfo) adapterView.getItemAtPosition(position));
+                }
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                player.setAudioOutput(null);
+                if (player != null) {
+                    player.setAudioOutput(null);
+                }
             }
         });
-        uiUpdater = new PlayerControlsUpdater(view, player, getLoaderManager());
+        updateView();
     }
 
     @Override
     public void onDestroyView() {
-        uiUpdater.detach();
+        if (uiUpdater != null) {
+            uiUpdater.detach();
+        }
         audioManager.unregisterAudioDeviceCallback(audioDeviceCallback);
         super.onDestroyView();
     }
 
-    public void addToQueue(MediaItem mediaItem) {
-        player.addToQueue(mediaItem);
-        uiUpdater.onMetaData();
+
+    public void serviceConnected(IBinder playlistServiceBinder) {
+        player = new PlaylistServiceClient(playlistServiceBinder) {
+            @Override
+            public void onTrackAdded(int index) {
+                getParent().onTrackAdded(index);
+            }
+
+            @Override
+            public void onIndexChanged(int oldIndex, int newIndex) {
+                getParent().onIndexChanged(oldIndex, newIndex);
+
+            }
+        };
+        updateView();
+    }
+
+    public void serviceDisconnected() {
+        player = null;
+        updateView();
+    }
+
+    private void updateView() {
+        View view = getView();
+        if (view != null) {
+            if (player != null) {
+                audioDeviceSpinner.setVisibility(View.VISIBLE);
+                if (uiUpdater == null) {
+                    uiUpdater = new PlayerControlsUpdater(view, player, getLoaderManager());
+                }
+            } else {
+                audioDeviceSpinner.setVisibility(View.INVISIBLE);
+                if (uiUpdater != null) {
+                    uiUpdater.detach();
+                }
+                uiUpdater = null;
+            }
+        }
+
+    }
+
+    public void addToQueue(@NonNull MediaItem mediaItem) {
+        if (player != null) {
+            player.addToQueue(mediaItem);
+            if (uiUpdater != null) {
+                uiUpdater.onMetaData();
+            }
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        player.release();
+        if (player != null) {
+            player.release();
+        }
     }
 
     private void setDevices(@Nullable AudioDeviceInfo[] devices) {
@@ -142,25 +200,15 @@ public class PlaylistControlsFragment extends Fragment implements PlaylistPlayer
     }
 
     public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
-        return player.getMediaList();
+        return player != null ? player.getMediaList() : Collections.<PlaylistPlayer.PlaylistItem>emptyList();
     }
 
     public int getCurrentTrackIndex() {
-        return player.getCurrentMediaIndex();
+        return player != null ? player.getCurrentMediaIndex() : 0;
     }
 
-    private PlaylistPlayer.PlaylistChangedListener getParent() {
-        return FragmentUtils.getParent(this, PlaylistPlayer.PlaylistChangedListener.class);
-    }
-
-    @Override
-    public void onTrackAdded(int index) {
-        getParent().onTrackAdded(index);
-    }
-
-    @Override
-    public void onIndexChanged(int oldIndex, int newIndex) {
-        getParent().onIndexChanged(oldIndex, newIndex);
+    private Holder getParent() {
+        return FragmentUtils.getParent(this, Holder.class);
     }
 
     private class AudioOutputAdapter extends BaseAdapter {

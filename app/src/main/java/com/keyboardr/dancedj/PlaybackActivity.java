@@ -1,7 +1,11 @@
 package com.keyboardr.dancedj;
 
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -12,6 +16,7 @@ import android.widget.ViewSwitcher;
 
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.PlaylistPlayer;
+import com.keyboardr.dancedj.service.PlaylistService;
 import com.keyboardr.dancedj.ui.monitor.LibraryFragment;
 import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.dancedj.ui.playlist.PlaylistControlsFragment;
@@ -19,7 +24,7 @@ import com.keyboardr.dancedj.ui.playlist.PlaylistFragment;
 
 import java.util.List;
 
-public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder, PlaylistFragment.Holder, PlaylistPlayer.PlaylistChangedListener {
+public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder, PlaylistFragment.Holder, PlaylistControlsFragment.Holder {
 
     private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
     @Nullable
@@ -27,6 +32,19 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
     private static final int INDEX_MONITOR = 0;
     private static final int INDEX_PLAYLIST = 1;
+
+    private ServiceConnection playlistServiceConn = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            getPlaylistControlsFragment().serviceConnected(iBinder);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            getPlaylistControlsFragment().serviceDisconnected();
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,6 +57,13 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                         ? INDEX_PLAYLIST : INDEX_MONITOR);
             }
         }
+        bindService(new Intent(this, PlaylistService.class), playlistServiceConn, BIND_AUTO_CREATE | BIND_IMPORTANT);
+    }
+
+    @Override
+    protected void onDestroy() {
+        unbindService(playlistServiceConn);
+        super.onDestroy();
     }
 
     @Override
@@ -49,7 +74,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
     @Override
     public void addToQueue(@NonNull MediaItem mediaItem) {
-        ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).addToQueue(mediaItem);
+        getPlaylistControlsFragment().addToQueue(mediaItem);
     }
 
     @Override
@@ -93,14 +118,18 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         return super.onOptionsItemSelected(item);
     }
 
+    private PlaylistControlsFragment getPlaylistControlsFragment() {
+        return (PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment);
+    }
+
     @Override
     public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
-        return ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).getPlaylist();
+        return getPlaylistControlsFragment().getPlaylist();
     }
 
     @Override
     public int getCurrentTrackIndex() {
-        return ((PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment)).getCurrentTrackIndex();
+        return getPlaylistControlsFragment().getCurrentTrackIndex();
     }
 
     @Override

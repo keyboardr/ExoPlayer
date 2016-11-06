@@ -50,12 +50,12 @@ public class MonitorControlsFragment extends Fragment {
             ArrayList<AudioDeviceInfo> newDevices = (devices == null)
                     ? new ArrayList<AudioDeviceInfo>() : new ArrayList<>(Arrays.asList(devices));
             boolean currentRemoved = false;
-            AudioDeviceInfo audioOutput = player.getAudioOutput();
+            int audioOutput = player.getAudioOutputId();
             for (AudioDeviceInfo device : removedDevices) {
                 for (int i = newDevices.size() - 1; i >= 0; i--) {
                     if (device.getId() == newDevices.get(i).getId()) {
                         newDevices.remove(i);
-                        if (audioOutput != null && audioOutput.getId() == device.getId()) {
+                        if (audioOutput != -1 && audioOutput == device.getId()) {
                             currentRemoved = true;
                         }
                     }

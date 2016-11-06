@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
+import com.keyboardr.dancedj.player.AbsPlayer;
 import com.keyboardr.dancedj.player.MonitorPlayer;
 import com.keyboardr.dancedj.player.Player;
 import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
@@ -23,7 +24,7 @@ import com.keyboardr.dancedj.util.MathUtil;
 /**
  * Responsible for updating the UI of a controller
  */
-public class PlayerControlsUpdater implements Player.PlaybackListener {
+public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
 
     private static final String ARG_MEDIA_ITEM = "mediaItem";
 

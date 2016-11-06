@@ -1,182 +1,66 @@
 package com.keyboardr.dancedj.player;
 
-import android.content.Context;
 import android.media.AudioDeviceInfo;
-import android.os.Handler;
-import android.support.annotation.NonNull;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
-import com.google.android.exoplayer2.DefaultLoadControl;
-import com.google.android.exoplayer2.ExoPlaybackException;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.Timeline;
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Util;
 import com.keyboardr.dancedj.model.MediaItem;
 
-import java.io.IOException;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
- * A wrapper around the media player for Monitor playback.
+ * General interface for interacting with players
  */
+public interface Player {
 
-public abstract class Player {
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({PlayState.UNKNOWN, PlayState.PLAYING, PlayState.PAUSED, PlayState.LOADING, PlayState.STOPPED})
+    @interface PlayState {
+        int UNKNOWN = 0;
+        int PLAYING = 1;
+        int PAUSED = 2;
+        int LOADING = 3;
+        int STOPPED = 4;
+    }
 
-    public interface PlaybackListener {
+    interface PlaybackListener {
 
         void onSeekComplete(Player player);
 
         void onPlayStateChanged(Player player);
+
     }
 
-    private static final String TAG = "Player";
-    @NonNull
-    private final Context context;
-    private final Handler mainHandler;
-    private final int audioStreamType;
+    void setPlaybackListener(@Nullable PlaybackListener playbackListener);
 
-    @Nullable
-    protected PlaybackListener playbackListener;
+    void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo);
 
-    private final DefaultDataSourceFactory defaultDataSourceFactory;
-    private final DefaultExtractorsFactory defaultExtractorsFactory;
-    private final ExtractorMediaSource.EventListener extractorListener = new ExtractorMediaSource.EventListener() {
-        @Override
-        public void onLoadError(IOException error) {
-            Log.e(TAG, "onLoadError: ", error);
-        }
-    };
-    private final ExoPlayer.EventListener playerListener = new ExoPlayer.EventListener() {
+    int getAudioOutputId();
 
-        @Override
-        public void onLoadingChanged(boolean isLoading) {
-            Log.d(TAG, "onLoadingChanged() called with: isLoading = [" + isLoading + "]");
-            if (playbackListener != null) {
-                playbackListener.onPlayStateChanged(Player.this);
-            }
-        }
+    @PlayState
+    int getPlayState();
 
-        @Override
-        public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
-            Log.d(TAG, "onPlayerStateChanged() called with: playWhenReady = [" + playWhenReady + "], playbackState = [" + playbackState + "]");
-            if (playbackListener != null) {
-                playbackListener.onPlayStateChanged(Player.this);
-            }
-        }
+    void release();
 
-        @Override
-        public void onTimelineChanged(Timeline timeline, Object manifest) {
-            Log.d(TAG, "onTimelineChanged() called with: timeline = [" + timeline + "], manifest = [" + manifest + "]");
-            if (playbackListener != null) {
-                playbackListener.onPlayStateChanged(Player.this);
-                playbackListener.onSeekComplete(Player.this);
-            }
-        }
+    void togglePlayPause();
 
-        @Override
-        public void onPlayerError(ExoPlaybackException error) {
-            Log.e(TAG, "onPlayerError: ", error);
-        }
+    MediaItem getCurrentMediaItem();
 
-        @Override
-        public void onPositionDiscontinuity() {
-            Log.d(TAG, "onPositionDiscontinuity() called");
-            if (playbackListener != null) {
-                playbackListener.onPlayStateChanged(Player.this);
-                playbackListener.onSeekComplete(Player.this);
-            }
-        }
-    };
-    @Nullable
-    private SimpleExoPlayer player;
+    boolean canPause();
 
-    public Player(@NonNull Context context, int audioStreamType) {
-        this.context = context;
-        this.audioStreamType = audioStreamType;
-        mainHandler = new Handler();
-        defaultDataSourceFactory = new DefaultDataSourceFactory(context, Util.getUserAgent(context, "DanceDJ"));
-        defaultExtractorsFactory = new DefaultExtractorsFactory();
-        ensurePlayer();
-    }
-
-    @NonNull
-    protected SimpleExoPlayer ensurePlayer() {
-        if (player != null) return player;
-        player = ExoPlayerFactory.newSimpleInstance(context,
-                new DefaultTrackSelector(mainHandler),
-                new DefaultLoadControl(), audioStreamType);
-        player.addListener(playerListener);
-        return player;
-    }
-
-    public void setPlaybackListener(@Nullable PlaybackListener playbackListener) {
-        this.playbackListener = playbackListener;
-    }
-
-    public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
-        ensurePlayer().setAudioOutput(audioDeviceInfo);
-    }
-
-    @Nullable
-    public AudioDeviceInfo getAudioOutput() {
-        if (player == null) {
-            return null;
-        }
-        return player.getAudioOutput();
-    }
-
-    @NonNull
-    protected MediaSource getMediaSource(MediaItem mediaItem) {
-        return new ExtractorMediaSource(mediaItem.toUri(), defaultDataSourceFactory,
-                defaultExtractorsFactory, mainHandler, extractorListener);
-    }
-
-    public void release() {
-        if (player != null) {
-            player.removeListener(playerListener);
-            player.release();
-            player = null;
-        }
-    }
-
-    public abstract void togglePlayPause();
-
-    public abstract MediaItem getCurrentMediaItem();
-
-    public abstract boolean canPause();
-
-    public boolean isPlaying() {
-        return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && player.getPlayWhenReady();
-    }
+    boolean isPlaying();
 
     @SuppressWarnings("WeakerAccess")
-    public boolean isPaused() {
-        return player != null && player.getPlaybackState() == ExoPlayer.STATE_READY && !player.getPlayWhenReady();
-    }
+    boolean isPaused();
 
     @SuppressWarnings("unused")
-    public boolean isLoading() {
-        return player != null && (player.isLoading() || player.getPlaybackState() == ExoPlayer.STATE_BUFFERING);
-    }
+    boolean isLoading();
 
     @SuppressWarnings("WeakerAccess")
-    public boolean isStopped() {
-        return player == null || player.getPlaybackState() == ExoPlayer.STATE_IDLE || player.getPlaybackState() == ExoPlayer.STATE_ENDED;
-    }
+    boolean isStopped();
 
-    public long getCurrentPosition() {
-        return player == null ? 0 : player.getCurrentPosition();
-    }
+    long getCurrentPosition();
 
-    public long getDuration() {
-        return player == null ? 0 : player.getDuration();
-    }
-
+    long getDuration();
 }

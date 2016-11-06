@@ -12,7 +12,7 @@ import com.keyboardr.dancedj.model.MediaItem;
  * A wrapper around the media player for Monitor playback.
  */
 
-public class MonitorPlayer extends Player {
+public class MonitorPlayer extends AbsPlayer {
 
     private static final String TAG = "MonitorPlayer";
 

@@ -2,6 +2,8 @@ package com.keyboardr.dancedj.player;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -13,7 +15,7 @@ import com.keyboardr.dancedj.model.MediaItem;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlaylistPlayer extends Player {
+public class PlaylistPlayer extends AbsPlayer {
 
     public interface PlaylistChangedListener {
         void onTrackAdded(int index);
@@ -78,7 +80,7 @@ public class PlaylistPlayer extends Player {
 
     @Override
     public MediaItem getCurrentMediaItem() {
-        if (mediaItems.size() == 0) {
+        if (mediaItems.isEmpty()) {
             return null;
         }
         return mediaItems.get(getCurrentMediaIndex()).mediaItem;
@@ -98,11 +100,11 @@ public class PlaylistPlayer extends Player {
         ensurePlayer().setPlayWhenReady(true);
     }
 
-    public List<PlaylistItem> getMediaList() {
+    public ArrayList<PlaylistItem> getMediaList() {
         return new ArrayList<>(mediaItems);
     }
 
-    public static class PlaylistItem {
+    public static class PlaylistItem implements Parcelable {
         public final MediaItem mediaItem;
         public final long id;
 
@@ -110,5 +112,33 @@ public class PlaylistPlayer extends Player {
             this.mediaItem = mediaItem;
             this.id = id;
         }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeParcelable(this.mediaItem, flags);
+            dest.writeLong(this.id);
+        }
+
+        protected PlaylistItem(Parcel in) {
+            this.mediaItem = in.readParcelable(MediaItem.class.getClassLoader());
+            this.id = in.readLong();
+        }
+
+        public static final Parcelable.Creator<PlaylistItem> CREATOR = new Parcelable.Creator<PlaylistItem>() {
+            @Override
+            public PlaylistItem createFromParcel(Parcel source) {
+                return new PlaylistItem(source);
+            }
+
+            @Override
+            public PlaylistItem[] newArray(int size) {
+                return new PlaylistItem[size];
+            }
+        };
     }
 }
