@@ -183,9 +183,6 @@ public class PlaylistControlsFragment extends Fragment {
     public void addToQueue(@NonNull MediaItem mediaItem) {
         if (player != null) {
             player.addToQueue(mediaItem);
-            if (uiUpdater != null) {
-                uiUpdater.onMetaData();
-            }
         }
     }
 

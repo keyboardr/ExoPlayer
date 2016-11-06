@@ -151,7 +151,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
 
     @Override
     public MediaItem getCurrentMediaItem() {
-        if (mediaList == null || mediaList.isEmpty()) {
+        if (mediaList == null || mediaList.isEmpty() || index >= mediaList.size()) {
             return null;
         }
         return mediaList.get(index).mediaItem;

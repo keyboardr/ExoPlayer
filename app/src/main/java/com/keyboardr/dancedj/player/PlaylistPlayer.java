@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.keyboardr.dancedj.model.MediaItem;
 
@@ -40,11 +41,17 @@ public class PlaylistPlayer extends AbsPlayer {
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 if (playbackState == ExoPlayer.STATE_ENDED && playWhenReady) {
                     currentIndex++;
-                    if (mediaItems.size() > currentIndex) {
-                        ensurePlayer().prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
-                    }
                     if (playlistChangedListener != null) {
                         playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
+                    }
+                    SimpleExoPlayer player = ensurePlayer();
+                    if (mediaItems.size() > currentIndex) {
+                        player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
+                    } else {
+                        player.setPlayWhenReady(false);
+                    }
+                    if (playbackListener != null) {
+                        playbackListener.onPlayStateChanged(PlaylistPlayer.this);
                     }
                 }
             }
@@ -70,11 +77,16 @@ public class PlaylistPlayer extends AbsPlayer {
 
     public void addToQueue(@NonNull MediaItem mediaItem) {
         mediaItems.add(new PlaylistItem(mediaItem, nextId++));
-        if (ensurePlayer().getPlaybackState() == ExoPlayer.STATE_IDLE) {
-            ensurePlayer().prepare(getMediaSource(mediaItems.get(0).mediaItem));
+        SimpleExoPlayer player = ensurePlayer();
+        if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
+                || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
+            player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
         }
         if (playlistChangedListener != null) {
             playlistChangedListener.onTrackAdded(mediaItems.size() - 1);
+        }
+        if (playbackListener != null) {
+            playbackListener.onPlayStateChanged(this);
         }
     }
 
