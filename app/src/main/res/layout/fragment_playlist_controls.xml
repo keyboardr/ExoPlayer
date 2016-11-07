@@ -12,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:maxLines="1"
         android:textAppearance="?android:textAppearanceLarge"
         android:visibility="invisible"
         app:layout_constraintLeft_toRightOf="@+id/controls_album_art"
@@ -25,6 +26,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:maxLines="1"
         android:textAppearance="?android:textAppearanceMedium"
         android:visibility="invisible"
         app:layout_constraintLeft_toLeftOf="@+id/controls_title"
@@ -63,11 +65,11 @@
 
     <ProgressBar
         android:id="@+id/controls_seek"
+        style="?android:progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="invisible"
-        style="?android:progressBarStyleHorizontal"
         android:indeterminate="false"
+        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="@+id/controls_play_pause"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintLeft_toRightOf="@+id/controls_play_pause"
@@ -82,6 +84,7 @@
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@id/controls_seek"
         app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        tools:layout_editor_absoluteX="357dp"
         tools:text="3:15"
         tools:visibility="visible" />
 
@@ -92,6 +95,7 @@
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="@id/controls_seek"
         app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        tools:layout_editor_absoluteX="48dp"
         tools:text="0:15"
         tools:visibility="visible" />
 

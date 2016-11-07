@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AudioSelectionManager {
-    private static final boolean SPINNER_ENABLED = false;
+    public static final boolean SPINNER_ENABLED = false;
 
     public interface DefaultDeviceSelector {
         boolean canBeDefault(AudioDeviceInfo deviceInfo);
@@ -32,16 +32,22 @@ public class AudioSelectionManager {
 
     @Nullable
     private AudioDeviceInfo[] devices;
+    @SuppressWarnings("FieldCanBeLocal")
+    @NonNull
     private final AudioOutputAdapter audioOutputAdapter;
+    @NonNull
     private final Player player;
+    @NonNull
     private final Spinner audioDeviceSpinner;
+    @NonNull
     private final AudioManager audioManager;
+    @SuppressWarnings("FieldCanBeLocal")
     @Nullable
     private final DefaultDeviceSelector defaultDeviceSelector;
 
     private AudioDeviceCallback audioDeviceCallback = new AudioDeviceCallback() {
         @Override
-        public void onAudioDevicesAdded(AudioDeviceInfo[] addedDevices) {
+        public void onAudioDevicesAdded(@NonNull AudioDeviceInfo[] addedDevices) {
             ArrayList<AudioDeviceInfo> newDevices = (devices == null)
                     ? new ArrayList<AudioDeviceInfo>() : new ArrayList<>(Arrays.asList(devices));
             for (AudioDeviceInfo deviceInfo : addedDevices) {
@@ -53,7 +59,7 @@ public class AudioSelectionManager {
         }
 
         @Override
-        public void onAudioDevicesRemoved(AudioDeviceInfo[] removedDevices) {
+        public void onAudioDevicesRemoved(@NonNull AudioDeviceInfo[] removedDevices) {
             int originalSize = devices == null ? 0 : devices.length;
             ArrayList<AudioDeviceInfo> newDevices = (devices == null)
                     ? new ArrayList<AudioDeviceInfo>() : new ArrayList<>(Arrays.asList(devices));
@@ -112,7 +118,11 @@ public class AudioSelectionManager {
 
     private void setDevices(@Nullable AudioDeviceInfo[] devices) {
         this.devices = devices;
-        if (!SPINNER_ENABLED) {
+        if (SPINNER_ENABLED) {
+            if (audioOutputAdapter != null) {
+                audioOutputAdapter.notifyDataSetChanged();
+            }
+        } else {
             if (defaultDeviceSelector == null) {
                 player.setAudioOutput(null);
             } else {
@@ -130,8 +140,6 @@ public class AudioSelectionManager {
                     defaultDeviceSelector.onNoDeviceFound();
                 }
             }
-        } else if (audioOutputAdapter != null) {
-            audioOutputAdapter.notifyDataSetChanged();
         }
     }
 
@@ -142,6 +150,7 @@ public class AudioSelectionManager {
             return devices == null ? 1 : devices.length + 1;
         }
 
+        @Nullable
         @Override
         public Object getItem(int position) {
             if (position == 0) {

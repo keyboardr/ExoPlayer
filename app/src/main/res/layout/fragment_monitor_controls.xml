@@ -12,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:maxLines="1"
         android:textAppearance="?android:textAppearanceLarge"
         android:visibility="invisible"
         app:layout_constraintLeft_toRightOf="@+id/controls_album_art"
@@ -25,6 +26,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
+        android:maxLines="1"
         android:textAppearance="?android:textAppearanceMedium"
         android:visibility="invisible"
         app:layout_constraintLeft_toLeftOf="@+id/controls_title"
@@ -83,7 +85,8 @@
         app:layout_constraintTop_toBottomOf="@+id/controls_seek"
         tools:ignore="RtlSymmetry"
         tools:text="3:15"
-        tools:visibility="visible" />
+        tools:visibility="visible"
+        tools:layout_editor_absoluteX="341dp" />
 
     <TextView
         android:id="@+id/controls_position"
@@ -95,7 +98,8 @@
         app:layout_constraintTop_toBottomOf="@+id/controls_seek"
         tools:ignore="RtlSymmetry"
         tools:text="0:15"
-        tools:visibility="visible" />
+        tools:visibility="visible"
+        tools:layout_editor_absoluteX="48dp" />
 
     <Spinner
         android:id="@+id/controls_spinner"

@@ -60,6 +60,9 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        if (!AudioSelectionManager.SPINNER_ENABLED) {
+            view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
+        }
         updateView();
     }
 
