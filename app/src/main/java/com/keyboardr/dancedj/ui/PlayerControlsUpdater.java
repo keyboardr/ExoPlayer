@@ -40,15 +40,23 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     @NonNull
     private final LoaderManager loaderManager;
 
-    private MediaItem lastMediaItem;
-
+    @NonNull
     protected final P player;
 
-    private Handler seekHandler = new Handler();
+    private final Handler seekHandler = new Handler();
 
-    private Runnable seekRunnable;
+    @NonNull
+    private final Runnable seekRunnable = new Runnable() {
+        @Override
+        public void run() {
+            onSeekComplete(player);
+            seekHandler.postDelayed(this, 1000 - (player.getCurrentPosition() % 1000));
+        }
+    };
 
     private Bitmap albumArtData;
+
+    private MediaItem lastMediaItem;
 
     private LoaderManager.LoaderCallbacks<Bitmap> albumArtCalbacks = new LoaderManager.LoaderCallbacks<Bitmap>() {
         @Override
@@ -159,17 +167,9 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
     public void updatePlayState() {
         updatePlayPauseButton();
+        seekHandler.removeCallbacks(seekRunnable);
         if (player.isPlaying()) {
-            seekRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    onSeekComplete(player);
-                    seekHandler.postDelayed(this, 1000 - (player.getCurrentPosition() % 1000));
-                }
-            };
             seekHandler.post(seekRunnable);
-        } else {
-            seekHandler.removeCallbacks(seekRunnable);
         }
     }
 
