@@ -118,7 +118,7 @@ public class MonitorControlsFragment extends Fragment {
                 player.setAudioOutput(null);
             }
         });
-        uiUpdater = new PlayerControlsUpdater(view, player, getLoaderManager());
+        uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager());
     }
 
     @Override

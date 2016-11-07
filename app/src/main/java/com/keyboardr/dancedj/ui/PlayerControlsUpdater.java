@@ -10,13 +10,11 @@ import android.support.v4.content.Loader;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
 import com.keyboardr.dancedj.player.AbsPlayer;
-import com.keyboardr.dancedj.player.MonitorPlayer;
 import com.keyboardr.dancedj.player.Player;
 import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.dancedj.util.MathUtil;
@@ -24,15 +22,15 @@ import com.keyboardr.dancedj.util.MathUtil;
 /**
  * Responsible for updating the UI of a controller
  */
-public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
+public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlayer.PlaybackListener {
 
     private static final String ARG_MEDIA_ITEM = "mediaItem";
 
+    protected final ImageView playPause;
+    protected final ProgressBar seekBar;
     @NonNull
     private final View view;
-    private final ImageView playPause;
     private final ImageView albumArt;
-    private final ProgressBar seekBar;
     private final TextView title;
     private final TextView artist;
 
@@ -41,7 +39,7 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
 
     private MediaItem lastMediaItem;
 
-    private final Player player;
+    protected final P player;
 
     private Handler seekHandler = new Handler();
 
@@ -69,7 +67,7 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
         }
     };
 
-    public PlayerControlsUpdater(@NonNull View view, @NonNull Player player, @NonNull LoaderManager loaderManager) {
+    public PlayerControlsUpdater(@NonNull View view, @NonNull P player, @NonNull LoaderManager loaderManager) {
         this.view = view;
         this.player = player;
         this.loaderManager = loaderManager;
@@ -129,7 +127,7 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
         updatePlayState();
     }
 
-    private void attachPlayer() {
+    protected void attachPlayer() {
         player.setPlaybackListener(this);
 
         onMetaData();
@@ -138,32 +136,9 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
         playPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (player.getCurrentMediaItem() != null) {
-                    player.togglePlayPause();
-                }
+                onPlayClicked();
             }
         });
-        if (seekBar instanceof SeekBar && player instanceof MonitorPlayer) {
-            ((SeekBar) seekBar).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser && player.getDuration() > 0) {
-                        ((MonitorPlayer) player).seekTo((int) (((float) progress) * ((float) player.getDuration())
-                                / (float) seekBar.getMax()));
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
-        }
     }
 
     public void detach() {
@@ -172,13 +147,7 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
     }
 
     public void updatePlayState() {
-        if (player.canPause()) {
-            playPause.setImageResource(player.isPlaying() ?
-                    R.drawable.ic_pause : R.drawable.ic_play_arrow);
-        } else {
-            playPause.setImageResource(R.drawable.ic_play_arrow);
-            playPause.setEnabled(player.isPaused() || player.isStopped());
-        }
+        updatePlayPauseButton();
         if (player.isPlaying()) {
             seekRunnable = new Runnable() {
                 @Override
@@ -192,4 +161,8 @@ public class PlayerControlsUpdater implements AbsPlayer.PlaybackListener {
             seekHandler.removeCallbacks(seekRunnable);
         }
     }
+
+    protected abstract void updatePlayPauseButton();
+
+    protected abstract void onPlayClicked();
 }

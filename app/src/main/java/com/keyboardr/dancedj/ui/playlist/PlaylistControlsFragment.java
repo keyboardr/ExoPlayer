@@ -167,7 +167,7 @@ public class PlaylistControlsFragment extends Fragment {
             if (player != null) {
                 audioDeviceSpinner.setVisibility(View.VISIBLE);
                 if (uiUpdater == null) {
-                    uiUpdater = new PlayerControlsUpdater(view, player, getLoaderManager());
+                    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
                 }
             } else {
                 audioDeviceSpinner.setVisibility(View.INVISIBLE);
