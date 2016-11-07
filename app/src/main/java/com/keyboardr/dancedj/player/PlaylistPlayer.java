@@ -6,6 +6,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -27,6 +28,8 @@ public class PlaylistPlayer extends AbsPlayer {
     private List<PlaylistItem> mediaItems = new ArrayList<>();
     private int currentIndex;
     private int nextId;
+    private boolean continuePlayingOnDone;
+
     @Nullable
     private PlaylistChangedListener playlistChangedListener;
 
@@ -46,6 +49,7 @@ public class PlaylistPlayer extends AbsPlayer {
                     }
                     SimpleExoPlayer player = ensurePlayer();
                     if (mediaItems.size() > currentIndex) {
+                        player.setPlayWhenReady(continuePlayingOnDone);
                         player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
                     } else {
                         player.setPlayWhenReady(false);
@@ -109,7 +113,17 @@ public class PlaylistPlayer extends AbsPlayer {
 
     @Override
     public void togglePlayPause() {
-        ensurePlayer().setPlayWhenReady(true);
+        continuePlayingOnDone = !continuePlayingOnDone;
+        if (continuePlayingOnDone) {
+            ensurePlayer().setPlayWhenReady(true);
+        } else {
+            Toast.makeText(context, "Playback will stop at the end of the current track",
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    public boolean willContinuePlayingOnDone() {
+        return continuePlayingOnDone;
     }
 
     public ArrayList<PlaylistItem> getMediaList() {

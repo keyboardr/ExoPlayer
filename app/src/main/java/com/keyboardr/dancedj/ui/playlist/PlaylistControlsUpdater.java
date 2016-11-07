@@ -17,8 +17,12 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
 
     @Override
     protected void updatePlayPauseButton() {
-        playPause.setImageResource(R.drawable.ic_play_arrow);
-        playPause.setEnabled(player.isPaused() || player.isStopped());
+        if (player.isPaused() || player.isStopped()) {
+            playPause.setImageResource(R.drawable.ic_play_arrow);
+        } else {
+            playPause.setImageResource(player.willContinuePlayingOnDone()
+                    ? R.drawable.ic_play_circle_filled : R.drawable.ic_play_circle_outline);
+        }
     }
 
     @Override

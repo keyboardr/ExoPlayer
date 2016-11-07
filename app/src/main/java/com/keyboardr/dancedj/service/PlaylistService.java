@@ -83,10 +83,6 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
         sendMessageToClients(what, arg1, arg2, null);
     }
 
-    private void sendMessageToClients(@ClientMessage int what, long arg) {
-        sendMessageToClients(what, (int) (arg >> 32), (int) arg, null);
-    }
-
     private void sendMessageToClients(@ClientMessage int what, int arg1, int arg2, @Nullable Bundle data) {
         for (int i = clients.size() - 1; i >= 0; i--) {
             Messenger client = clients.get(i);
@@ -115,7 +111,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
     @Override
     public void onIndexChanged(int oldIndex, int newIndex) {
         sendMessageToClients(ClientMessage.INDEX_CHANGED, oldIndex, newIndex);
-        sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
+        sendPlaybackState();
     }
 
     @SuppressLint("HandlerLeak")
@@ -137,6 +133,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
                     return;
                 case ServiceMessage.TOGGLE_PLAY_PAUSE:
                     player.togglePlayPause();
+                    sendPlaybackState();
                     return;
                 case ServiceMessage.ADD_TO_QUEUE:
                     //noinspection ConstantConditions
@@ -148,6 +145,11 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
         }
     }
 
+    private PlaylistServiceClient.PlaybackState createPlaybackState() {
+        return new PlaylistServiceClient.PlaybackState(player.getCurrentPosition(),
+                player.getDuration(), player.getPlayState(), player.willContinuePlayingOnDone());
+    }
+
     private void sendInitialInfo(Messenger client) {
         try {
             client.send(getSetMediaListMessage());
@@ -155,19 +157,19 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
             client.send(Message.obtain(null, ClientMessage.INDEX_CHANGED,
                     player.getCurrentMediaIndex(), player.getCurrentMediaIndex()));
 
-            sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
-            long currentPosition = player.getCurrentPosition();
-            client.send(Message.obtain(null, ClientMessage.SET_CURRENT_POSITION,
-                    (int) (currentPosition >> 32), (int) currentPosition));
-
-            int playState = player.getPlayState();
-            client.send(Message.obtain(null, ClientMessage.SET_PLAY_STATE, playState, 0));
+            sendPlaybackState();
 
             client.send(Message.obtain(null, ClientMessage.SET_OUTPUT_ID, player.getAudioOutputId(), 0));
 
         } catch (RemoteException e) {
             e.printStackTrace();
         }
+    }
+
+    private void sendPlaybackState() {
+        Bundle playbackData = new Bundle();
+        playbackData.putParcelable(PlaylistServiceClient.DATA_PLAYBACK_STATE, createPlaybackState());
+        sendMessageToClients(ClientMessage.SET_PLAYBACK_STATE, 0, 0, playbackData);
     }
 
     @NonNull
@@ -183,14 +185,11 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
 
     @Override
     public void onSeekComplete(Player player) {
-        long currentPosition = player.getCurrentPosition();
-        sendMessageToClients(ClientMessage.SET_CURRENT_POSITION, currentPosition);
     }
 
     @Override
     public void onPlayStateChanged(Player player) {
-        sendMessageToClients(ClientMessage.SET_DURATION, player.getDuration());
-        sendMessageToClients(ClientMessage.SET_PLAY_STATE, player.getPlayState());
+        sendPlaybackState();
     }
 
     private void setPlayerOutput(int outputId) {

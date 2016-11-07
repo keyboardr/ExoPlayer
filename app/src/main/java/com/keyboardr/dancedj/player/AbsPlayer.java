@@ -31,7 +31,7 @@ public abstract class AbsPlayer implements Player {
 
     private static final String TAG = "Player";
     @NonNull
-    private final Context context;
+    protected final Context context;
     private final Handler mainHandler;
     private final int audioStreamType;
 

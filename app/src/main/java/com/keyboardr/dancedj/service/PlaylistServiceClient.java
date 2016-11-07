@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.RemoteException;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
@@ -23,26 +25,77 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
 
+
 /**
  * A client object for communicating with a {@link PlaylistService}
  */
 public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.PlaylistChangedListener {
 
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ClientMessage.TRACK_ADDED, ClientMessage.INDEX_CHANGED, ClientMessage.SET_CURRENT_POSITION,
-            ClientMessage.SET_MEDIA_LIST, ClientMessage.SET_PLAY_STATE, ClientMessage.SET_OUTPUT_ID,
-            ClientMessage.SET_DURATION})
+    @IntDef({ClientMessage.TRACK_ADDED, ClientMessage.INDEX_CHANGED, ClientMessage.SET_MEDIA_LIST,
+            ClientMessage.SET_OUTPUT_ID, ClientMessage.SET_PLAYBACK_STATE})
     @interface ClientMessage {
         int TRACK_ADDED = 1;
         int INDEX_CHANGED = 2;
-        int SET_CURRENT_POSITION = 3;
-        int SET_MEDIA_LIST = 4;
-        int SET_PLAY_STATE = 5;
-        int SET_OUTPUT_ID = 6;
-        int SET_DURATION = 7;
+        int SET_MEDIA_LIST = 3;
+        int SET_OUTPUT_ID = 4;
+        int SET_PLAYBACK_STATE = 5;
+    }
+
+    static class PlaybackState implements Parcelable {
+        private final long lastPosition;
+        private final long lastPositionTime;
+        private final long duration;
+        @PlayState
+        private final int playState;
+        private final boolean continuePlayingOnDone;
+
+        PlaybackState(long lastPosition, long duration, int playState, boolean continuePlayingOnDone) {
+            this.lastPosition = lastPosition;
+            this.lastPositionTime = SystemClock.elapsedRealtime();
+            this.duration = duration;
+            this.playState = playState;
+            this.continuePlayingOnDone = continuePlayingOnDone;
+        }
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeLong(this.lastPosition);
+            dest.writeLong(this.lastPositionTime);
+            dest.writeLong(this.duration);
+            dest.writeInt(this.playState);
+            dest.writeByte(this.continuePlayingOnDone ? (byte) 1 : (byte) 0);
+        }
+
+        protected PlaybackState(Parcel in) {
+            this.lastPosition = in.readLong();
+            this.lastPositionTime = in.readLong();
+            this.duration = in.readLong();
+            //noinspection WrongConstant
+            this.playState = in.readInt();
+            this.continuePlayingOnDone = in.readByte() != 0;
+        }
+
+        public static final Parcelable.Creator<PlaybackState> CREATOR = new Parcelable.Creator<PlaybackState>() {
+            @Override
+            public PlaybackState createFromParcel(Parcel source) {
+                return new PlaybackState(source);
+            }
+
+            @Override
+            public PlaybackState[] newArray(int size) {
+                return new PlaybackState[size];
+            }
+        };
     }
 
     static final String DATA_MEDIA_LIST = "mediaList";
+    static final String DATA_PLAYBACK_STATE = "playbackState";
 
     @SuppressLint("HandlerLeak")
     private class ClientHandler extends Handler {
@@ -58,10 +111,11 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
                         onIndexChanged(msg.arg1, msg.arg2);
                     }
                     break;
-                case ClientMessage.SET_CURRENT_POSITION:
-                    lastPosition = (((long) msg.arg1) << 32) | (msg.arg2 & 0xffffffffL);
-                    lastPositionTime = SystemClock.elapsedRealtime();
+                case ClientMessage.SET_PLAYBACK_STATE:
+                    //noinspection ConstantConditions
+                    playbackState = msg.getData().getParcelable(DATA_PLAYBACK_STATE);
                     if (playbackListener != null) {
+                        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
                         playbackListener.onSeekComplete(PlaylistServiceClient.this);
                     }
                     break;
@@ -72,18 +126,8 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
                         onMediaListLoaded();
                     }
                     break;
-                case ClientMessage.SET_PLAY_STATE:
-                    //noinspection WrongConstant
-                    playState = msg.arg1;
-                    if (playbackListener != null) {
-                        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
-                    }
-                    break;
                 case ClientMessage.SET_OUTPUT_ID:
                     outputId = msg.arg1;
-                    break;
-                case ClientMessage.SET_DURATION:
-                    duration = (((long) msg.arg1) << 32) | (msg.arg2 & 0xffffffffL);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -94,14 +138,11 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     private final Messenger messenger = new Messenger(new ClientHandler());
     private final Messenger service;
 
-    private long lastPosition;
-    private long lastPositionTime;
-    private long duration;
     private List<PlaylistPlayer.PlaylistItem> mediaList = null;
     private int index;
-    @PlayState
-    private int playState;
     private int outputId;
+    @NonNull
+    private PlaybackState playbackState = new PlaybackState(0, 0, PlayState.UNKNOWN, false);
 
     @Nullable
     protected PlaybackListener playbackListener;
@@ -141,12 +182,13 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
 
     @Override
     public long getCurrentPosition() {
-        return lastPosition + SystemClock.elapsedRealtime() - lastPositionTime;
+        return playbackState.lastPosition +
+                (SystemClock.elapsedRealtime() - playbackState.lastPositionTime);
     }
 
     @Override
     public long getDuration() {
-        return duration;
+        return playbackState.duration;
     }
 
     @Override
@@ -165,27 +207,31 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     @Override
     @PlayState
     public int getPlayState() {
-        return playState;
+        return playbackState.playState;
     }
 
     @Override
     public boolean isPlaying() {
-        return playState == PlayState.PLAYING;
+        return getPlayState() == PlayState.PLAYING;
     }
 
     @Override
     public boolean isPaused() {
-        return playState == PlayState.PAUSED;
+        return getPlayState() == PlayState.PAUSED;
     }
 
     @Override
     public boolean isLoading() {
-        return playState == PlayState.LOADING;
+        return getPlayState() == PlayState.LOADING;
     }
 
     @Override
     public boolean isStopped() {
-        return playState == PlayState.STOPPED || playState == PlayState.UNKNOWN;
+        return getPlayState() == PlayState.STOPPED || getPlayState() == PlayState.UNKNOWN;
+    }
+
+    public boolean willContinuePlayingOnDone() {
+        return playbackState.continuePlayingOnDone;
     }
 
     @Override
