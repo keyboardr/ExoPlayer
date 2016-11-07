@@ -107,11 +107,6 @@ public class PlaylistPlayer extends AbsPlayer {
     }
 
     @Override
-    public boolean canPause() {
-        return false;
-    }
-
-    @Override
     public void togglePlayPause() {
         continuePlayingOnDone = !continuePlayingOnDone;
         if (continuePlayingOnDone) {

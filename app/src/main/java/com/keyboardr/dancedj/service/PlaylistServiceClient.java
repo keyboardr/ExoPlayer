@@ -200,11 +200,6 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     }
 
     @Override
-    public boolean canPause() {
-        return false;
-    }
-
-    @Override
     @PlayState
     public int getPlayState() {
         return playbackState.playState;

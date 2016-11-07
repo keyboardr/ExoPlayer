@@ -47,8 +47,6 @@ public interface Player {
 
     MediaItem getCurrentMediaItem();
 
-    boolean canPause();
-
     boolean isPlaying();
 
     @SuppressWarnings("WeakerAccess")

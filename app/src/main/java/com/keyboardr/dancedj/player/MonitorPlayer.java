@@ -39,11 +39,6 @@ public class MonitorPlayer extends AbsPlayer {
         player.setPlayWhenReady(true);
     }
 
-    @Override
-    public boolean canPause() {
-        return true;
-    }
-
     @SuppressWarnings("WeakerAccess")
     public void pause() {
         ensurePlayer().setPlayWhenReady(false);
