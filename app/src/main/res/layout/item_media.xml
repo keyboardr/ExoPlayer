@@ -36,8 +36,10 @@
     <ImageView
         android:id="@+id/media_item_icon"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
+        android:layout_gravity="center_vertical"
+        android:padding="8dp"
         tools:src="@drawable/ic_playlist_add"
         android:background="?android:selectableItemBackgroundBorderless"/>
 </LinearLayout>
