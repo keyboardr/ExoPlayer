@@ -1,45 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:selectableItemBackground"
-    android:orientation="horizontal"
     android:paddingBottom="16dp"
     android:paddingLeft="24dp"
     android:paddingRight="24dp"
     android:paddingTop="16dp">
 
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
+    <TextView
+        android:id="@+id/media_item_title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_columnSpan="3"
+        android:layout_columnWeight="1"
+        android:duplicateParentState="true"
+        android:textAppearance="?android:textAppearanceListItem"
+        tools:text="Song Name" />
 
-        <TextView
-            android:id="@+id/media_item_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:duplicateParentState="true"
-            android:textAppearance="?android:textAppearanceListItem"
-            tools:text="Song Name" />
+    <TextView
+        android:id="@+id/media_item_artist"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_row="1"
+        android:duplicateParentState="true"
+        android:textAppearance="?android:textAppearanceListItemSecondary"
+        android:textColor="?android:textColorSecondary"
+        tools:text="Song Artist" />
 
-        <TextView
-            android:id="@+id/media_item_artist"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:duplicateParentState="true"
-            android:textAppearance="?android:textAppearanceListItemSecondary"
-            android:textColor="?android:textColorSecondary"
-            tools:text="Song Name" />
-    </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=" - "
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/media_item_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_columnWeight="1"
+        tools:text="3:15" />
+
     <ImageView
         android:id="@+id/media_item_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
+        android:layout_column="4"
         android:layout_gravity="center_vertical"
+        android:layout_marginStart="16dp"
+        android:layout_row="0"
+        android:layout_rowSpan="2"
+        android:background="?android:selectableItemBackgroundBorderless"
         android:padding="8dp"
-        tools:src="@drawable/ic_playlist_add"
-        android:background="?android:selectableItemBackgroundBorderless"/>
-</LinearLayout>
+        tools:src="@drawable/ic_playlist_add" />
+</GridLayout>

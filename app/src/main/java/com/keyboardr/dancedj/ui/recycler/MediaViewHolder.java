@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.keyboardr.dancedj.R;
 import com.keyboardr.dancedj.model.MediaItem;
+import com.keyboardr.dancedj.util.MathUtil;
 
 /**
  * ViewHolder for media items
@@ -35,6 +36,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     private final TextView title;
     private final TextView artist;
+    private final TextView duration;
 
     private final ImageView icon;
 
@@ -49,6 +51,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
                 parent, false));
         title = (TextView) itemView.findViewById(R.id.media_item_title);
         artist = (TextView) itemView.findViewById(R.id.media_item_artist);
+        duration = (TextView) itemView.findViewById(R.id.media_item_duration);
         icon = ((ImageView) itemView.findViewById(R.id.media_item_icon));
 
         this.mediaViewDecorator = mediaViewDecorator;
@@ -79,6 +82,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         titleString.setSpan(new StyleSpan(selected ? Typeface.BOLD : Typeface.NORMAL), 0, titleString.length(), 0);
         title.setText(titleString);
         artist.setText(mediaItem.artist);
+
+        duration.setText(MathUtil.getSongDuration(mediaItem.getDuration()));
 
         if (mediaViewDecorator != null) {
             int iconForItem = mediaViewDecorator.getIconForItem(mediaItem);

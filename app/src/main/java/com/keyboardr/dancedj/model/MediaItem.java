@@ -25,6 +25,7 @@ public class MediaItem implements Parcelable {
     public final CharSequence title;
     public final CharSequence artist;
     private final long albumId;
+    private final long duration;
     private final String path;
     private final long transientMediaId;
 
@@ -32,10 +33,11 @@ public class MediaItem implements Parcelable {
         return new Builder();
     }
 
-    private MediaItem(CharSequence title, CharSequence artist, long albumId, String path, long transientMediaId) {
+    private MediaItem(CharSequence title, CharSequence artist, long albumId, long duration, String path, long transientMediaId) {
         this.title = title;
         this.artist = artist;
         this.albumId = albumId;
+        this.duration = duration;
         this.path = path;
         this.transientMediaId = transientMediaId;
     }
@@ -77,6 +79,10 @@ public class MediaItem implements Parcelable {
         return null;
     }
 
+    public long getDuration() {
+        return duration;
+    }
+
     public long getTransientId() {
         return transientMediaId;
     }
@@ -86,6 +92,7 @@ public class MediaItem implements Parcelable {
         private CharSequence title;
         private CharSequence artist;
         private long albumId = -1;
+        private long duration;
         private String path;
 
         public Builder setTitle(CharSequence title) {
@@ -103,13 +110,18 @@ public class MediaItem implements Parcelable {
             return this;
         }
 
+        public Builder setDuration(long duration) {
+            this.duration = duration;
+            return this;
+        }
+
         public Builder setPath(String path) {
             this.path = path;
             return this;
         }
 
         public MediaItem make(long transientMediaId) {
-            return new MediaItem(title, artist, albumId, path, transientMediaId);
+            return new MediaItem(title, artist, albumId, duration, path, transientMediaId);
         }
     }
 
@@ -123,6 +135,7 @@ public class MediaItem implements Parcelable {
         TextUtils.writeToParcel(this.title, dest, flags);
         TextUtils.writeToParcel(this.artist, dest, flags);
         dest.writeLong(this.albumId);
+        dest.writeLong(this.duration);
         dest.writeString(this.path);
         dest.writeLong(this.transientMediaId);
     }
@@ -131,6 +144,7 @@ public class MediaItem implements Parcelable {
         this.title = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
         this.artist = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
         this.albumId = in.readLong();
+        this.duration = in.readLong();
         this.path = in.readString();
         this.transientMediaId = in.readLong();
     }
