@@ -44,15 +44,16 @@ public class PlaylistPlayer extends AbsPlayer {
             public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
                 if (playbackState == ExoPlayer.STATE_ENDED && playWhenReady) {
                     currentIndex++;
-                    if (playlistChangedListener != null) {
-                        playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
-                    }
                     SimpleExoPlayer player = ensurePlayer();
                     if (mediaItems.size() > currentIndex) {
                         player.setPlayWhenReady(continuePlayingOnDone);
                         player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
                     } else {
+                        continuePlayingOnDone = false;
                         player.setPlayWhenReady(false);
+                    }
+                    if (playlistChangedListener != null) {
+                        playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
                     }
                     if (playbackListener != null) {
                         playbackListener.onPlayStateChanged(PlaylistPlayer.this);
