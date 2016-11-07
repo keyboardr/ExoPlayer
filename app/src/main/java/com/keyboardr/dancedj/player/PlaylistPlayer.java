@@ -46,9 +46,11 @@ public class PlaylistPlayer extends AbsPlayer {
                     currentIndex++;
                     SimpleExoPlayer player = ensurePlayer();
                     if (mediaItems.size() > currentIndex) {
+                        // More tracks in the queue. Continue iff continuePlayingOnDone is set.
                         player.setPlayWhenReady(continuePlayingOnDone);
                         player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
                     } else {
+                        // End of queue. Get ready for more tracks to be added.
                         continuePlayingOnDone = false;
                         player.setPlayWhenReady(false);
                     }
