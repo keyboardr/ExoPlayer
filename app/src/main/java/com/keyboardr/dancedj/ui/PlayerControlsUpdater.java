@@ -4,7 +4,6 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.View;
@@ -18,6 +17,8 @@ import com.keyboardr.dancedj.player.AbsPlayer;
 import com.keyboardr.dancedj.player.Player;
 import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.dancedj.util.MathUtil;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * Responsible for updating the UI of a controller
@@ -33,6 +34,8 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     private final ImageView albumArt;
     private final TextView title;
     private final TextView artist;
+    private final TextView position;
+    private final TextView duration;
 
     @NonNull
     private final LoaderManager loaderManager;
@@ -74,6 +77,8 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
         title = ((TextView) view.findViewById(R.id.controls_title));
         artist = ((TextView) view.findViewById(R.id.controls_artist));
+        position = (TextView) view.findViewById(R.id.controls_position);
+        duration = (TextView) view.findViewById(R.id.controls_duration);
         seekBar = (ProgressBar) view.findViewById(R.id.controls_seek);
         playPause = ((ImageView) view.findViewById(R.id.controls_play_pause));
         albumArt = (ImageView) view.findViewById(R.id.controls_album_art);
@@ -87,8 +92,9 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
         lastMediaItem = mediaItem;
         title.setText(mediaItem == null ? "" : mediaItem.title);
         artist.setText(mediaItem == null ? "" : mediaItem.artist);
+        seekBar.setMax(mediaItem == null ? 100 : (int) Math.ceil(mediaItem.getDuration() / 1000));
 
-        updateVisibility(mediaItem);
+        updateVisibility(mediaItem == null);
 
         albumArt.setImageBitmap(albumArtData);
 
@@ -102,12 +108,14 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
         }
     }
 
-    private void updateVisibility(@Nullable MediaItem item) {
-        playPause.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        seekBar.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        title.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        artist.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
-        albumArt.setVisibility(item == null ? View.INVISIBLE : View.VISIBLE);
+    private void updateVisibility(boolean visible) {
+        playPause.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        seekBar.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        title.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        artist.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        position.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        duration.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
+        albumArt.setVisibility(visible ? View.INVISIBLE : View.VISIBLE);
     }
 
     @Override
@@ -119,6 +127,9 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
                 (int) ((currentPosition / duration) * max + .5f),
                 0, seekBar.getMax());
         seekBar.setProgress(progress);
+        this.duration.setText(MathUtil.getSongDuration((long) duration, false));
+        position.setText(MathUtil.getSongDuration((long) currentPosition,
+                TimeUnit.MILLISECONDS.toHours((long) duration) >= 1));
     }
 
     @Override
@@ -153,7 +164,7 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
                 @Override
                 public void run() {
                     onSeekComplete(player);
-                    seekHandler.postDelayed(this, player.getDuration() / seekBar.getMax());
+                    seekHandler.postDelayed(this, 1000 - (player.getCurrentPosition() % 1000));
                 }
             };
             seekHandler.post(seekRunnable);

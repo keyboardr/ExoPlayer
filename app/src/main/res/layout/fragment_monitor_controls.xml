@@ -73,6 +73,30 @@
         app:layout_constraintTop_toTopOf="@+id/controls_play_pause"
         tools:visibility="visible" />
 
+    <TextView
+        android:id="@+id/controls_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingEnd="16dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@id/controls_seek"
+        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        tools:ignore="RtlSymmetry"
+        tools:text="3:15"
+        tools:visibility="visible" />
+
+    <TextView
+        android:id="@+id/controls_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingStart="16dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@id/controls_seek"
+        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        tools:ignore="RtlSymmetry"
+        tools:text="0:15"
+        tools:visibility="visible" />
+
     <Spinner
         android:id="@+id/controls_spinner"
         android:layout_width="0dp"
