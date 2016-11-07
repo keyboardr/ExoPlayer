@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.ColorInt;
@@ -58,6 +59,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
             }
         }
         bindService(new Intent(this, PlaylistService.class), playlistServiceConn, BIND_AUTO_CREATE | BIND_IMPORTANT);
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
     }
 
     @Override

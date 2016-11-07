@@ -34,7 +34,7 @@ public class PlaylistPlayer extends AbsPlayer {
     private PlaylistChangedListener playlistChangedListener;
 
     public PlaylistPlayer(@NonNull Context context) {
-        super(context, AudioManager.STREAM_MUSIC);
+        super(context, AudioManager.STREAM_ALARM);
         ExoPlayer.EventListener eventListener = new ExoPlayer.EventListener() {
             @Override
             public void onLoadingChanged(boolean isLoading) {

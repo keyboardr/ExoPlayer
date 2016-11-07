@@ -19,7 +19,7 @@ public class MonitorPlayer extends AbsPlayer {
     private MediaItem currentItem;
 
     public MonitorPlayer(@NonNull Context context) {
-        super(context, AudioManager.STREAM_VOICE_CALL);
+        super(context, AudioManager.STREAM_MUSIC);
     }
 
 
