@@ -21,7 +21,8 @@
         <service
             android:name=".service.PlaylistService"
             android:enabled="true"
-            android:exported="false"></service>
+            android:exported="false"
+            android:process=":playlist"/>
     </application>
 
 </manifest>

@@ -45,6 +45,7 @@ public interface Player {
 
     void togglePlayPause();
 
+    @Nullable
     MediaItem getCurrentMediaItem();
 
     boolean isPlaying();

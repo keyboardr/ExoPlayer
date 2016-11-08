@@ -119,6 +119,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
 
         @Override
         public void handleMessage(Message msg) {
+            msg.getData().setClassLoader(getClassLoader());
             switch (msg.what) {
                 case ServiceMessage.REGISTER_CLIENT:
                     clients.add(msg.replyTo);
@@ -175,10 +176,8 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
     @NonNull
     private Message getSetMediaListMessage() {
         Message mediaList = Message.obtain(null, ClientMessage.SET_MEDIA_LIST);
-        Bundle mediaListData = new Bundle();
-        mediaListData.putParcelableArrayList(PlaylistServiceClient.DATA_MEDIA_LIST,
+        mediaList.getData().putParcelableArrayList(PlaylistServiceClient.DATA_MEDIA_LIST,
                 player.getMediaList());
-        mediaList.setData(mediaListData);
         return mediaList;
     }
 

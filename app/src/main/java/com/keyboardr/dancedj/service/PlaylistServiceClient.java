@@ -101,6 +101,8 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
     private class ClientHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            Bundle data = msg.getData();
+            data.setClassLoader(getClass().getClassLoader());
             switch (msg.what) {
                 case ClientMessage.TRACK_ADDED:
                     onTrackAdded(msg.arg1);
@@ -113,7 +115,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
                     break;
                 case ClientMessage.SET_PLAYBACK_STATE:
                     //noinspection ConstantConditions
-                    playbackState = msg.getData().getParcelable(DATA_PLAYBACK_STATE);
+                    playbackState = data.getParcelable(DATA_PLAYBACK_STATE);
                     if (playbackListener != null) {
                         playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
                         playbackListener.onSeekComplete(PlaylistServiceClient.this);
@@ -121,7 +123,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
                     break;
                 case ClientMessage.SET_MEDIA_LIST:
                     boolean wasNull = mediaList == null;
-                    mediaList = msg.getData().getParcelableArrayList(DATA_MEDIA_LIST);
+                    mediaList = data.getParcelableArrayList(DATA_MEDIA_LIST);
                     if (wasNull) {
                         onMediaListLoaded();
                     }
@@ -250,9 +252,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer.Pl
 
     public void addToQueue(@NonNull MediaItem mediaItem) {
         Message message = Message.obtain(null, ServiceMessage.ADD_TO_QUEUE);
-        Bundle data = new Bundle();
-        data.putParcelable(PlaylistService.DATA_MEDIA_ITEM, mediaItem);
-        message.setData(data);
+        message.getData().putParcelable(PlaylistService.DATA_MEDIA_ITEM, mediaItem);
         try {
             service.send(message);
         } catch (RemoteException e) {
