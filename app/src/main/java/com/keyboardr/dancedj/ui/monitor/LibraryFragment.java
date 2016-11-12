@@ -22,7 +22,7 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
 
     public interface LibraryFragmentHolder {
         void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
-
+        boolean canAddToQueue();
         void addToQueue(@NonNull MediaItem mediaItem);
     }
 
@@ -71,6 +71,10 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
         return FragmentUtils.getParent(this, LibraryFragmentHolder.class);
     }
 
+    public void notifyConnectionChanged() {
+        adapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onMediaItemSelected(MediaItem mediaItem) {
         getParent().playMediaItemOnMonitor(mediaItem);
@@ -79,7 +83,7 @@ public class LibraryFragment extends RecyclerFragment implements MediaViewHolder
     @Override
     @DrawableRes
     public int getIconForItem(MediaItem mediaItem) {
-        return R.drawable.ic_playlist_add;
+        return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
     }
 
     @Override

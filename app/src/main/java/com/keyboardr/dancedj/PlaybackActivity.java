@@ -46,6 +46,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.playlist, SetFragment.newInstance(iBinder)).commit();
             }
+            getLibraryFragment().notifyConnectionChanged();
         }
 
         @Override
@@ -58,8 +59,13 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
             }
             bindService(new Intent(PlaybackActivity.this, PlaylistService.class), playlistServiceConn,
                     BIND_IMPORTANT);
+            getLibraryFragment().notifyConnectionChanged();
         }
     };
+
+    private LibraryFragment getLibraryFragment() {
+        return ((LibraryFragment) getSupportFragmentManager().findFragmentById(R.id.library_fragment));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +97,11 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     public void playMediaItemOnMonitor(@NonNull MediaItem mediaItem) {
         ((MonitorControlsFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.monitor_fragment)).playMedia(mediaItem);
+    }
+
+    @Override
+    public boolean canAddToQueue() {
+        return playlistConnected;
     }
 
     @Override
