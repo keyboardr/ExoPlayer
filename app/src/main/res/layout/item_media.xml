@@ -63,5 +63,6 @@
         android:layout_marginStart="16dp"
         android:background="?android:selectableItemBackgroundBorderless"
         android:padding="8dp"
+        android:tint="?android:colorForeground"
         tools:src="@drawable/ic_playlist_add" />
 </LinearLayout>
