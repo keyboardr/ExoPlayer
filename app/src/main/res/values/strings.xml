@@ -13,4 +13,12 @@
     <string name="start_new_setlist">Start new setlist</string>
     <string name="end_set">End set</string>
     <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
+    <string name="title_sort">Sort:</string>
+
+    <string-array name="sort_methods">
+        <item>ID</item>
+        <item>Title</item>
+        <item>Artist</item>
+        <item>Duration</item>
+    </string-array>
 </resources>

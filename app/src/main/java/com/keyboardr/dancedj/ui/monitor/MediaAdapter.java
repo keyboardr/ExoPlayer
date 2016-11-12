@@ -10,10 +10,6 @@ import com.keyboardr.dancedj.ui.recycler.MediaViewHolder;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Keyboardr on 11/11/2016.
- */
-
 public class MediaAdapter extends RecyclerView.Adapter<MediaViewHolder> {
 
     private final MediaViewHolder.OnMediaItemSelectedListener mediaItemSelectedListener;
