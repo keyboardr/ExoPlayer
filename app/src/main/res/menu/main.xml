@@ -4,11 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.keyboardr.dancedj.PlaybackActivity">
 
-    <item android:title="@string/show_playlist"
-        app:showAsAction="ifRoom"
-        android:checkable="true"
+    <item
         android:id="@+id/show_playlist"
+        android:checkable="true"
+        android:enabled="true"
         android:icon="@drawable/ic_queue_music"
+        android:title="@string/show_playlist"
         android:visible="true"
-        android:enabled="true" />
+        app:showAsAction="ifRoom" />
 </menu>

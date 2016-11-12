@@ -10,5 +10,7 @@
     <string name="show_playlist">Show playlist</string>
     <string name="hide_playlist">Hide playlist</string>
     <string name="playlist_empty">Playlist empty</string>
-
+    <string name="start_new_setlist">Start new setlist</string>
+    <string name="end_set">End set</string>
+    <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
 </resources>

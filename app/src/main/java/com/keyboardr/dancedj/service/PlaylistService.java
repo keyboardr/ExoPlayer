@@ -29,6 +29,7 @@ import java.util.List;
 
 public class PlaylistService extends Service implements PlaylistPlayer.PlaylistChangedListener, Player.PlaybackListener {
 
+    public static final String EXTRA_END_SET = "endSet";
     static final String DATA_MEDIA_ITEM = "mediaItem";
 
     @Retention(RetentionPolicy.SOURCE)
@@ -60,7 +61,13 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
-        startForeground(1, getNotification());
+        if (intent.getBooleanExtra(EXTRA_END_SET, false)) {
+            stopForeground(true);
+            stopSelf();
+            return START_REDELIVER_INTENT;
+        } else {
+            startForeground(1, getNotification());
+        }
         return START_STICKY;
     }
 

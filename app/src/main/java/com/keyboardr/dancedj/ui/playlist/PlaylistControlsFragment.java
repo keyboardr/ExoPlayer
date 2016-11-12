@@ -37,43 +37,19 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     }
 
     public interface Holder extends PlaylistPlayer.PlaylistChangedListener {
+        IBinder getPlaylistServiceBinder();
+
         void onMediaListLoaded();
     }
 
-    @Nullable
     private PlaylistServiceClient player;
-    @Nullable
     private PlayerControlsUpdater uiUpdater;
     private AudioSelectionManager audioSelectionManager;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_playlist_controls, container, false);
-    }
-
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        if (!AudioSelectionManager.SPINNER_ENABLED) {
-            view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
-        }
-        updateView();
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        updateView();
-    }
-
-    public void serviceConnected(IBinder playlistServiceBinder) {
-        player = new PlaylistServiceClient(playlistServiceBinder) {
+        player = new PlaylistServiceClient(getParent().getPlaylistServiceBinder()) {
             @Override
             public void onTrackAdded(int index) {
                 getParent().onTrackAdded(index);
@@ -89,48 +65,41 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
                 getParent().onMediaListLoaded();
             }
         };
-        updateView();
     }
 
-    public void serviceDisconnected() {
-        player = null;
-        updateView();
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_playlist_controls, container, false);
     }
 
-    private void updateView() {
-        View view = getView();
-        if (view != null && player != null) {
-            if (uiUpdater == null) {
-                uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
-            }
-            if (audioSelectionManager == null) {
-                audioSelectionManager = new AudioSelectionManager(getContext(), (Spinner) view.findViewById(R.id.controls_spinner), player, this);
-            }
-        } else {
-            if (uiUpdater != null) {
-                uiUpdater.detach();
-                uiUpdater = null;
-            }
-            if (audioSelectionManager != null) {
-                audioSelectionManager.detach();
-                audioSelectionManager = null;
-            }
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        if (!AudioSelectionManager.SPINNER_ENABLED) {
+            view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
         }
+        uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
+        audioSelectionManager = new AudioSelectionManager(getContext(), (Spinner) view.findViewById(R.id.controls_spinner), player, this);
+    }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        uiUpdater.detach();
+        uiUpdater = null;
+        audioSelectionManager.detach();
+        audioSelectionManager = null;
     }
 
     public void addToQueue(@NonNull MediaItem mediaItem) {
-        if (player != null) {
-            player.addToQueue(mediaItem);
-        }
+        player.addToQueue(mediaItem);
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (player != null) {
-            player.release();
-        }
+        player.release();
     }
 
     @NonNull
@@ -139,7 +108,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     }
 
     public int getCurrentTrackIndex() {
-        return player != null ? player.getCurrentMediaIndex() : 0;
+        return player.getCurrentMediaIndex();
     }
 
     private Holder getParent() {

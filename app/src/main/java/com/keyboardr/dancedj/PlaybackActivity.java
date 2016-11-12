@@ -10,22 +10,22 @@ import android.os.IBinder;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.dancedj.model.MediaItem;
-import com.keyboardr.dancedj.player.PlaylistPlayer;
 import com.keyboardr.dancedj.service.PlaylistService;
+import com.keyboardr.dancedj.ui.NoSetFragment;
 import com.keyboardr.dancedj.ui.monitor.LibraryFragment;
 import com.keyboardr.dancedj.ui.monitor.MonitorControlsFragment;
-import com.keyboardr.dancedj.ui.playlist.PlaylistControlsFragment;
-import com.keyboardr.dancedj.ui.playlist.PlaylistFragment;
+import com.keyboardr.dancedj.ui.playlist.SetFragment;
 
-import java.util.List;
-
-public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder, PlaylistFragment.Holder, PlaylistControlsFragment.Holder {
+public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder,
+        NoSetFragment.Holder, SetFragment.Holder {
 
     private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
     @Nullable
@@ -34,18 +34,32 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     private static final int INDEX_MONITOR = 0;
     private static final int INDEX_PLAYLIST = 1;
 
+    private static final String TAG = "PlaybackActivity";
+
+    public boolean playlistConnected;
     private ServiceConnection playlistServiceConn = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
-            getPlaylistControlsFragment().serviceConnected(iBinder);
+            playlistConnected = true;
+            Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+            if (!(frag instanceof SetFragment)) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.playlist, SetFragment.newInstance(iBinder)).commit();
+            }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName componentName) {
-            getPlaylistControlsFragment().serviceDisconnected();
+            playlistConnected = false;
+            Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+            if (!(frag instanceof NoSetFragment)) {
+                getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.playlist, new NoSetFragment()).commit();
+            }
+            bindService(new Intent(PlaybackActivity.this, PlaylistService.class), playlistServiceConn,
+                    BIND_IMPORTANT);
         }
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,8 +72,13 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                         ? INDEX_PLAYLIST : INDEX_MONITOR);
             }
         }
-        bindService(new Intent(this, PlaylistService.class), playlistServiceConn, BIND_AUTO_CREATE | BIND_IMPORTANT);
+        bindService(new Intent(this, PlaylistService.class), playlistServiceConn, BIND_IMPORTANT);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
+        if (getSupportFragmentManager().findFragmentById(R.id.playlist) == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.playlist, NoSetFragment.newInstance()).commit();
+        }
     }
 
     @Override
@@ -76,7 +95,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
     @Override
     public void addToQueue(@NonNull MediaItem mediaItem) {
-        getPlaylistControlsFragment().addToQueue(mediaItem);
+        SetFragment setFragment = getSetlistFragment();
+        if (setFragment != null) {
+            setFragment.addToQueue(mediaItem);
+        } else {
+            Log.w(TAG, "addToQueue: no setlist fragment");
+        }
     }
 
     @Override
@@ -120,36 +144,26 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         return super.onOptionsItemSelected(item);
     }
 
-    private PlaylistControlsFragment getPlaylistControlsFragment() {
-        return (PlaylistControlsFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_control_fragment);
-    }
-
-    private PlaylistFragment getPlaylistFragment() {
-        return (PlaylistFragment) getSupportFragmentManager().findFragmentById(R.id.playlist_fragment);
-    }
-
-    @Override
-    public List<PlaylistPlayer.PlaylistItem> getPlaylist() {
-        return getPlaylistControlsFragment().getPlaylist();
+    @Nullable
+    public SetFragment getSetlistFragment() {
+        Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+        if (frag instanceof SetFragment) {
+            return ((SetFragment) frag);
+        }
+        return null;
     }
 
     @Override
-    public int getCurrentTrackIndex() {
-        return getPlaylistControlsFragment().getCurrentTrackIndex();
+    public void startNewSetlist() {
+        Intent service = new Intent(this, PlaylistService.class);
+        service.putExtra(PlaylistService.EXTRA_END_SET, false);
+        startService(service);
     }
 
     @Override
-    public void onTrackAdded(int index) {
-        getPlaylistFragment().onTrackAdded(index);
-    }
-
-    @Override
-    public void onIndexChanged(int oldIndex, int newIndex) {
-        getPlaylistFragment().onIndexChanged(oldIndex, newIndex);
-    }
-
-    @Override
-    public void onMediaListLoaded() {
-        getPlaylistFragment().onMediaListLoaded();
+    public void endSet() {
+        Intent service = new Intent(this, PlaylistService.class);
+        service.putExtra(PlaylistService.EXTRA_END_SET, true);
+        startService(service);
     }
 }
