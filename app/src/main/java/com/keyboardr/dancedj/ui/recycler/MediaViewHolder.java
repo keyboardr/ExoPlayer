@@ -79,7 +79,10 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         itemView.setSelected(selected);
         itemView.setEnabled(enabled);
         SpannableString titleString = new SpannableString(mediaItem.title);
-        titleString.setSpan(new StyleSpan(selected ? Typeface.BOLD : Typeface.NORMAL), 0, titleString.length(), 0);
+        titleString.setSpan(new StyleSpan(enabled
+                        ? (selected ? Typeface.BOLD : Typeface.NORMAL)
+                        : Typeface.ITALIC),
+                0, titleString.length(), 0);
         title.setText(titleString);
         artist.setText(mediaItem.artist);
 
