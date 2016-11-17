@@ -23,9 +23,8 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.List;
 
-public class LibraryFragment extends android.support.v4.app.Fragment implements MediaViewHolder
-    .OnMediaItemSelectedListener,
-    MediaViewHolder.MediaViewDecorator, FilterFragment.Holder {
+public class LibraryFragment extends android.support.v4.app.Fragment
+    implements FilterFragment.Holder {
 
   public interface Holder {
     void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
@@ -41,34 +40,6 @@ public class LibraryFragment extends android.support.v4.app.Fragment implements 
   private static final String ARG_FILTER = "filter";
 
   private ViewAnimator switcher;
-
-  @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                           Bundle savedInstanceState) {
-    View view = inflater.inflate(R.layout.fragment_library, container, false);
-    switcher = (ViewAnimator) view.findViewById(R.id.library_switcher);
-    RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.library_recycler);
-    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
-        LinearLayoutManager.VERTICAL, false);
-    recyclerView.setLayoutManager(layoutManager);
-    recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
-        layoutManager.getOrientation()));
-    recyclerView.setAdapter(getAdapter());
-    return view;
-  }
-
-  @Override
-  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-    super.onViewCreated(view, savedInstanceState);
-    getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
-  }
-
-  @Override
-  public void setLibraryFilter(FilterInfo filter) {
-    Bundle args = new Bundle();
-    args.putParcelable(ARG_FILTER, filter);
-    getLoaderManager().restartLoader(0, args, mediaLoaderCallbacks);
-  }
 
   private final LoaderManager.LoaderCallbacks<List<MediaItem>> mediaLoaderCallbacks
       = new LoaderManager.LoaderCallbacks<List<MediaItem>>() {
@@ -91,17 +62,71 @@ public class LibraryFragment extends android.support.v4.app.Fragment implements 
     }
   };
 
-  private final MediaAdapter adapter = new MediaAdapter(this, this);
+  private final MediaViewHolder.MediaViewDecorator decorator
+      = new MediaViewHolder.MediaViewDecorator() {
 
-  @NonNull
-  protected RecyclerView.Adapter getAdapter() {
-    return adapter;
-  }
+    @Override
+    public void onMediaItemSelected(MediaItem mediaItem) {
+      getParent().playMediaItemOnMonitor(mediaItem);
+    }
+
+    @Override
+    @DrawableRes
+    public int getIconForItem(MediaItem mediaItem) {
+      return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
+    }
+
+    @Override
+    public void onDecoratorSelected(MediaItem mediaItem) {
+      getParent().addToQueue(mediaItem);
+    }
+
+    @Override
+    public boolean showMoreOption() {
+      return true;
+    }
+
+    @Override
+    public void onMoreSelected(MediaItem mediaItem) {
+
+    }
+
+  };
+
+  private final MediaAdapter adapter = new MediaAdapter(decorator);
 
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
     FragmentUtils.checkParent(this, Holder.class);
+  }
+
+  @Override
+  public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                           Bundle savedInstanceState) {
+    View view = inflater.inflate(R.layout.fragment_library, container, false);
+    switcher = (ViewAnimator) view.findViewById(R.id.library_switcher);
+    RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.library_recycler);
+    LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
+        LinearLayoutManager.VERTICAL, false);
+    recyclerView.setLayoutManager(layoutManager);
+    recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
+        layoutManager.getOrientation()));
+    recyclerView.setAdapter(adapter);
+    return view;
+  }
+
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
+  }
+
+  @Override
+  public void setLibraryFilter(FilterInfo filter) {
+    Bundle args = new Bundle();
+    args.putParcelable(ARG_FILTER, filter);
+    getLoaderManager().restartLoader(0, args, mediaLoaderCallbacks);
   }
 
   @NonNull
@@ -113,22 +138,6 @@ public class LibraryFragment extends android.support.v4.app.Fragment implements 
 
   public void notifyConnectionChanged() {
     adapter.notifyDataSetChanged();
-  }
-
-  @Override
-  public void onMediaItemSelected(MediaItem mediaItem) {
-    getParent().playMediaItemOnMonitor(mediaItem);
-  }
-
-  @Override
-  @DrawableRes
-  public int getIconForItem(MediaItem mediaItem) {
-    return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
-  }
-
-  @Override
-  public void onDecoratorSelected(MediaItem mediaItem) {
-    getParent().addToQueue(mediaItem);
   }
 
 }

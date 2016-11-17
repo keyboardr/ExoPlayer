@@ -5,8 +5,7 @@
     android:layout_height="wrap_content"
     android:background="?android:selectableItemBackground"
     android:paddingBottom="16dp"
-    android:paddingLeft="24dp"
-    android:paddingRight="24dp"
+    android:paddingStart="24dp"
     android:paddingTop="16dp">
 
     <GridLayout
@@ -65,4 +64,15 @@
         android:padding="8dp"
         android:tint="?android:colorForeground"
         tools:src="@drawable/ic_playlist_add" />
+
+    <ImageView
+        android:id="@+id/media_item_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="8dp"
+        android:background="?android:selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:src="@drawable/ic_more_vert_black"
+        android:tint="?android:colorForeground" />
 </LinearLayout>

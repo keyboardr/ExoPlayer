@@ -1,4 +1,4 @@
-package com.keyboardr.bluejay.ui.monitor.library;
+package com.keyboardr.bluejay.provider;
 
 import android.content.AsyncQueryHandler;
 import android.content.ContentResolver;
@@ -16,8 +16,6 @@ import android.util.Pair;
 
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.model.Shortlist;
-import com.keyboardr.bluejay.provider.MediaShortlistContract;
-import com.keyboardr.bluejay.provider.ShortlistsContract;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
