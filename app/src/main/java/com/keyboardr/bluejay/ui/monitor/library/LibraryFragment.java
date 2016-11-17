@@ -1,4 +1,4 @@
-package com.keyboardr.bluejay.ui.monitor;
+package com.keyboardr.bluejay.ui.monitor.library;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -19,6 +19,7 @@ import android.widget.ViewAnimator;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.ui.monitor.MediaAdapter;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 

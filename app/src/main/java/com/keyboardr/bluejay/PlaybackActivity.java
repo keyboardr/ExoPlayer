@@ -20,7 +20,7 @@ import android.widget.ViewSwitcher;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistService;
 import com.keyboardr.bluejay.ui.NoSetFragment;
-import com.keyboardr.bluejay.ui.monitor.LibraryFragment;
+import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.ui.playlist.SetFragment;
 

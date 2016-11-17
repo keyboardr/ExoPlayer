@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:baselineAligned="false"
     android:orientation="vertical"
-    tools:context="com.keyboardr.bluejay.ui.monitor.LibraryFragment">
+    tools:context="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment">
 
     <include
         layout="@layout/fragment_recycler"
@@ -20,7 +20,7 @@
 
         <fragment
             android:id="@+id/filter_fragment"
-            class="com.keyboardr.bluejay.ui.monitor.FilterFragment"
+            class="com.keyboardr.bluejay.ui.monitor.library.FilterFragment"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </FrameLayout>

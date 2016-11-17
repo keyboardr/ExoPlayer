@@ -1,4 +1,4 @@
-package com.keyboardr.bluejay.ui.monitor;
+package com.keyboardr.bluejay.ui.monitor.library;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
