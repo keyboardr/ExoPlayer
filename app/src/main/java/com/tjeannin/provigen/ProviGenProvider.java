@@ -24,10 +24,10 @@ public abstract class ProviGenProvider extends ContentProvider {
 
     private List<Contract> contracts = new ArrayList<>();
 
-    private UriMatcher uriMatcher;
-    private static final int ITEM = 1;
-    private static final int ITEM_ID = 2;
-    private SQLiteOpenHelper openHelper;
+    protected UriMatcher uriMatcher;
+    protected static final int ITEM = 1;
+    protected static final int ITEM_ID = 2;
+    protected SQLiteOpenHelper openHelper;
 
     /**
      * This method should return an instance of a {@link SQLiteOpenHelper}.
@@ -206,7 +206,7 @@ public abstract class ProviGenProvider extends ContentProvider {
      * @param element The element to append.
      * @return An Array with the element appended.
      */
-    private static String[] appendToStringArray(String[] array, String element) {
+    protected static String[] appendToStringArray(String[] array, String element) {
         if (array != null) {
             String[] newArray = new String[array.length + 1];
             System.arraycopy(array, 0, newArray, 0, array.length);

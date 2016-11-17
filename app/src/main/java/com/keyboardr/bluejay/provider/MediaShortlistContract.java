@@ -24,4 +24,6 @@ public interface MediaShortlistContract extends ProviGenBaseContract {
     @Column(Column.Type.INTEGER)
     String MEDIA_ID = "media_id";
 
+    String SHORTLIST_NAME = ShortlistsContract.NAME;
+
 }

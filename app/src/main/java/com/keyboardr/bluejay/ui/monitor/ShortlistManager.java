@@ -1,0 +1,283 @@
+package com.keyboardr.bluejay.ui.monitor;
+
+import android.content.AsyncQueryHandler;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.LongSparseArray;
+import android.util.Pair;
+
+import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.Shortlist;
+import com.keyboardr.bluejay.provider.MediaShortlistContract;
+import com.keyboardr.bluejay.provider.ShortlistsContract;
+
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class ShortlistManager {
+
+  public static final String ACTION_SHORTLISTS_READY = "com.keyboardr.bluejay.ui.monitor"
+      + ".ShortlistManager.ACTION_SHORTLISTS_READY";
+
+  public static final String ACTION_SHORTLIST_PAIRS_READY = "com.keyboardr.bluejay.ui.monitor"
+      + ".ShortlistManager.ACTION_SHORTLIST_PAIRS_READY";
+
+  public static final String ACTION_SHORTLISTS_CHANGED = "com.keyboardr.bluejay.ui.monitor"
+      + "ShortlistManager.ACTION_SHORTLISTS_CHANGED";
+
+  @Nullable
+  private LongSparseArray<List<Shortlist>> shortlistMap;
+
+  private List<Pair<MediaItem, Shortlist>> pendingAdds = new ArrayList<>();
+  private List<Pair<MediaItem, Shortlist>> pendingRemoves = new ArrayList<>();
+  private List<Shortlist> shortlists;
+
+  private final AsyncQueryHandler queryHandler;
+  private final LocalBroadcastManager localBroadcastManager;
+
+  public ShortlistManager(@NonNull Context context) {
+    queryHandler = new ShortlistQueryHandler(new WeakReference<>(this),
+        context.getContentResolver());
+    localBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
+    queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_SHORTLIST, null,
+        ShortlistsContract.CONTENT_URI, null, null, null, ShortlistsContract._ID);
+    queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_PAIRS, null,
+        MediaShortlistContract.CONTENT_URI, null, null, null,
+        MediaShortlistContract.MEDIA_ID);
+  }
+
+  @Nullable
+  public List<Shortlist> getShortlists(@NonNull MediaItem mediaItem) {
+    if (shortlistMap == null) {
+      return null;
+    }
+    List<Shortlist> result = shortlistMap.get(mediaItem.getTransientId());
+    if (result == null) {
+      result = Collections.emptyList();
+    }
+    for (int i = result.size() - 1; i >= 0; i--) {
+      if (Collections.binarySearch(shortlists, result.get(i)) < 0) {
+        result.remove(i);
+      }
+    }
+    return result;
+  }
+
+  public void add(@NonNull MediaItem mediaItem, @NonNull Shortlist shortlist) {
+    // Cancel pending removal of this pair
+    for (int i = pendingRemoves.size() - 1; i >= 0; i--) {
+      Pair<MediaItem, Shortlist> pendingRemoval = pendingRemoves.get(i);
+      if (pendingRemoval.first.equals(mediaItem)
+          && pendingRemoval.second.equals(shortlist)) {
+        pendingRemoves.remove(i);
+      }
+    }
+
+    List<Shortlist> shortlists = getShortlists(mediaItem);
+    if (shortlists == null) {
+      pendingAdds.add(new Pair<>(mediaItem, shortlist));
+      return;
+    }
+
+    int index = Collections.binarySearch(shortlists, shortlist);
+    if (index < 0) {
+      shortlists.add(-index - 1, shortlist);
+      ContentValues values = new ContentValues();
+      values.put(MediaShortlistContract.MEDIA_ID, mediaItem.getTransientId());
+      values.put(MediaShortlistContract.SHORTLIST_ID, shortlist.getId());
+      queryHandler.startInsert(0, null, MediaShortlistContract.CONTENT_URI, values);
+    }
+  }
+
+  public void remove(@NonNull MediaItem mediaItem, @NonNull Shortlist shortlist) {
+    // Cancel pending addition of this pair
+    for (int i = pendingAdds.size() - 1; i >= 0; i--) {
+      Pair<MediaItem, Shortlist> pendingAdd = pendingAdds.get(i);
+      if (pendingAdd.first.equals(mediaItem)
+          && pendingAdd.second.equals(shortlist)) {
+        pendingAdds.remove(i);
+      }
+    }
+
+    List<Shortlist> shortlists = getShortlists(mediaItem);
+    if (shortlists == null) {
+      pendingRemoves.add(new Pair<>(mediaItem, shortlist));
+      return;
+    }
+
+    int index = Collections.binarySearch(shortlists, shortlist);
+    if (index >= 0) {
+      shortlists.add(index, shortlist);
+    }
+    queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
+        MediaShortlistContract.SHORTLIST_ID + " = ? AND "
+            + MediaShortlistContract.MEDIA_ID + " = ?",
+        new String[]{shortlist.getId() + "", mediaItem.getTransientId() + ""});
+  }
+
+  public List<Shortlist> getShortlists() {
+    return shortlists;
+  }
+
+  public void createShortlist(@NonNull String name) {
+    if (shortlists == null) {
+      throw new IllegalStateException("Shortlists not yet initialized");
+    }
+    ContentValues values = new ContentValues();
+    values.put(ShortlistsContract.NAME, name);
+    queryHandler.startInsert(ShortlistQueryHandler.TOKEN_SHORTLIST, null,
+        ShortlistsContract.CONTENT_URI, values);
+  }
+
+  public void deleteShortlist(@NonNull Shortlist shortlist) {
+    if (shortlists == null) {
+      throw new IllegalStateException("Shortlists not yet initialized");
+    }
+    int index = Collections.binarySearch(shortlists, shortlist);
+    if (index >= 0) {
+      shortlists.remove(index);
+    }
+    queryHandler.startDelete(0, null, ContentUris.withAppendedId(ShortlistsContract.CONTENT_URI,
+        shortlist.getId()), null, null);
+    queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
+        MediaShortlistContract.SHORTLIST_ID + " = " + shortlist.getId(), null);
+    notifyShortlistsChanged();
+  }
+
+  private void notifyShortlistsChanged() {
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
+  }
+
+  private void setShortlistPairs(LongSparseArray<List<Shortlist>> shortlistMap) {
+    this.shortlistMap = shortlistMap;
+
+    for (Pair<MediaItem, Shortlist> add : pendingAdds) {
+      add(add.first, add.second);
+    }
+    for (Pair<MediaItem, Shortlist> remove : pendingRemoves) {
+      remove(remove.first, remove.second);
+    }
+
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLIST_PAIRS_READY));
+  }
+
+  private void setShortlists(@NonNull List<Shortlist> shortlists) {
+    this.shortlists = shortlists;
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
+  }
+
+  private static class ShortlistQueryHandler extends AsyncQueryHandler {
+    private static final int TOKEN_INIT_SHORTLIST = 1;
+    private static final int TOKEN_INIT_PAIRS = 2;
+    private static final int TOKEN_SHORTLIST = 3;
+    private static final int TOKEN_SHORTLIST_ADDED = 4;
+
+    private final WeakReference<ShortlistManager> shortlistManager;
+
+    public ShortlistQueryHandler(WeakReference<ShortlistManager> shortlistManager,
+                                 ContentResolver cr) {
+      super(cr);
+      this.shortlistManager = shortlistManager;
+    }
+
+    @Override
+    protected void onQueryComplete(int token, Object cookie, @NonNull Cursor cursor) {
+      try {
+        switch (token) {
+          case TOKEN_INIT_SHORTLIST:
+            List<Shortlist> shortlists = new ArrayList<>();
+            if (cursor.moveToFirst()) {
+              int idColumn = cursor.getColumnIndexOrThrow(ShortlistsContract._ID);
+              int nameColumn = cursor.getColumnIndexOrThrow(ShortlistsContract.NAME);
+              do {
+                shortlists.add(new Shortlist(cursor.getLong(idColumn),
+                    cursor.getString(nameColumn)));
+              } while (cursor.moveToNext());
+            }
+            ShortlistManager manager = shortlistManager.get();
+            if (manager != null) {
+              manager.setShortlists(shortlists);
+            }
+            break;
+          case TOKEN_INIT_PAIRS:
+            LongSparseArray<List<Shortlist>> shortlistMap = new LongSparseArray<>();
+            if (cursor.moveToFirst()) {
+              int columnMediaId = cursor.getColumnIndexOrThrow(MediaShortlistContract
+                  .MEDIA_ID);
+              int columnShortlistId = cursor.getColumnIndexOrThrow(MediaShortlistContract
+                  .SHORTLIST_ID);
+              int columnShortlistName = cursor.getColumnIndexOrThrow
+                  (MediaShortlistContract.SHORTLIST_NAME);
+              do {
+                long mediaId = cursor.getLong(columnMediaId);
+                shortlists = shortlistMap.get(mediaId);
+                if (shortlists == null) {
+                  shortlists = new ArrayList<>();
+                }
+                insert(shortlists, new Shortlist(cursor.getLong(columnShortlistId),
+                    cursor.getString(columnShortlistName)));
+              } while (cursor.moveToNext());
+            }
+            manager = shortlistManager.get();
+            if (manager != null) {
+              manager.setShortlistPairs(shortlistMap);
+            }
+            break;
+          case TOKEN_SHORTLIST_ADDED:
+            if (cursor.moveToFirst()) {
+              long id = cursor.getLong(cursor.getColumnIndexOrThrow(ShortlistsContract
+                  ._ID));
+              String name = cursor.getString(cursor.getColumnIndexOrThrow
+                  (ShortlistsContract
+                      .NAME));
+              Shortlist shortlist = new Shortlist(id, name);
+              ShortlistManager shortlistManager = this.shortlistManager.get();
+              if (shortlistManager != null) {
+                shortlists = shortlistManager.shortlists;
+                insert(shortlists, shortlist);
+                shortlistManager.notifyShortlistsChanged();
+              }
+            }
+            break;
+        }
+      } finally {
+        cursor.close();
+      }
+    }
+
+    private void insert(List<Shortlist> shortlists, Shortlist shortlist) {
+      long id = shortlist.getId();
+      // Since we just created this shortlist, it probably belongs at
+      // the end
+      if (shortlists != null
+          && (shortlists.size() == 0 || shortlists.get(0).getId() <
+          id)) {
+        shortlists.add(shortlist);
+      } else if (shortlists != null) {
+        int index = Collections.binarySearch(shortlists, shortlist);
+        if (index >= 0) {
+          shortlists.set(index, shortlist);
+        } else {
+          shortlists.add(-index - 1, shortlist);
+        }
+      }
+    }
+
+    @Override
+    protected void onInsertComplete(int token, Object cookie, @NonNull Uri uri) {
+      if (token == TOKEN_SHORTLIST) {
+        startQuery(TOKEN_SHORTLIST_ADDED, cookie, uri, null, null, null, null);
+      }
+    }
+  }
+}
