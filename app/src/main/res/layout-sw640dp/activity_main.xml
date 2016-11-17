@@ -8,7 +8,7 @@
     android:orientation="horizontal"
     android:divider="?android:dividerVertical"
     android:showDividers="middle"
-    tools:context="com.keyboardr.dancedj.PlaybackActivity">
+    tools:context="com.keyboardr.bluejay.PlaybackActivity">
 
     <include
         layout="@layout/playlist"
