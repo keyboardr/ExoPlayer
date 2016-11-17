@@ -11,15 +11,15 @@ import com.tjeannin.provigen.annotation.ContentUri;
  * Created by Keyboardr on 11/16/2016.
  */
 
-public interface MediaLabelContract extends ProviGenBaseContract {
-    String TABLE = "media_label";
+public interface MediaShortlistContract extends ProviGenBaseContract {
+    String TABLE = "media_shortlist";
 
     @ContentUri
     Uri CONTENT_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://" +
             BluejayProvider.AUTHORITY + "/" + TABLE);
 
     @Column(Column.Type.INTEGER)
-    String LABEL_ID = "label_id";
+    String SHORTLIST_ID = "shortlist_id";
 
     @Column(Column.Type.INTEGER)
     String MEDIA_ID = "media_id";

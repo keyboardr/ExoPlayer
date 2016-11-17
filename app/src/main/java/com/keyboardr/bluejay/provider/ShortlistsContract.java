@@ -7,8 +7,8 @@ import com.tjeannin.provigen.ProviGenBaseContract;
 import com.tjeannin.provigen.annotation.Column;
 import com.tjeannin.provigen.annotation.ContentUri;
 
-public interface LabelsContract extends ProviGenBaseContract {
-    String TABLE = "label";
+public interface ShortlistsContract extends ProviGenBaseContract {
+    String TABLE = "shortlists";
 
     @ContentUri
     Uri CONTENT_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + BluejayProvider

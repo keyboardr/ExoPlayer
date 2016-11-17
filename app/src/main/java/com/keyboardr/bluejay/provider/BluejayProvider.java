@@ -11,7 +11,7 @@ public class BluejayProvider extends ProviGenProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
     private static final String DB_NAME = "bluejaydb";
-    private static final Class[] CLASSES = {LabelsContract.class, MediaLabelContract.class,
+    private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
             MetadataContract.class};
 
     @Override
