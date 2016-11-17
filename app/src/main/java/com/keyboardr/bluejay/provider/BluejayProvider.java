@@ -11,7 +11,8 @@ public class BluejayProvider extends ProviGenProvider {
     public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
     private static final String DB_NAME = "bluejaydb";
-    private static final Class[] CLASSES = {};
+    private static final Class[] CLASSES = {LabelsContract.class, MediaLabelContract.class,
+            MetadataContract.class};
 
     @Override
     public SQLiteOpenHelper openHelper(Context context) {
