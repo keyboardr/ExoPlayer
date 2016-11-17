@@ -1,11 +1,17 @@
 package com.tjeannin.provigen;
 
-import android.content.*;
+import android.content.ContentProvider;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
 import com.tjeannin.provigen.model.Contract;
 
 import java.util.ArrayList;
@@ -16,7 +22,7 @@ import java.util.List;
  */
 public abstract class ProviGenProvider extends ContentProvider {
 
-    private List<Contract> contracts = new ArrayList<Contract>();
+    private List<Contract> contracts = new ArrayList<>();
 
     private UriMatcher uriMatcher;
     private static final int ITEM = 1;
@@ -58,10 +64,10 @@ public abstract class ProviGenProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         SQLiteDatabase database = openHelper.getWritableDatabase();
 
-        int numberOfRowsAffected = 0;
+        int numberOfRowsAffected;
         Contract contract = findMatchingContract(uri);
 
         switch (uriMatcher.match(uri)) {
@@ -89,7 +95,7 @@ public abstract class ProviGenProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
 
         Contract contract = findMatchingContract(uri);
 
@@ -104,7 +110,7 @@ public abstract class ProviGenProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         SQLiteDatabase database = openHelper.getWritableDatabase();
 
         Contract contract = findMatchingContract(uri);
@@ -119,11 +125,11 @@ public abstract class ProviGenProvider extends ContentProvider {
     }
 
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         SQLiteDatabase database = openHelper.getReadableDatabase();
 
         Contract contract = findMatchingContract(uri);
-        Cursor cursor = null;
+        Cursor cursor;
 
         switch (uriMatcher.match(uri)) {
             case ITEM:
@@ -149,12 +155,12 @@ public abstract class ProviGenProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection,
+    public int update(@NonNull Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
         SQLiteDatabase database = openHelper.getWritableDatabase();
 
         Contract contract = findMatchingContract(uri);
-        int numberOfRowsAffected = 0;
+        int numberOfRowsAffected;
 
         switch (uriMatcher.match(uri)) {
             case ITEM:
@@ -190,7 +196,7 @@ public abstract class ProviGenProvider extends ContentProvider {
                 return contract;
             }
         }
-        return null;
+        throw new IllegalArgumentException("No contract for Uri: " + uri);
     }
 
     /**
