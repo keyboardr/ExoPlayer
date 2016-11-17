@@ -22,7 +22,12 @@
             android:name=".service.PlaylistService"
             android:enabled="true"
             android:exported="false"
-            android:process=":playlist"/>
+            android:process=":playlist" />
+
+        <provider
+            android:name=".provider.BluejayProvider"
+            android:authorities="com.keyboardr.dancedj.provider"
+            android:exported="false" />
     </application>
 
 </manifest>
