@@ -1,4 +1,4 @@
-package com.keyboardr.bluejay.ui.monitor;
+package com.keyboardr.bluejay.ui.monitor.library;
 
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;

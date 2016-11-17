@@ -24,7 +24,7 @@ import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.ui.playlist.SetFragment;
 
-public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.LibraryFragmentHolder,
+public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.Holder,
         NoSetFragment.Holder, SetFragment.Holder {
 
     private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
