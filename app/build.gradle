@@ -4,7 +4,7 @@ android {
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
     defaultConfig {
-        applicationId "com.keyboardr.dancedj"
+        applicationId "com.keyboardr.bluejay"
         minSdkVersion 23
         targetSdkVersion project.ext.targetSdkVersion
         versionCode 1

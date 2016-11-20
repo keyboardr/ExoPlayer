@@ -11,6 +11,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.util.LongSparseArray;
 import android.util.Pair;
 
@@ -32,6 +33,8 @@ public class ShortlistManager {
 
   public static final String ACTION_SHORTLISTS_CHANGED = "com.keyboardr.bluejay.ui.monitor"
       + "ShortlistManager.ACTION_SHORTLISTS_CHANGED";
+
+  private static final String TAG = "ShortlistManager";
 
   @Nullable
   private LongSparseArray<List<Shortlist>> shortlistMap;
@@ -152,6 +155,10 @@ public class ShortlistManager {
     notifyShortlistsChanged();
   }
 
+  public boolean isReady() {
+    return shortlists != null && shortlistMap != null;
+  }
+
   private void notifyShortlistsChanged() {
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
   }
@@ -167,11 +174,17 @@ public class ShortlistManager {
     }
 
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLIST_PAIRS_READY));
+    if (isReady()) {
+      localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
+    }
   }
 
   private void setShortlists(@NonNull List<Shortlist> shortlists) {
     this.shortlists = shortlists;
-    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
+    if (isReady()) {
+      localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
+    }
   }
 
   private static class ShortlistQueryHandler extends AsyncQueryHandler {
@@ -189,7 +202,11 @@ public class ShortlistManager {
     }
 
     @Override
-    protected void onQueryComplete(int token, Object cookie, @NonNull Cursor cursor) {
+    protected void onQueryComplete(int token, Object cookie, @Nullable Cursor cursor) {
+      if (cursor == null) {
+        Log.w(TAG, "onQueryComplete: null cursor");
+        return;
+      }
       try {
         switch (token) {
           case TOKEN_INIT_SHORTLIST:

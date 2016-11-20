@@ -1,12 +1,16 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -18,6 +22,7 @@ import android.widget.ViewAnimator;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -83,7 +88,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
 
     @Override
     public boolean showMoreOption() {
-      return true;
+      return shortlistManager.isReady();
     }
 
     @Override
@@ -94,6 +99,33 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   };
 
   private final MediaAdapter adapter = new MediaAdapter(decorator);
+
+  private ShortlistManager shortlistManager;
+
+  private BroadcastReceiver shortlistsReadyReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      if (shortlistManager.isReady()) {
+        adapter.notifyDataSetChanged();
+        LocalBroadcastManager.getInstance(context.getApplicationContext()).unregisterReceiver(this);
+      }
+    }
+  };
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    shortlistManager = new ShortlistManager(getContext());
+    LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver
+        (shortlistsReadyReceiver, new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_READY));
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+    LocalBroadcastManager.getInstance(getContext().getApplicationContext()).unregisterReceiver
+        (shortlistsReadyReceiver);
+  }
 
   @Override
   public void onAttach(Context context) {
