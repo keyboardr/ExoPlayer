@@ -3,6 +3,7 @@ package com.keyboardr.bluejay.ui.monitor;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -70,12 +71,13 @@ public class MonitorControlsFragment extends Fragment {
 
         private final MediaItem mediaItem;
 
-        public AlbumArtLoader(Context context, MediaItem item) {
+        public AlbumArtLoader(@NonNull Context context, @Nullable MediaItem item) {
             super(context);
             this.mediaItem = item;
         }
 
         @Override
+        @Nullable
         public Bitmap loadInBackground() {
             if (mediaItem == null) {
                 return null;
