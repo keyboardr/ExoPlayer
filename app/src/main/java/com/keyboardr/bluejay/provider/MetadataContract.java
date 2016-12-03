@@ -24,4 +24,7 @@ public interface MetadataContract extends ProviGenBaseContract {
     @Column(Column.Type.INTEGER)
     String END_OFFSET = "end_offset";
 
+    @Column(Column.Type.INTEGER)
+    String KEY_ROOT = "key_root";
+
 }
