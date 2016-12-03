@@ -42,10 +42,12 @@ public class ShortlistManager {
 
   private List<Pair<MediaItem, Shortlist>> pendingAdds = new ArrayList<>();
   private List<Pair<MediaItem, Shortlist>> pendingRemoves = new ArrayList<>();
-  private List<Shortlist> shortlists; // Sorted by id
+  private LongSparseArray<Shortlist> shortlists;
 
   private final AsyncQueryHandler queryHandler;
   private final LocalBroadcastManager localBroadcastManager;
+
+  private List<Shortlist> cachedShortlists;
 
   public ShortlistManager(@NonNull Context context) {
     queryHandler = new ShortlistQueryHandler(new WeakReference<>(this),
@@ -53,9 +55,6 @@ public class ShortlistManager {
     localBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
     queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_SHORTLIST, null,
         ShortlistsContract.CONTENT_URI, null, null, null, ShortlistsContract._ID);
-    queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_PAIRS, null,
-        MediaShortlistContract.CONTENT_URI, null, null, null,
-        MediaShortlistContract.MEDIA_ID);
   }
 
   @Nullable
@@ -65,10 +64,13 @@ public class ShortlistManager {
     }
     List<Shortlist> result = shortlistMap.get(mediaItem.getTransientId());
     if (result == null) {
-      result = Collections.emptyList();
+      result = new ArrayList<>();
+      shortlistMap.put(mediaItem.getTransientId(), result);
     }
+
+    // Remove deleted shortlists
     for (int i = result.size() - 1; i >= 0; i--) {
-      if (Collections.binarySearch(shortlists, result.get(i)) < 0) {
+      if (shortlists.get(result.get(i).getId()) == null) {
         result.remove(i);
       }
     }
@@ -128,7 +130,15 @@ public class ShortlistManager {
   }
 
   public List<Shortlist> getShortlists() {
-    return shortlists;
+    if (cachedShortlists != null) {
+      return cachedShortlists;
+    }
+    ArrayList<Shortlist> result = new ArrayList<>(shortlists.size());
+    for (int i = 0; i < shortlists.size(); i++) {
+      result.add(shortlists.valueAt(i));
+    }
+    cachedShortlists = Collections.unmodifiableList(result);
+    return result;
   }
 
   public boolean isInShortlist(@NonNull MediaItem mediaItem, @NonNull Shortlist shortlist) {
@@ -150,10 +160,8 @@ public class ShortlistManager {
     if (shortlists == null) {
       throw new IllegalStateException("Shortlists not yet initialized");
     }
-    int index = Collections.binarySearch(shortlists, shortlist);
-    if (index >= 0) {
-      shortlists.remove(index);
-    }
+    shortlists.remove(shortlist.getId());
+    cachedShortlists = null;
     queryHandler.startDelete(0, null, ContentUris.withAppendedId(ShortlistsContract.CONTENT_URI,
         shortlist.getId()), null, null);
     queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
@@ -169,6 +177,18 @@ public class ShortlistManager {
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
   }
 
+  private void setShortlists(@NonNull List<Shortlist> shortlists) {
+    this.shortlists = new LongSparseArray<>(shortlists.size());
+    cachedShortlists = null;
+    for (Shortlist shortlist : shortlists) {
+      this.shortlists.put(shortlist.getId(), shortlist);
+    }
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
+    queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_PAIRS, null,
+        MediaShortlistContract.CONTENT_URI, null, null, null,
+        MediaShortlistContract.MEDIA_ID);
+  }
+
   private void setShortlistPairs(LongSparseArray<List<Shortlist>> shortlistMap) {
     this.shortlistMap = shortlistMap;
 
@@ -180,17 +200,7 @@ public class ShortlistManager {
     }
 
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLIST_PAIRS_READY));
-    if (isReady()) {
-      localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
-    }
-  }
-
-  private void setShortlists(@NonNull List<Shortlist> shortlists) {
-    this.shortlists = shortlists;
-    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
-    if (isReady()) {
-      localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
-    }
+    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
   }
 
   private static class ShortlistQueryHandler extends AsyncQueryHandler {
@@ -232,27 +242,26 @@ public class ShortlistManager {
             break;
           case TOKEN_INIT_PAIRS:
             LongSparseArray<List<Shortlist>> shortlistMap = new LongSparseArray<>();
+            manager = shortlistManager.get();
+            if (manager == null) {
+              return;
+            }
             if (cursor.moveToFirst()) {
               int columnMediaId = cursor.getColumnIndexOrThrow(MediaShortlistContract
                   .MEDIA_ID);
               int columnShortlistId = cursor.getColumnIndexOrThrow(MediaShortlistContract
                   .SHORTLIST_ID);
-              int columnShortlistName = cursor.getColumnIndexOrThrow
-                  (MediaShortlistContract.SHORTLIST_NAME);
               do {
                 long mediaId = cursor.getLong(columnMediaId);
                 shortlists = shortlistMap.get(mediaId);
                 if (shortlists == null) {
                   shortlists = new ArrayList<>();
+                  shortlistMap.put(mediaId, shortlists);
                 }
-                insert(shortlists, new Shortlist(cursor.getLong(columnShortlistId),
-                    cursor.getString(columnShortlistName)));
+                insert(shortlists, manager.shortlists.get(cursor.getLong(columnShortlistId)));
               } while (cursor.moveToNext());
             }
-            manager = shortlistManager.get();
-            if (manager != null) {
-              manager.setShortlistPairs(shortlistMap);
-            }
+            manager.setShortlistPairs(shortlistMap);
             break;
           case TOKEN_SHORTLIST_ADDED:
             if (cursor.moveToFirst()) {
@@ -264,8 +273,8 @@ public class ShortlistManager {
               Shortlist shortlist = new Shortlist(id, name);
               ShortlistManager shortlistManager = this.shortlistManager.get();
               if (shortlistManager != null) {
-                shortlists = shortlistManager.shortlists;
-                insert(shortlists, shortlist);
+                shortlistManager.shortlists.put(shortlist.getId(), shortlist);
+                shortlistManager.cachedShortlists = null;
                 shortlistManager.notifyShortlistsChanged();
               }
             }

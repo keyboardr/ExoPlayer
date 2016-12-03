@@ -1,9 +1,11 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -18,6 +20,7 @@ import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,6 +93,16 @@ public class MetadataFragment extends DialogFragment {
     super.onCreate(savedInstanceState);
     this.mediaItem = getArguments().getParcelable(ARG_MEDIA_ITEM);
     shortlistManager = FragmentUtils.getParentChecked(this, Holder.class).getShortlistManager();
+    if (shortlistManager == null) {
+      dismiss();
+    }
+  }
+
+  @NonNull
+  @Override
+  public Dialog onCreateDialog(Bundle savedInstanceState) {
+    Dialog dialog = super.onCreateDialog(savedInstanceState);
+    return dialog;
   }
 
   @Nullable
@@ -100,7 +113,7 @@ public class MetadataFragment extends DialogFragment {
   }
 
   @Override
-  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+  public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     ((TextView) view.findViewById(R.id.title)).setText(mediaItem.title);
     ((TextView) view.findViewById(R.id.artist)).setText(mediaItem.artist);
@@ -144,6 +157,24 @@ public class MetadataFragment extends DialogFragment {
 
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
         new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
+    shortlistsView.requestFocus();
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    Dialog dialog = getDialog();
+    if (dialog != null) {
+      boolean landscape = getResources().getConfiguration().orientation ==
+          Configuration.ORIENTATION_LANDSCAPE;
+      int widthId = landscape
+          ? android.R.dimen.dialog_min_width_major : android.R.dimen.dialog_min_width_minor;
+      TypedValue widthValue = new TypedValue();
+      getResources().getValue(widthId, widthValue, true);
+      float width = widthValue.getFraction(dialog.getOwnerActivity().getWindow().getDecorView()
+          .getWidth(), 1);
+      dialog.getWindow().setLayout((int) Math.ceil(width), ViewGroup.LayoutParams.MATCH_PARENT);
+    }
   }
 
   private boolean createShortlist() {
@@ -195,7 +226,7 @@ public class MetadataFragment extends DialogFragment {
 
     public ShortlistViewHolder(ViewGroup parent) {
       super(LayoutInflater.from(parent.getContext()).inflate(
-          android.R.layout.simple_list_item_single_choice, parent, false));
+          android.R.layout.simple_list_item_multiple_choice, parent, false));
       checkableView = (CheckedTextView) itemView.findViewById(android.R.id.text1);
       checkableView.setOnClickListener(this);
     }
