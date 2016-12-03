@@ -23,16 +23,16 @@ import com.keyboardr.bluejay.util.MathUtil;
 public class MediaViewHolder extends RecyclerView.ViewHolder {
 
   public interface MediaViewDecorator {
-    void onMediaItemSelected(MediaItem mediaItem);
+    void onMediaItemSelected(@NonNull MediaItem mediaItem);
 
     @DrawableRes
-    int getIconForItem(MediaItem mediaItem);
+    int getIconForItem(@NonNull MediaItem mediaItem);
 
-    void onDecoratorSelected(MediaItem mediaItem);
+    void onDecoratorSelected(@NonNull MediaItem mediaItem);
 
     boolean showMoreOption();
 
-    void onMoreSelected(MediaItem mediaItem);
+    void onMoreSelected(@NonNull MediaItem mediaItem);
 
   }
 

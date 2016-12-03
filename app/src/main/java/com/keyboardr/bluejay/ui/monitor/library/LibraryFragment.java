@@ -29,7 +29,7 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 import java.util.List;
 
 public class LibraryFragment extends android.support.v4.app.Fragment
-    implements FilterFragment.Holder {
+    implements FilterFragment.Holder, MetadataFragment.Holder {
 
   public interface Holder {
     void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
@@ -71,18 +71,18 @@ public class LibraryFragment extends android.support.v4.app.Fragment
       = new MediaViewHolder.MediaViewDecorator() {
 
     @Override
-    public void onMediaItemSelected(MediaItem mediaItem) {
+    public void onMediaItemSelected(@NonNull MediaItem mediaItem) {
       getParent().playMediaItemOnMonitor(mediaItem);
     }
 
     @Override
     @DrawableRes
-    public int getIconForItem(MediaItem mediaItem) {
+    public int getIconForItem(@NonNull MediaItem mediaItem) {
       return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
     }
 
     @Override
-    public void onDecoratorSelected(MediaItem mediaItem) {
+    public void onDecoratorSelected(@NonNull MediaItem mediaItem) {
       getParent().addToQueue(mediaItem);
     }
 
@@ -92,8 +92,8 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     }
 
     @Override
-    public void onMoreSelected(MediaItem mediaItem) {
-
+    public void onMoreSelected(@NonNull MediaItem mediaItem) {
+      MetadataFragment.show(LibraryFragment.this, mediaItem);
     }
 
   };
@@ -152,6 +152,11 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
+  }
+
+  @Override
+  public ShortlistManager getShortlistManager() {
+    return shortlistManager;
   }
 
   @Override

@@ -36,12 +36,13 @@ public class ShortlistManager {
 
   private static final String TAG = "ShortlistManager";
 
+  // Indexed by media id, Sorted by shortlist id
   @Nullable
   private LongSparseArray<List<Shortlist>> shortlistMap;
 
   private List<Pair<MediaItem, Shortlist>> pendingAdds = new ArrayList<>();
   private List<Pair<MediaItem, Shortlist>> pendingRemoves = new ArrayList<>();
-  private List<Shortlist> shortlists;
+  private List<Shortlist> shortlists; // Sorted by id
 
   private final AsyncQueryHandler queryHandler;
   private final LocalBroadcastManager localBroadcastManager;
@@ -128,6 +129,11 @@ public class ShortlistManager {
 
   public List<Shortlist> getShortlists() {
     return shortlists;
+  }
+
+  public boolean isInShortlist(@NonNull MediaItem mediaItem, @NonNull Shortlist shortlist) {
+    List<Shortlist> shortlists = getShortlists(mediaItem);
+    return shortlists != null && Collections.binarySearch(shortlists, shortlist) >= 0;
   }
 
   public void createShortlist(@NonNull String name) {

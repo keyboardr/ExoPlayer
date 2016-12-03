@@ -1,0 +1,220 @@
+package com.keyboardr.bluejay.ui.monitor.library;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckedTextView;
+import android.widget.TextView;
+
+import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.Shortlist;
+import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.util.FragmentUtils;
+
+/**
+ * Metadata editor for a track
+ */
+
+public class MetadataFragment extends DialogFragment {
+
+  private ShortlistManager shortlistManager;
+  private RecyclerView shortlistsView;
+  private TextInputEditText newShortlistText;
+
+  public interface Holder {
+    ShortlistManager getShortlistManager();
+  }
+
+  private static final String ARG_MEDIA_ITEM = "mediaItem";
+  private MediaItem mediaItem;
+
+  private BroadcastReceiver shortlistsChangedReceiver = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      shortlistsView.getAdapter().notifyDataSetChanged();
+    }
+  };
+
+  @NonNull
+  public static <P extends Fragment & Holder>
+  MetadataFragment show(@NonNull P parent, @NonNull MediaItem mediaItem) {
+    FragmentManager fragmentManager = parent.getChildFragmentManager();
+    return show(fragmentManager, mediaItem);
+  }
+
+  @NonNull
+  public static <P extends FragmentActivity & Holder>
+  MetadataFragment show(@NonNull P parent, @NonNull MediaItem mediaItem) {
+    FragmentManager fragmentManager = parent.getSupportFragmentManager();
+    return show(fragmentManager, mediaItem);
+  }
+
+  @NonNull
+  private static MetadataFragment show(@NonNull FragmentManager fragmentManager,
+                                       @NonNull MediaItem mediaItem) {
+    MetadataFragment metadataFragment = newInstance(mediaItem);
+    metadataFragment.show(fragmentManager, "");
+    return metadataFragment;
+  }
+
+  private static MetadataFragment newInstance(@NonNull MediaItem mediaItem) {
+    Bundle args = new Bundle();
+    args.putParcelable(ARG_MEDIA_ITEM, mediaItem);
+    MetadataFragment fragment = new MetadataFragment();
+    fragment.setArguments(args);
+    return fragment;
+  }
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    this.mediaItem = getArguments().getParcelable(ARG_MEDIA_ITEM);
+    shortlistManager = FragmentUtils.getParentChecked(this, Holder.class).getShortlistManager();
+  }
+
+  @Nullable
+  @Override
+  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
+      Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.fragment_metadata, container, false);
+  }
+
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    ((TextView) view.findViewById(R.id.title)).setText(mediaItem.title);
+    ((TextView) view.findViewById(R.id.artist)).setText(mediaItem.artist);
+
+    shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
+    shortlistsView.setLayoutManager(new GridLayoutManager(getContext(), 3));
+    // TODO: 12/2/2016 set span count based on width
+    shortlistsView.setAdapter(new ShortlistAdapter());
+
+    final View addShortlist = view.findViewById(R.id.add_shortlist);
+    newShortlistText = (TextInputEditText) view.findViewById(R.id
+        .new_shortlist);
+
+    addShortlist.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        createShortlist();
+      }
+    });
+    newShortlistText.addTextChangedListener(new TextWatcher() {
+
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+        addShortlist.setEnabled(charSequence.length() != 0);
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+      }
+    });
+    newShortlistText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+      @Override
+      public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+        return createShortlist();
+      }
+    });
+
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
+        new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
+  }
+
+  private boolean createShortlist() {
+    if (TextUtils.isEmpty(newShortlistText.getText())) {
+      return false;
+    }
+    shortlistManager.createShortlist(newShortlistText.getText().toString());
+    newShortlistText.setText("");
+    return true;
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(shortlistsChangedReceiver);
+  }
+
+  private class ShortlistAdapter extends RecyclerView.Adapter<ShortlistViewHolder> {
+
+    public ShortlistAdapter() {
+      setHasStableIds(true);
+    }
+
+    @Override
+    public ShortlistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+      return new ShortlistViewHolder(parent);
+    }
+
+    @Override
+    public void onBindViewHolder(ShortlistViewHolder holder, int position) {
+      holder.bindItem(shortlistManager.getShortlists().get(position));
+    }
+
+    @Override
+    public int getItemCount() {
+      return shortlistManager.getShortlists().size();
+    }
+
+    @Override
+    public long getItemId(int position) {
+      return shortlistManager.getShortlists().get(position).getId();
+    }
+  }
+
+  private class ShortlistViewHolder extends RecyclerView.ViewHolder implements View
+      .OnClickListener {
+    private Shortlist shortlist;
+    private CheckedTextView checkableView;
+
+    public ShortlistViewHolder(ViewGroup parent) {
+      super(LayoutInflater.from(parent.getContext()).inflate(
+          android.R.layout.simple_list_item_single_choice, parent, false));
+      checkableView = (CheckedTextView) itemView.findViewById(android.R.id.text1);
+      checkableView.setOnClickListener(this);
+    }
+
+    public void bindItem(Shortlist shortlist) {
+      this.shortlist = shortlist;
+      checkableView.setText(shortlist.getName());
+      checkableView.setChecked(shortlistManager.isInShortlist(mediaItem, shortlist));
+    }
+
+    @Override
+    public void onClick(View view) {
+      if (checkableView.isChecked()) {
+        shortlistManager.remove(mediaItem, shortlist);
+        checkableView.setChecked(false);
+      } else {
+        shortlistManager.add(mediaItem, shortlist);
+        checkableView.setChecked(true);
+      }
+    }
+  }
+}

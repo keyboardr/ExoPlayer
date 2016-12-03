@@ -70,7 +70,8 @@ public class BluejayProvider extends ProviGenProvider {
             case MediaShortlistContract.TABLE:
                 return MediaShortlistContract.TABLE + " LEFT JOIN "
                         + ShortlistsContract.TABLE + " ON "
-                        + MediaShortlistContract.MEDIA_ID + " = " + ShortlistsContract._ID;
+                        + MediaShortlistContract.MEDIA_ID + " = " +
+                            ShortlistsContract.TABLE + "." + ShortlistsContract._ID;
             default:
                 return table;
         }
