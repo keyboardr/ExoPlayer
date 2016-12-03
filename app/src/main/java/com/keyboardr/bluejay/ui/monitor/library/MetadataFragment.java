@@ -133,6 +133,8 @@ public class MetadataFragment extends DialogFragment {
         createShortlist();
       }
     });
+    addShortlist.setEnabled(newShortlistText.length() != 0);
+
     newShortlistText.addTextChangedListener(new TextWatcher() {
 
       @Override

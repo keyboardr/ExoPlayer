@@ -15,6 +15,7 @@
     <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
     <string name="title_sort">Sort:</string>
     <string name="new_shortlist">New shortlist</string>
+    <string name="shortlists_label">Shortlists:</string>
 
     <string-array name="sort_methods">
         <item>ID</item>
