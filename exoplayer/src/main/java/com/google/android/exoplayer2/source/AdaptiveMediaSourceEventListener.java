@@ -15,8 +15,6 @@
  */
 package com.google.android.exoplayer2.source;
 
-import static com.google.android.exoplayer2.C.usToMs;
-
 import android.os.Handler;
 import android.os.SystemClock;
 import com.google.android.exoplayer2.C;
@@ -51,8 +49,8 @@ public interface AdaptiveMediaSourceEventListener {
    * @param elapsedRealtimeMs The value of {@link SystemClock#elapsedRealtime} when the load began.
    */
   void onLoadStarted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat,
-      int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
-      long mediaEndTimeMs, long elapsedRealtimeMs);
+                     int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
+                     long mediaEndTimeMs, long elapsedRealtimeMs);
 
   /**
    * Called when a load ends.
@@ -77,8 +75,8 @@ public interface AdaptiveMediaSourceEventListener {
    * @param bytesLoaded The number of bytes that were loaded.
    */
   void onLoadCompleted(DataSpec dataSpec, int dataType, int trackType, Format trackFormat,
-      int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
-      long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded);
+                       int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
+                       long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded);
 
   /**
    * Called when a load is canceled.
@@ -104,8 +102,8 @@ public interface AdaptiveMediaSourceEventListener {
    * @param bytesLoaded The number of bytes that were loaded prior to cancelation.
    */
   void onLoadCanceled(DataSpec dataSpec, int dataType, int trackType, Format trackFormat,
-      int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
-      long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded);
+                      int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
+                      long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded);
 
   /**
    * Called when a load error occurs.
@@ -137,9 +135,9 @@ public interface AdaptiveMediaSourceEventListener {
    * @param wasCanceled Whether the load was canceled as a result of the error.
    */
   void onLoadError(DataSpec dataSpec, int dataType, int trackType, Format trackFormat,
-      int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
-      long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded,
-      IOException error, boolean wasCanceled);
+                   int trackSelectionReason, Object trackSelectionData, long mediaStartTimeMs,
+                   long mediaEndTimeMs, long elapsedRealtimeMs, long loadDurationMs, long bytesLoaded,
+                   IOException error, boolean wasCanceled);
 
   /**
    * Called when data is removed from the back of a media buffer, typically so that it can be
@@ -165,7 +163,7 @@ public interface AdaptiveMediaSourceEventListener {
    * @param mediaTimeMs The media time at which the change occurred.
    */
   void onDownstreamFormatChanged(int trackType, Format trackFormat, int trackSelectionReason,
-      Object trackSelectionData, long mediaTimeMs);
+                                 Object trackSelectionData, long mediaTimeMs);
 
   /**
    * Dispatches events to a {@link AdaptiveMediaSourceEventListener}.
@@ -174,10 +172,21 @@ public interface AdaptiveMediaSourceEventListener {
 
     private final Handler handler;
     private final AdaptiveMediaSourceEventListener listener;
+    private final long mediaTimeOffsetMs;
 
     public EventDispatcher(Handler handler, AdaptiveMediaSourceEventListener listener) {
+      this(handler, listener, 0);
+    }
+
+    public EventDispatcher(Handler handler, AdaptiveMediaSourceEventListener listener,
+        long mediaTimeOffsetMs) {
       this.handler = listener != null ? Assertions.checkNotNull(handler) : null;
       this.listener = listener;
+      this.mediaTimeOffsetMs = mediaTimeOffsetMs;
+    }
+
+    public EventDispatcher copyWithMediaTimeOffsetMs(long mediaTimeOffsetMs) {
+      return new EventDispatcher(handler, listener, mediaTimeOffsetMs);
     }
 
     public void loadStarted(DataSpec dataSpec, int dataType, long elapsedRealtimeMs) {
@@ -193,8 +202,8 @@ public interface AdaptiveMediaSourceEventListener {
           @Override
           public void run() {
             listener.onLoadStarted(dataSpec, dataType, trackType, trackFormat, trackSelectionReason,
-                trackSelectionData, usToMs(mediaStartTimeUs), usToMs(mediaEndTimeUs),
-                elapsedRealtimeMs);
+                trackSelectionData, adjustMediaTime(mediaStartTimeUs),
+                adjustMediaTime(mediaEndTimeUs), elapsedRealtimeMs);
           }
         });
       }
@@ -215,8 +224,8 @@ public interface AdaptiveMediaSourceEventListener {
           @Override
           public void run() {
             listener.onLoadCompleted(dataSpec, dataType, trackType, trackFormat,
-                trackSelectionReason, trackSelectionData, usToMs(mediaStartTimeUs),
-                usToMs(mediaEndTimeUs), elapsedRealtimeMs, loadDurationMs, bytesLoaded);
+                trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs),
+                adjustMediaTime(mediaEndTimeUs), elapsedRealtimeMs, loadDurationMs, bytesLoaded);
           }
         });
       }
@@ -237,8 +246,8 @@ public interface AdaptiveMediaSourceEventListener {
           @Override
           public void run() {
             listener.onLoadCanceled(dataSpec, dataType, trackType, trackFormat,
-                trackSelectionReason, trackSelectionData, usToMs(mediaStartTimeUs),
-                usToMs(mediaEndTimeUs), elapsedRealtimeMs, loadDurationMs, bytesLoaded);
+                trackSelectionReason, trackSelectionData, adjustMediaTime(mediaStartTimeUs),
+                adjustMediaTime(mediaEndTimeUs), elapsedRealtimeMs, loadDurationMs, bytesLoaded);
           }
         });
       }
@@ -261,8 +270,9 @@ public interface AdaptiveMediaSourceEventListener {
           @Override
           public void run() {
             listener.onLoadError(dataSpec, dataType, trackType, trackFormat, trackSelectionReason,
-                trackSelectionData, usToMs(mediaStartTimeUs), usToMs(mediaEndTimeUs),
-                elapsedRealtimeMs, loadDurationMs, bytesLoaded, error, wasCanceled);
+                trackSelectionData, adjustMediaTime(mediaStartTimeUs),
+                adjustMediaTime(mediaEndTimeUs), elapsedRealtimeMs, loadDurationMs, bytesLoaded,
+                error, wasCanceled);
           }
         });
       }
@@ -274,8 +284,8 @@ public interface AdaptiveMediaSourceEventListener {
         handler.post(new Runnable()  {
           @Override
           public void run() {
-            listener.onUpstreamDiscarded(trackType, usToMs(mediaStartTimeUs),
-                usToMs(mediaEndTimeUs));
+            listener.onUpstreamDiscarded(trackType, adjustMediaTime(mediaStartTimeUs),
+                adjustMediaTime(mediaEndTimeUs));
           }
         });
       }
@@ -289,10 +299,15 @@ public interface AdaptiveMediaSourceEventListener {
           @Override
           public void run() {
             listener.onDownstreamFormatChanged(trackType, trackFormat, trackSelectionReason,
-                trackSelectionData, usToMs(mediaTimeUs));
+                trackSelectionData, adjustMediaTime(mediaTimeUs));
           }
         });
       }
+    }
+
+    private long adjustMediaTime(long mediaTimeUs) {
+      long mediaTimeMs = C.usToMs(mediaTimeUs);
+      return mediaTimeMs == C.TIME_UNSET ? C.TIME_UNSET : mediaTimeOffsetMs + mediaTimeMs;
     }
 
   }

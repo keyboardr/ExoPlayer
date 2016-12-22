@@ -1,9 +1,9 @@
 package com.keyboardr.bluejay.player;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.support.annotation.NonNull;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.keyboardr.bluejay.model.MediaItem;
@@ -19,7 +19,7 @@ public class MonitorPlayer extends AbsPlayer {
     private MediaItem currentItem;
 
     public MonitorPlayer(@NonNull Context context) {
-        super(context, AudioManager.STREAM_MUSIC);
+        super(context, C.STREAM_TYPE_MUSIC);
     }
 
 

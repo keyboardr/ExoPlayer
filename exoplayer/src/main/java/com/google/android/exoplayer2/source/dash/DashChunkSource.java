@@ -28,8 +28,9 @@ public interface DashChunkSource extends ChunkSource {
   interface Factory {
 
     DashChunkSource createDashChunkSource(LoaderErrorThrower manifestLoaderErrorThrower,
-        DashManifest manifest, int periodIndex, int adaptationSetIndex,
-        TrackSelection trackSelection, long elapsedRealtimeOffsetMs);
+                                          DashManifest manifest, int periodIndex, int
+                                              adaptationSetIndex,
+                                          TrackSelection trackSelection, long elapsedRealtimeOffsetMs);
 
   }
 

@@ -46,7 +46,7 @@ public interface VideoRendererEventListener {
    * @param initializationDurationMs The time taken to initialize the decoder in milliseconds.
    */
   void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs,
-      long initializationDurationMs);
+                                 long initializationDurationMs);
 
   /**
    * Called when the format of the media being consumed by the renderer changes.
@@ -69,7 +69,8 @@ public interface VideoRendererEventListener {
   void onDroppedFrames(int count, long elapsedMs);
 
   /**
-   * Called each time there's a change in the size of the video being rendered.
+   * Called before a frame is rendered for the first time since setting the surface, and each time
+   * there's a change in the size, rotation or pixel aspect ratio of the video being rendered.
    *
    * @param width The video width in pixels.
    * @param height The video height in pixels.
@@ -85,7 +86,7 @@ public interface VideoRendererEventListener {
    *     content.
    */
   void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees,
-      float pixelWidthHeightRatio);
+                          float pixelWidthHeightRatio);
 
   /**
    * Called when a frame is rendered for the first time since setting the surface, and when a frame

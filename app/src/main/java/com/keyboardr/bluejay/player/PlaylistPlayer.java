@@ -1,17 +1,19 @@
 package com.keyboardr.bluejay.player;
 
 import android.content.Context;
-import android.media.AudioManager;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.keyboardr.bluejay.model.MediaItem;
 
 import java.util.ArrayList;
@@ -34,7 +36,7 @@ public class PlaylistPlayer extends AbsPlayer {
     private PlaylistChangedListener playlistChangedListener;
 
     public PlaylistPlayer(@NonNull Context context) {
-        super(context, AudioManager.STREAM_ALARM);
+        super(context, C.STREAM_TYPE_ALARM);
         ExoPlayer.EventListener eventListener = new ExoPlayer.EventListener() {
             @Override
             public void onLoadingChanged(boolean isLoading) {
@@ -65,6 +67,10 @@ public class PlaylistPlayer extends AbsPlayer {
 
             @Override
             public void onTimelineChanged(Timeline timeline, Object manifest) {
+            }
+
+            @Override
+            public void onTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections) {
             }
 
             @Override
