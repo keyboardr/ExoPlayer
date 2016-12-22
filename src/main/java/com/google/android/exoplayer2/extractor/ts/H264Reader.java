@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.extractor.ExtractorOutput;
 import com.google.android.exoplayer2.extractor.TrackOutput;
+import com.google.android.exoplayer2.extractor.ts.TsPayloadReader.TrackIdGenerator;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.NalUnitUtil;
 import com.google.android.exoplayer2.util.NalUnitUtil.SpsData;
@@ -32,7 +33,7 @@ import java.util.List;
 /**
  * Parses a continuous H264 byte stream and extracts individual frames.
  */
-/* package */ final class H264Reader extends ElementaryStreamReader {
+/* package */ final class H264Reader implements ElementaryStreamReader {
 
   private static final int NAL_UNIT_TYPE_SEI = 6; // Supplemental enhancement information
   private static final int NAL_UNIT_TYPE_SPS = 7; // Sequence parameter set
@@ -86,7 +87,7 @@ import java.util.List;
   }
 
   @Override
-  public void init(ExtractorOutput extractorOutput, TrackIdGenerator idGenerator) {
+  public void createTracks(ExtractorOutput extractorOutput, TrackIdGenerator idGenerator) {
     output = extractorOutput.track(idGenerator.getNextId());
     sampleReader = new SampleReader(output, allowNonIdrKeyframes, detectAccessUnits);
     seiReader = new SeiReader(extractorOutput.track(idGenerator.getNextId()));
@@ -172,7 +173,7 @@ import java.util.List;
           List<byte[]> initializationData = new ArrayList<>();
           initializationData.add(Arrays.copyOf(sps.nalData, sps.nalLength));
           initializationData.add(Arrays.copyOf(pps.nalData, pps.nalLength));
-          NalUnitUtil.SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
+          SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
           NalUnitUtil.PpsData ppsData = NalUnitUtil.parsePpsNalUnit(pps.nalData, 3, pps.nalLength);
           output.format(Format.createVideoSampleFormat(null, MimeTypes.VIDEO_H264, null,
               Format.NO_VALUE, Format.NO_VALUE, spsData.width, spsData.height, Format.NO_VALUE,
@@ -184,7 +185,7 @@ import java.util.List;
           pps.reset();
         }
       } else if (sps.isCompleted()) {
-        NalUnitUtil.SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
+        SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
         sampleReader.putSps(spsData);
         sps.reset();
       } else if (pps.isCompleted()) {
@@ -217,7 +218,7 @@ import java.util.List;
     private final TrackOutput output;
     private final boolean allowNonIdrKeyframes;
     private final boolean detectAccessUnits;
-    private final SparseArray<NalUnitUtil.SpsData> sps;
+    private final SparseArray<SpsData> sps;
     private final SparseArray<NalUnitUtil.PpsData> pps;
     private final ParsableNalUnitBitArray bitArray;
 
@@ -256,7 +257,7 @@ import java.util.List;
       return detectAccessUnits;
     }
 
-    public void putSps(NalUnitUtil.SpsData spsData) {
+    public void putSps(SpsData spsData) {
       sps.append(spsData.seqParameterSetId, spsData);
     }
 
@@ -340,7 +341,7 @@ import java.util.List;
         return;
       }
       NalUnitUtil.PpsData ppsData = pps.get(picParameterSetId);
-      NalUnitUtil.SpsData spsData = sps.get(ppsData.seqParameterSetId);
+      SpsData spsData = sps.get(ppsData.seqParameterSetId);
       if (spsData.separateColorPlaneFlag) {
         if (!bitArray.canReadBits(2)) {
           return;

@@ -194,7 +194,7 @@ public final class FragmentedMp4Extractor implements Extractor {
   }
 
   @Override
-  public void seek(long position) {
+  public void seek(long position, long timeUs) {
     int trackCount = trackBundles.size();
     for (int i = 0; i < trackCount; i++) {
       trackBundles.valueAt(i).reset();
@@ -359,7 +359,7 @@ public final class FragmentedMp4Extractor implements Extractor {
     long duration = C.TIME_UNSET;
     int mvexChildrenSize = mvex.leafChildren.size();
     for (int i = 0; i < mvexChildrenSize; i++) {
-      Atom.LeafAtom atom = mvex.leafChildren.get(i);
+      LeafAtom atom = mvex.leafChildren.get(i);
       if (atom.type == Atom.TYPE_trex) {
         Pair<Integer, DefaultSampleValues> trexData = parseTrex(atom.data);
         defaultSampleValuesArray.put(trexData.first, trexData.second);
@@ -372,7 +372,7 @@ public final class FragmentedMp4Extractor implements Extractor {
     SparseArray<Track> tracks = new SparseArray<>();
     int moovContainerChildrenSize = moov.containerChildren.size();
     for (int i = 0; i < moovContainerChildrenSize; i++) {
-      Atom.ContainerAtom atom = moov.containerChildren.get(i);
+      ContainerAtom atom = moov.containerChildren.get(i);
       if (atom.type == Atom.TYPE_trak) {
         Track track = AtomParsers.parseTrak(atom, moov.getLeafAtomOfType(Atom.TYPE_mvhd), duration,
             drmInitData, false);
@@ -442,7 +442,7 @@ public final class FragmentedMp4Extractor implements Extractor {
       @Flags int flags, byte[] extendedTypeScratch) throws ParserException {
     int moofContainerChildrenSize = moof.containerChildren.size();
     for (int i = 0; i < moofContainerChildrenSize; i++) {
-      Atom.ContainerAtom child = moof.containerChildren.get(i);
+      ContainerAtom child = moof.containerChildren.get(i);
       // TODO: Support multiple traf boxes per track in a single moof.
       if (child.type == Atom.TYPE_traf) {
         parseTraf(child, trackBundleArray, flags, extendedTypeScratch);
@@ -1101,7 +1101,7 @@ public final class FragmentedMp4Extractor implements Extractor {
 
 
   /** Returns DrmInitData from leaf atoms. */
-  private static DrmInitData getDrmInitDataFromAtoms(List<Atom.LeafAtom> leafChildren) {
+  private static DrmInitData getDrmInitDataFromAtoms(List<LeafAtom> leafChildren) {
     ArrayList<SchemeData> schemeDatas = null;
     int leafChildrenSize = leafChildren.size();
     for (int i = 0; i < leafChildrenSize; i++) {
