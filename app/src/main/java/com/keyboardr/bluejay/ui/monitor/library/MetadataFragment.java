@@ -25,12 +25,10 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckedTextView;
 import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
-import com.keyboardr.bluejay.model.Shortlist;
 import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -98,13 +96,6 @@ public class MetadataFragment extends DialogFragment {
     }
   }
 
-  @NonNull
-  @Override
-  public Dialog onCreateDialog(Bundle savedInstanceState) {
-    Dialog dialog = super.onCreateDialog(savedInstanceState);
-    return dialog;
-  }
-
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
@@ -121,7 +112,13 @@ public class MetadataFragment extends DialogFragment {
     shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
     shortlistsView.setLayoutManager(new GridLayoutManager(getContext(), 3));
     // TODO: 12/2/2016 set span count based on width
-    shortlistsView.setAdapter(new ShortlistAdapter());
+    shortlistsView.setAdapter(new ShortlistAdapter<MetadataShortlistViewHolder>(shortlistManager) {
+
+      @Override
+      public MetadataShortlistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new MetadataShortlistViewHolder(parent);
+      }
+    });
 
     final View addShortlist = view.findViewById(R.id.add_shortlist);
     newShortlistText = (TextInputEditText) view.findViewById(R.id
@@ -194,59 +191,23 @@ public class MetadataFragment extends DialogFragment {
     LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(shortlistsChangedReceiver);
   }
 
-  private class ShortlistAdapter extends RecyclerView.Adapter<ShortlistViewHolder> {
+  private class MetadataShortlistViewHolder extends ShortlistViewHolder {
 
-    public ShortlistAdapter() {
-      setHasStableIds(true);
+    public MetadataShortlistViewHolder(ViewGroup parent) {
+      super(parent);
     }
 
     @Override
-    public ShortlistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-      return new ShortlistViewHolder(parent);
+    public boolean isChecked() {
+      return shortlistManager.isInShortlist(mediaItem, shortlist);
     }
 
     @Override
-    public void onBindViewHolder(ShortlistViewHolder holder, int position) {
-      holder.bindItem(shortlistManager.getShortlists().get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-      return shortlistManager.getShortlists().size();
-    }
-
-    @Override
-    public long getItemId(int position) {
-      return shortlistManager.getShortlists().get(position).getId();
-    }
-  }
-
-  private class ShortlistViewHolder extends RecyclerView.ViewHolder implements View
-      .OnClickListener {
-    private Shortlist shortlist;
-    private CheckedTextView checkableView;
-
-    public ShortlistViewHolder(ViewGroup parent) {
-      super(LayoutInflater.from(parent.getContext()).inflate(
-          android.R.layout.simple_list_item_multiple_choice, parent, false));
-      checkableView = (CheckedTextView) itemView.findViewById(android.R.id.text1);
-      checkableView.setOnClickListener(this);
-    }
-
-    public void bindItem(Shortlist shortlist) {
-      this.shortlist = shortlist;
-      checkableView.setText(shortlist.getName());
-      checkableView.setChecked(shortlistManager.isInShortlist(mediaItem, shortlist));
-    }
-
-    @Override
-    public void onClick(View view) {
-      if (checkableView.isChecked()) {
-        shortlistManager.remove(mediaItem, shortlist);
-        checkableView.setChecked(false);
-      } else {
+    public void setChecked(boolean checked) {
+      if (checked) {
         shortlistManager.add(mediaItem, shortlist);
-        checkableView.setChecked(true);
+      } else {
+        shortlistManager.remove(mediaItem, shortlist);
       }
     }
   }

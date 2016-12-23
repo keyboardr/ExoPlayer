@@ -51,7 +51,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @Override
     public Loader<List<MediaItem>> onCreateLoader(int i, Bundle bundle) {
       return new LibraryLoader(getContext(), bundle == null ? null : ((FilterInfo) bundle
-          .getParcelable(ARG_FILTER)));
+          .getParcelable(ARG_FILTER)), getShortlistManager());
     }
 
     @Override
