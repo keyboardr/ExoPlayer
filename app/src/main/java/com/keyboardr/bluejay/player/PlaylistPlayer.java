@@ -14,12 +14,15 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
+import com.keyboardr.bluejay.BuildConfig;
 import com.keyboardr.bluejay.model.MediaItem;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PlaylistPlayer extends AbsPlayer {
+
+  private static final boolean DEBUG_SHORT_SONGS = false;
 
   public interface PlaylistChangedListener {
     void onTrackAdded(int index);
@@ -50,7 +53,7 @@ public class PlaylistPlayer extends AbsPlayer {
           if (mediaItems.size() > currentIndex) {
             // More tracks in the queue. Continue iff continuePlayingOnDone is set.
             player.setPlayWhenReady(continuePlayingOnDone);
-            player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
+            prepareNextTrack(player);
           } else {
             // End of queue. Get ready for more tracks to be added.
             continuePlayingOnDone = false;
@@ -85,6 +88,14 @@ public class PlaylistPlayer extends AbsPlayer {
     ensurePlayer().addListener(eventListener);
   }
 
+  private void prepareNextTrack(SimpleExoPlayer player) {
+    MediaItem mediaItem = mediaItems.get(currentIndex).mediaItem;
+    player.prepare(getMediaSource(mediaItem));
+    if (BuildConfig.DEBUG && DEBUG_SHORT_SONGS) {
+      player.seekTo(mediaItem.getDuration() - 10000);
+    }
+  }
+
   public void addPlaylistChangedListener(@Nullable PlaylistChangedListener
                                              playlistChangedListener) {
     this.playlistChangedListener = playlistChangedListener;
@@ -95,7 +106,7 @@ public class PlaylistPlayer extends AbsPlayer {
     SimpleExoPlayer player = ensurePlayer();
     if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
-      player.prepare(getMediaSource(mediaItems.get(currentIndex).mediaItem));
+      prepareNextTrack(player);
     }
     if (playlistChangedListener != null) {
       playlistChangedListener.onTrackAdded(mediaItems.size() - 1);
