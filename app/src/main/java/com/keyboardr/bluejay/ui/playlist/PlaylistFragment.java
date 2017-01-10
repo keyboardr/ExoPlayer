@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,10 @@ public class PlaylistFragment extends Fragment {
     List<PlaylistPlayer.PlaylistItem> getPlaylist();
 
     int getCurrentTrackIndex();
+
+    void removeTrack(int index);
+
+    void moveTrack(int oldIndex, int newIndex);
 
   }
 
@@ -52,6 +57,55 @@ public class PlaylistFragment extends Fragment {
     recyclerView.setLayoutManager(layoutManager);
     recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager
         .getOrientation()));
+
+    ItemTouchHelper.SimpleCallback touchCallback = new ItemTouchHelper.SimpleCallback
+        (ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+      @Override
+      public int getDragDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder.getAdapterPosition() <= getCurrentTrackIndex()) {
+          return 0;
+        }
+        return super.getDragDirs(recyclerView, viewHolder);
+      }
+
+      @Override
+      public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if (viewHolder.getAdapterPosition() <= getCurrentTrackIndex()) {
+          return 0;
+        }
+        return super.getSwipeDirs(recyclerView, viewHolder);
+      }
+
+      @Override
+      public boolean canDropOver(RecyclerView recyclerView, RecyclerView.ViewHolder current,
+                                 RecyclerView.ViewHolder target) {
+        int currentTrackIndex = getCurrentTrackIndex();
+        return target.getAdapterPosition() > currentTrackIndex
+            && current.getAdapterPosition() > currentTrackIndex
+            && super.canDropOver(recyclerView, current, target);
+      }
+
+
+      @Override
+      public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
+                            RecyclerView.ViewHolder target) {
+        int oldIndex = viewHolder.getAdapterPosition();
+        int newIndex = target.getAdapterPosition();
+        getParent().moveTrack(oldIndex, newIndex);
+        playlistAdapter.notifyItemMoved(oldIndex, newIndex);
+        return false;
+      }
+
+      @Override
+      public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+        int removeIndex = viewHolder.getAdapterPosition();
+        getParent().removeTrack(removeIndex);
+        playlistAdapter.notifyItemRemoved(removeIndex);
+      }
+    };
+    ItemTouchHelper itemTouchHelper = new ItemTouchHelper(touchCallback);
+    itemTouchHelper.attachToRecyclerView(recyclerView);
   }
 
   private Holder getParent() {
@@ -88,8 +142,8 @@ public class PlaylistFragment extends Fragment {
     @Override
     public void onBindViewHolder(MediaViewHolder holder, int position) {
       holder.bindMediaItem(getParent().getPlaylist().get(position).mediaItem,
-          position == getParent().getCurrentTrackIndex(),
-          position >= getParent().getCurrentTrackIndex());
+          position == getCurrentTrackIndex(),
+          position >= getCurrentTrackIndex());
     }
 
     @Override
@@ -101,5 +155,9 @@ public class PlaylistFragment extends Fragment {
     public long getItemId(int position) {
       return getParent().getPlaylist().get(position).id;
     }
+  }
+
+  private int getCurrentTrackIndex() {
+    return getParent().getCurrentTrackIndex();
   }
 }

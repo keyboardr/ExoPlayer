@@ -96,6 +96,14 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
         player.addToQueue(mediaItem);
     }
 
+    public void removeItem(int removeIndex) {
+        player.removeItem(removeIndex);
+    }
+
+    public void moveItem(int oldIndex, int newIndex) {
+        player.moveItem(oldIndex, newIndex);
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();

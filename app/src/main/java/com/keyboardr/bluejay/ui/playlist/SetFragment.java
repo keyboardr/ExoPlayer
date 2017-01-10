@@ -91,6 +91,36 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder, Pl
     }
 
     @Override
+    public void removeTrack(int removeIndex) {
+        int size = getPlaylist().size();
+        if (removeIndex >= size) {
+            throw new IndexOutOfBoundsException("Attempted to remove index " + removeIndex
+                + " from playlist size " + size);
+        }
+        int currentTrackIndex = getCurrentTrackIndex();
+        if (removeIndex <= currentTrackIndex) {
+            throw new IndexOutOfBoundsException("Attempted to remove index " + removeIndex
+                + ", current track index: " + currentTrackIndex);
+        }
+        getPlaylistControlsFragment().removeItem(removeIndex);
+    }
+
+    @Override
+    public void moveTrack(int oldIndex, int newIndex) {
+        int size = getPlaylist().size();
+        if (oldIndex >= size || newIndex >= size) {
+            throw new IndexOutOfBoundsException("Attempted to move index " + oldIndex
+                + " to " + newIndex + " from playlist size " + size);
+        }
+        int currentTrackIndex = getCurrentTrackIndex();
+        if (oldIndex <= currentTrackIndex || newIndex <= currentTrackIndex) {
+            throw new IndexOutOfBoundsException("Attempted to move index " + oldIndex
+                + " to " + newIndex + ", current track index: " + currentTrackIndex);
+        }
+        getPlaylistControlsFragment().moveItem(oldIndex, newIndex);
+    }
+
+    @Override
     public void onMediaListLoaded() {
         getPlaylistFragment().onMediaListLoaded();
     }
