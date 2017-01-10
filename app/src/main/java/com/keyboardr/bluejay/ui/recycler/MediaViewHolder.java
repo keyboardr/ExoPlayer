@@ -4,10 +4,12 @@ import android.graphics.Typeface;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -36,6 +38,12 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
   }
 
+  public interface DragStartListener {
+    void startDrag(@NonNull MediaViewHolder viewHolder);
+
+    boolean canDrag(@NonNull MediaItem mediaItem, boolean selected, boolean enabled);
+  }
+
   private final TextView title;
   private final TextView artist;
   private final TextView duration;
@@ -45,9 +53,21 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   private MediaItem mediaItem;
 
   private final MediaViewDecorator mediaViewDecorator;
+  private final DragStartListener dragStartListener;
 
   public MediaViewHolder(@NonNull ViewGroup parent,
-                         @Nullable final MediaViewDecorator mediaViewDecorator) {
+                         @Nullable MediaViewDecorator mediaViewDecorator) {
+    this(parent, mediaViewDecorator, null);
+  }
+
+  public MediaViewHolder(@NonNull ViewGroup parent,
+                         @Nullable DragStartListener dragStartListener) {
+    this(parent, null, dragStartListener);
+  }
+
+  private MediaViewHolder(@NonNull ViewGroup parent,
+                          @Nullable final MediaViewDecorator mediaViewDecorator,
+                          @Nullable final DragStartListener dragStartListener) {
     super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_media,
         parent, false));
     title = (TextView) itemView.findViewById(R.id.media_item_title);
@@ -57,6 +77,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     menu = ((ImageView) itemView.findViewById(R.id.media_item_menu));
 
     this.mediaViewDecorator = mediaViewDecorator;
+    this.dragStartListener = dragStartListener;
 
     if (mediaViewDecorator != null) {
       itemView.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +101,19 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         }
       });
 
+    }
+
+    if (dragStartListener != null) {
+      icon.setOnTouchListener(new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View view, MotionEvent motionEvent) {
+          if (MotionEventCompat.getActionMasked(motionEvent) ==
+              MotionEvent.ACTION_DOWN) {
+            dragStartListener.startDrag(MediaViewHolder.this);
+          }
+          return false;
+        }
+      });
     }
   }
 
@@ -112,6 +146,11 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
       } else {
         menu.setVisibility(View.INVISIBLE);
       }
+    } else if (dragStartListener != null
+        && dragStartListener.canDrag(mediaItem, selected, enabled)) {
+      icon.setImageResource(R.drawable.ic_drag_handle);
+      icon.setVisibility(View.VISIBLE);
+      menu.setVisibility(View.GONE);
     } else {
       icon.setVisibility(View.GONE);
       menu.setVisibility(View.INVISIBLE);

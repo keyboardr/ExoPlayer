@@ -1,6 +1,7 @@
 package com.keyboardr.bluejay.ui.playlist;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
@@ -22,6 +24,7 @@ import java.util.List;
 public class PlaylistFragment extends Fragment {
 
   private RecyclerView recyclerView;
+  private ItemTouchHelper itemTouchHelper;
 
   public interface Holder {
 
@@ -60,6 +63,11 @@ public class PlaylistFragment extends Fragment {
 
     ItemTouchHelper.SimpleCallback touchCallback = new ItemTouchHelper.SimpleCallback
         (ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+
+      @Override
+      public boolean isLongPressDragEnabled() {
+        return false;
+      }
 
       @Override
       public int getDragDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
@@ -104,7 +112,7 @@ public class PlaylistFragment extends Fragment {
         playlistAdapter.notifyItemRemoved(removeIndex);
       }
     };
-    ItemTouchHelper itemTouchHelper = new ItemTouchHelper(touchCallback);
+    itemTouchHelper = new ItemTouchHelper(touchCallback);
     itemTouchHelper.attachToRecyclerView(recyclerView);
   }
 
@@ -136,7 +144,17 @@ public class PlaylistFragment extends Fragment {
 
     @Override
     public MediaViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-      return new MediaViewHolder(parent, null);
+      return new MediaViewHolder(parent, new MediaViewHolder.DragStartListener() {
+        @Override
+        public void startDrag(@NonNull MediaViewHolder viewHolder) {
+          itemTouchHelper.startDrag(viewHolder);
+        }
+
+        @Override
+        public boolean canDrag(@NonNull MediaItem mediaItem, boolean selected, boolean enabled) {
+          return !selected && enabled;
+        }
+      });
     }
 
     @Override
