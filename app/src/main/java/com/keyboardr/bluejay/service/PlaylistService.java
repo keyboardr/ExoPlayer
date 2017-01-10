@@ -159,6 +159,7 @@ public class PlaylistService extends Service implements PlaylistPlayer.PlaylistC
           break;
         case ServiceMessage.MOVE_ITEM:
           player.moveItem(msg.getData().getInt(DATA_INDEX), msg.getData().getInt(DATA_NEW_INDEX));
+          break;
         default:
           super.handleMessage(msg);
       }

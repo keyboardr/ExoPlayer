@@ -267,13 +267,22 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
     Message message = Message.obtain(null, ServiceMessage.MOVE_ITEM);
     message.getData().putInt(PlaylistService.DATA_INDEX, oldIndex);
     message.getData().putInt(PlaylistService.DATA_NEW_INDEX, newIndex);
-
+    try {
+      service.send(message);
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
   }
 
   public void removeItem(int removeIndex) {
     mediaList.remove(removeIndex);
     Message message = Message.obtain(null, ServiceMessage.REMOVE_ITEM);
     message.getData().putInt(PlaylistService.DATA_INDEX, removeIndex);
+    try {
+      service.send(message);
+    } catch (RemoteException e) {
+      e.printStackTrace();
+    }
   }
 
   public List<PlaylistPlayer.PlaylistItem> getMediaList() {
