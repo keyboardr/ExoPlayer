@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,7 +16,7 @@ import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
-import com.keyboardr.bluejay.player.PlaylistPlayer;
+import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -23,12 +24,12 @@ import java.util.List;
 
 public class PlaylistFragment extends Fragment {
 
-  private RecyclerView recyclerView;
   private ItemTouchHelper itemTouchHelper;
 
   public interface Holder {
 
-    List<PlaylistPlayer.PlaylistItem> getPlaylist();
+    @NonNull
+    List<MediaSessionCompat.QueueItem> getPlaylist();
 
     int getCurrentTrackIndex();
 
@@ -54,7 +55,7 @@ public class PlaylistFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
     switcher = ((ViewAnimator) view.findViewById(R.id.playlist_switcher));
     playlistAdapter = new PlaylistAdapter();
-    recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
+    RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
     LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
         LinearLayoutManager.VERTICAL, false);
     recyclerView.setLayoutManager(layoutManager);
@@ -114,6 +115,9 @@ public class PlaylistFragment extends Fragment {
     };
     itemTouchHelper = new ItemTouchHelper(touchCallback);
     itemTouchHelper.attachToRecyclerView(recyclerView);
+
+    recyclerView.setAdapter(playlistAdapter);
+    switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
   }
 
   private Holder getParent() {
@@ -121,19 +125,14 @@ public class PlaylistFragment extends Fragment {
     return FragmentUtils.getParent(this, Holder.class);
   }
 
-  public void onTrackAdded(int index) {
-    playlistAdapter.notifyItemInserted(index);
+  public void onQueueChanged() {
+    playlistAdapter.notifyDataSetChanged();
     switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
   }
 
   public void onIndexChanged(int oldIndex, int newIndex) {
     playlistAdapter.notifyItemChanged(oldIndex);
     playlistAdapter.notifyItemChanged(newIndex);
-  }
-
-  public void onMediaListLoaded() {
-    recyclerView.setAdapter(playlistAdapter);
-    switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
   }
 
   private class PlaylistAdapter extends RecyclerView.Adapter<MediaViewHolder> {
@@ -159,7 +158,8 @@ public class PlaylistFragment extends Fragment {
 
     @Override
     public void onBindViewHolder(MediaViewHolder holder, int position) {
-      holder.bindMediaItem(getParent().getPlaylist().get(position).mediaItem,
+      holder.bindMediaItem(
+          PlaylistServiceClient.mediaItemFromQueueItem(getParent().getPlaylist().get(position)),
           position == getCurrentTrackIndex(),
           position >= getCurrentTrackIndex());
     }
@@ -171,7 +171,7 @@ public class PlaylistFragment extends Fragment {
 
     @Override
     public long getItemId(int position) {
-      return getParent().getPlaylist().get(position).id;
+      return getParent().getPlaylist().get(position).getQueueId();
     }
   }
 

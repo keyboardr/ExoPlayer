@@ -14,57 +14,57 @@ import com.keyboardr.bluejay.model.MediaItem;
 
 public class MonitorPlayer extends AbsPlayer {
 
-    private static final String TAG = "MonitorPlayer";
+  private static final String TAG = "MonitorPlayer";
 
-    private MediaItem currentItem;
+  private MediaItem currentItem;
 
-    public MonitorPlayer(@NonNull Context context) {
-        super(context, C.STREAM_TYPE_MUSIC);
+  public MonitorPlayer(@NonNull Context context) {
+    super(context, C.STREAM_TYPE_MUSIC);
+  }
+
+
+  public void play(MediaItem mediaItem, boolean playWhenReady) {
+    SimpleExoPlayer player = ensurePlayer();
+    player.prepare(getMediaSource(mediaItem));
+    currentItem = mediaItem;
+    player.setPlayWhenReady(playWhenReady);
+  }
+
+  @SuppressWarnings("WeakerAccess")
+  public void resume() {
+    SimpleExoPlayer player = ensurePlayer();
+    if (player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
+      player.seekTo(0);
     }
+    player.setPlayWhenReady(true);
+  }
 
+  @SuppressWarnings("WeakerAccess")
+  public void pause() {
+    ensurePlayer().setPlayWhenReady(false);
+  }
 
-    public void play(MediaItem mediaItem, boolean playWhenReady) {
-        SimpleExoPlayer player = ensurePlayer();
-        player.prepare(getMediaSource(mediaItem));
-        currentItem = mediaItem;
-        player.setPlayWhenReady(playWhenReady);
+  @Override
+  public void togglePlayPause() {
+    if (isPaused() || isStopped()) {
+      resume();
+    } else {
+      pause();
     }
+  }
 
-    @SuppressWarnings("WeakerAccess")
-    public void resume() {
-        SimpleExoPlayer player = ensurePlayer();
-        if (player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
-            player.seekTo(0);
-        }
-        player.setPlayWhenReady(true);
-    }
+  @Override
+  public MediaItem getCurrentMediaItem() {
+    return currentItem;
+  }
 
-    @SuppressWarnings("WeakerAccess")
-    public void pause() {
-        ensurePlayer().setPlayWhenReady(false);
-    }
+  @SuppressWarnings("unused")
+  public void stop() {
+    ensurePlayer().stop();
+  }
 
-    @Override
-    public void togglePlayPause() {
-        if (isPaused() || isStopped()) {
-            resume();
-        } else {
-            pause();
-        }
-    }
-
-    @Override
-    public MediaItem getCurrentMediaItem() {
-        return currentItem;
-    }
-
-    @SuppressWarnings("unused")
-    public void stop() {
-        ensurePlayer().stop();
-    }
-
-    public void seekTo(long positionMs) {
-        ensurePlayer().seekTo(positionMs);
-    }
+  public void seekTo(long positionMs) {
+    ensurePlayer().seekTo(positionMs);
+  }
 
 }

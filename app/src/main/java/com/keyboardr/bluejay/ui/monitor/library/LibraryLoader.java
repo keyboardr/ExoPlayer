@@ -7,6 +7,7 @@ import android.os.CancellationSignal;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.os.OperationCanceledException;
 
@@ -67,6 +68,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
   }
 
+  @WorkerThread
   private List<MediaItem> processCursor(@Nullable Cursor cursor) {
     if (mCursor != null) {
       mCursor.close();
@@ -88,7 +90,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
               .setAlbumId(cursor.getLong(albumIdColumn))
               .setDuration(cursor.getLong(durationColumn))
               .setPath(cursor.getString(dataColumn))
-              .make(cursor.getLong(mediaIdColumn)));
+              .make(getContext(), cursor.getLong(mediaIdColumn)));
         } while (cursor.moveToNext());
       }
     }

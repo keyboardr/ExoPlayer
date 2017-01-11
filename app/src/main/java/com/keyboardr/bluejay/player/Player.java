@@ -45,6 +45,10 @@ public interface Player {
 
     void togglePlayPause();
 
+    void resume();
+
+    void pause();
+
     @Nullable
     MediaItem getCurrentMediaItem();
 

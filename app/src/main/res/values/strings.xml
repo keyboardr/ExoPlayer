@@ -16,6 +16,7 @@
     <string name="title_sort">Sort:</string>
     <string name="new_shortlist">New shortlist</string>
     <string name="shortlists_label">Shortlists:</string>
+    <string name="no_media_playing">No tracks playing</string>
 
     <string-array name="sort_methods">
         <item>ID</item>

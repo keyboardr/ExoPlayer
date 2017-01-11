@@ -22,10 +22,10 @@ import java.util.List;
 
 public class PlaylistPlayer extends AbsPlayer {
 
-  private static final boolean DEBUG_SHORT_SONGS = false;
+  private static final boolean DEBUG_SHORT_SONGS = true;
 
   public interface PlaylistChangedListener {
-    void onTrackAdded(int index);
+    void onQueueChanged();
 
     void onIndexChanged(int oldIndex, int newIndex);
   }
@@ -109,7 +109,7 @@ public class PlaylistPlayer extends AbsPlayer {
       prepareNextTrack(player);
     }
     if (playlistChangedListener != null) {
-      playlistChangedListener.onTrackAdded(mediaItems.size() - 1);
+      playlistChangedListener.onQueueChanged();
     }
     if (playbackListener != null) {
       playbackListener.onPlayStateChanged(this);
@@ -138,13 +138,24 @@ public class PlaylistPlayer extends AbsPlayer {
 
   @Override
   public void togglePlayPause() {
-    continuePlayingOnDone = !continuePlayingOnDone;
     if (continuePlayingOnDone) {
-      ensurePlayer().setPlayWhenReady(true);
+      pause();
     } else {
-      Toast.makeText(context, "Playback will stop at the end of the current track",
-          Toast.LENGTH_LONG).show();
+      resume();
     }
+  }
+
+  @Override
+  public void resume() {
+    continuePlayingOnDone = true;
+    ensurePlayer().setPlayWhenReady(true);
+  }
+
+  @Override
+  public void pause() {
+    continuePlayingOnDone = false;
+    Toast.makeText(context, "Playback will stop at the end of the current track",
+        Toast.LENGTH_LONG).show();
   }
 
   public boolean willContinuePlayingOnDone() {

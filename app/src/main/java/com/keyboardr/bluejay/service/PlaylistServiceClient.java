@@ -1,212 +1,146 @@
 package com.keyboardr.bluejay.service;
 
-import android.annotation.SuppressLint;
 import android.media.AudioDeviceInfo;
+import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.IBinder;
-import android.os.Message;
-import android.os.Messenger;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.os.RemoteException;
-import android.os.SystemClock;
-import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.media.MediaDescriptionCompat;
+import android.support.v4.media.MediaMetadataCompat;
+import android.support.v4.media.session.MediaControllerCompat;
+import android.support.v4.media.session.MediaSessionCompat;
+import android.support.v4.media.session.PlaybackStateCompat;
 
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
-import com.keyboardr.bluejay.service.PlaylistService.ServiceMessage;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
 
 
 /**
- * A client object for communicating with a {@link PlaylistService}
+ * A client object for communicating with a {@link PlaylistMediaService}
  */
 public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
     .PlaylistChangedListener {
 
-  @Retention(RetentionPolicy.SOURCE)
-  @IntDef({ClientMessage.TRACK_ADDED, ClientMessage.INDEX_CHANGED, ClientMessage.SET_MEDIA_LIST,
-      ClientMessage.SET_OUTPUT_ID, ClientMessage.SET_PLAYBACK_STATE})
-  @interface ClientMessage {
-    int TRACK_ADDED = 1;
-    int INDEX_CHANGED = 2;
-    int SET_MEDIA_LIST = 3;
-    int SET_OUTPUT_ID = 4;
-    int SET_PLAYBACK_STATE = 5;
-  }
-
-  static class PlaybackState implements Parcelable {
-    private final long lastPosition;
-    private final long lastPositionTime;
-    private final long duration;
-    @PlayState
-    private final int playState;
-    private final boolean continuePlayingOnDone;
-
-    PlaybackState(long lastPosition, long duration, int playState, boolean continuePlayingOnDone) {
-      this.lastPosition = lastPosition;
-      this.lastPositionTime = SystemClock.elapsedRealtime();
-      this.duration = duration;
-      this.playState = playState;
-      this.continuePlayingOnDone = continuePlayingOnDone;
-    }
-
-    @Override
-    public int describeContents() {
-      return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-      dest.writeLong(this.lastPosition);
-      dest.writeLong(this.lastPositionTime);
-      dest.writeLong(this.duration);
-      dest.writeInt(this.playState);
-      dest.writeByte(this.continuePlayingOnDone ? (byte) 1 : (byte) 0);
-    }
-
-    protected PlaybackState(Parcel in) {
-      this.lastPosition = in.readLong();
-      this.lastPositionTime = in.readLong();
-      this.duration = in.readLong();
-      //noinspection WrongConstant
-      this.playState = in.readInt();
-      this.continuePlayingOnDone = in.readByte() != 0;
-    }
-
-    public static final Parcelable.Creator<PlaybackState> CREATOR = new Parcelable
-        .Creator<PlaybackState>() {
-      @Override
-      public PlaybackState createFromParcel(Parcel source) {
-        return new PlaybackState(source);
-      }
-
-      @Override
-      public PlaybackState[] newArray(int size) {
-        return new PlaybackState[size];
-      }
-    };
-  }
-
-  static final String DATA_MEDIA_LIST = "mediaList";
-  static final String DATA_PLAYBACK_STATE = "playbackState";
-
-  @SuppressLint("HandlerLeak")
-  private class ClientHandler extends Handler {
-    @Override
-    public void handleMessage(Message msg) {
-      Bundle data = msg.getData();
-      data.setClassLoader(getClass().getClassLoader());
-      switch (msg.what) {
-        case ClientMessage.TRACK_ADDED:
-          onTrackAdded(msg.arg1);
-          break;
-        case ClientMessage.INDEX_CHANGED:
-          index = msg.arg2;
-          if (msg.arg1 != msg.arg2) {
-            onIndexChanged(msg.arg1, msg.arg2);
-          }
-          break;
-        case ClientMessage.SET_PLAYBACK_STATE:
-          //noinspection ConstantConditions
-          playbackState = data.getParcelable(DATA_PLAYBACK_STATE);
-          if (playbackListener != null) {
-            playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
-            playbackListener.onSeekComplete(PlaylistServiceClient.this);
-          }
-          break;
-        case ClientMessage.SET_MEDIA_LIST:
-          boolean wasNull = mediaList == null;
-          mediaList = data.getParcelableArrayList(DATA_MEDIA_LIST);
-          if (wasNull) {
-            onMediaListLoaded();
-          }
-          break;
-        case ClientMessage.SET_OUTPUT_ID:
-          outputId = msg.arg1;
-          break;
-        default:
-          super.handleMessage(msg);
-      }
-    }
-  }
-
-  private final Messenger messenger = new Messenger(new ClientHandler());
-  private final Messenger service;
-
-  private List<PlaylistPlayer.PlaylistItem> mediaList = null;
-  private int index;
-  private int outputId;
   @NonNull
-  private PlaybackState playbackState = new PlaybackState(0, 0, PlayState.UNKNOWN, false);
+  public static MediaItem mediaItemFromQueueItem(@NonNull MediaSessionCompat.QueueItem queueItem) {
+    MediaDescriptionCompat description = queueItem.getDescription();
+    Bundle extras = description.getExtras();
+    if (extras == null) {
+      throw new IllegalArgumentException("No extras to get");
+    }
+    Uri mediaUri = description.getMediaUri();
+    return MediaItem.build().setArtist(description.getSubtitle())
+        .setAlbumId(extras.getLong(PlaylistMediaService.EXTRA_ALBUM_ID))
+        .setTitle(description.getTitle())
+        .setPath(mediaUri == null ? null : mediaUri.getPath())
+        .setDuration(description.getExtras().getLong(PlaylistMediaService.EXTRA_DURATION))
+        .make(extras.getLong(PlaylistMediaService.EXTRA_MEDIA_ID),
+            description.getIconUri());
+  }
 
+  @NonNull
+  private final MediaControllerCompat mediaController;
   @Nullable
   protected PlaybackListener playbackListener;
 
-  public PlaylistServiceClient(IBinder binder) {
-    service = new Messenger(binder);
-    Message message = Message.obtain(null, ServiceMessage.REGISTER_CLIENT);
-    message.replyTo = messenger;
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
+  private final MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
+
+    @Override
+    public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
+      PlaylistServiceClient.this.onQueueChanged();
     }
+
+    @Override
+    public void onAudioInfoChanged(MediaControllerCompat.PlaybackInfo info) {
+      // TODO: 1/10/2017
+    }
+
+    @Override
+    public void onPlaybackStateChanged(PlaybackStateCompat state) {
+      if (playbackListener != null) {
+        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
+        playbackListener.onSeekComplete(PlaylistServiceClient.this);
+      }
+    }
+
+    @Override
+    public void onMetadataChanged(MediaMetadataCompat metadata) {
+      if (playbackListener != null) {
+        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
+        playbackListener.onSeekComplete(PlaylistServiceClient.this);
+      }
+    }
+
+    @Override
+    public void onSessionEvent(String event, Bundle extras) {
+      // TODO: 1/10/2017
+    }
+
+    @Override
+    public void onSessionDestroyed() {
+      if (playbackListener != null) {
+        playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
+      }
+    }
+  };
+
+  public PlaylistServiceClient(@NonNull MediaControllerCompat mediaController) {
+    this.mediaController = mediaController;
+    mediaController.registerCallback(callback);
   }
 
   @Override
   public void release() {
-    Message message = Message.obtain(null, ServiceMessage.UNREGISTER_CLIENT);
-    message.replyTo = messenger;
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+    mediaController.unregisterCallback(callback);
   }
 
   @Override
   public void setAudioOutput(@Nullable AudioDeviceInfo deviceInfo) {
-    Message message = Message.obtain(null, ServiceMessage.SET_AUDIO_OUTPUT);
-    message.arg1 = deviceInfo == null ? -1 : deviceInfo.getId();
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+    Bundle extras = new Bundle();
+    extras.putInt(PlaylistMediaService.EXTRA_OUTPUT_ID,
+        deviceInfo != null ? deviceInfo.getId() : -1);
+    mediaController.sendCommand(PlaylistMediaService.COMMAND_SET_OUTPUT, extras, null);
   }
 
   @Override
   public long getCurrentPosition() {
-    return playbackState.lastPosition +
-        (SystemClock.elapsedRealtime() - playbackState.lastPositionTime);
+    return mediaController.getPlaybackState().getPosition();
   }
 
   @Override
   public long getDuration() {
-    return playbackState.duration;
+    return mediaController.getPlaybackState().getBufferedPosition();
   }
 
   @Override
   public MediaItem getCurrentMediaItem() {
-    if (mediaList == null || mediaList.isEmpty() || index >= mediaList.size()) {
+    Bundle extras = mediaController.getPlaybackState().getExtras();
+    if (extras == null) {
       return null;
     }
-    return mediaList.get(index).mediaItem;
+    extras.setClassLoader(getClass().getClassLoader());
+    return extras.getParcelable(PlaylistMediaService.EXTRA_MEDIA_ITEM);
   }
 
   @Override
   @PlayState
   public int getPlayState() {
-    return playbackState.playState;
+    int state = mediaController.getPlaybackState().getState();
+    if (state == PlaybackStateCompat.STATE_PLAYING) {
+      return PlayState.PLAYING;
+    } else if (state == PlaybackStateCompat.STATE_PAUSED) {
+      return PlayState.PAUSED;
+    } else if (state == PlaybackStateCompat.STATE_BUFFERING) {
+      return PlayState.LOADING;
+    } else if (state == PlaybackStateCompat.STATE_STOPPED) {
+      return PlayState.STOPPED;
+    } else {
+      return PlayState.UNKNOWN;
+    }
   }
 
   @Override
@@ -230,21 +164,41 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   }
 
   public boolean willContinuePlayingOnDone() {
-    return playbackState.continuePlayingOnDone;
+    Bundle extras = mediaController.getPlaybackState().getExtras();
+    if (extras == null) {
+      return false;
+    }
+    extras.setClassLoader(getClass().getClassLoader());
+    return extras.getBoolean(PlaylistMediaService.EXTRA_CONTINUE_ON_DONE);
   }
 
   @Override
   public int getAudioOutputId() {
-    return outputId;
+    Bundle extras = mediaController.getExtras();
+    if (extras == null) {
+      return -1;
+    }
+    extras.setClassLoader(getClass().getClassLoader());
+    return extras.getInt(PlaylistMediaService.EXTRA_OUTPUT_ID, -1);
   }
 
   @Override
   public void togglePlayPause() {
-    try {
-      service.send(Message.obtain(null, ServiceMessage.TOGGLE_PLAY_PAUSE));
-    } catch (RemoteException e) {
-      e.printStackTrace();
+    if (willContinuePlayingOnDone()) {
+      pause();
+    } else {
+      resume();
     }
+  }
+
+  @Override
+  public void resume() {
+    mediaController.getTransportControls().play();
+  }
+
+  @Override
+  public void pause() {
+    mediaController.getTransportControls().pause();
   }
 
   @Override
@@ -253,45 +207,39 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {
-    Message message = Message.obtain(null, ServiceMessage.ADD_TO_QUEUE);
-    message.getData().putParcelable(PlaylistService.DATA_MEDIA_ITEM, mediaItem);
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+    Bundle params = new Bundle();
+    params.putParcelable(PlaylistMediaService.EXTRA_MEDIA_ITEM, mediaItem);
+    mediaController.sendCommand(PlaylistMediaService.COMMAND_ADD_TO_QUEUE, params, null);
   }
 
   public void moveItem(int oldIndex, int newIndex) {
-    mediaList.add(newIndex, mediaList.remove(oldIndex));
-    Message message = Message.obtain(null, ServiceMessage.MOVE_ITEM);
-    message.getData().putInt(PlaylistService.DATA_INDEX, oldIndex);
-    message.getData().putInt(PlaylistService.DATA_NEW_INDEX, newIndex);
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+    Bundle params = new Bundle();
+    params.putInt(PlaylistMediaService.EXTRA_INDEX, oldIndex);
+    params.putInt(PlaylistMediaService.EXTRA_NEW_INDEX, newIndex);
+    mediaController.sendCommand(PlaylistMediaService.COMMAND_MOVE, params, null);
   }
 
   public void removeItem(int removeIndex) {
-    mediaList.remove(removeIndex);
-    Message message = Message.obtain(null, ServiceMessage.REMOVE_ITEM);
-    message.getData().putInt(PlaylistService.DATA_INDEX, removeIndex);
-    try {
-      service.send(message);
-    } catch (RemoteException e) {
-      e.printStackTrace();
-    }
+    Bundle params = new Bundle();
+    params.putInt(PlaylistMediaService.EXTRA_INDEX, removeIndex);
+    params.putInt(PlaylistMediaService.EXTRA_NEW_INDEX, -1);
+    mediaController.sendCommand(PlaylistMediaService.COMMAND_MOVE, params, null);
   }
 
-  public List<PlaylistPlayer.PlaylistItem> getMediaList() {
-    return mediaList == null ? Collections.<PlaylistPlayer.PlaylistItem>emptyList() : mediaList;
+  public List<MediaSessionCompat.QueueItem> getQueue() {
+    List<MediaSessionCompat.QueueItem> queue = mediaController.getQueue();
+    if (queue == null) {
+      return Collections.emptyList();
+    }
+    return queue;
   }
 
   public int getCurrentMediaIndex() {
-    return index;
+    Bundle extras = mediaController.getPlaybackState().getExtras();
+    if (extras == null) {
+      return 0;
+    }
+    extras.setClassLoader(getClass().getClassLoader());
+    return extras.getInt(PlaylistMediaService.EXTRA_INDEX, 0);
   }
-
-  public abstract void onMediaListLoaded();
 }
