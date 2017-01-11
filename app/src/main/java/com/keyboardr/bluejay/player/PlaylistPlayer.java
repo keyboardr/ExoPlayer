@@ -118,10 +118,17 @@ public class PlaylistPlayer extends AbsPlayer {
 
   public void removeItem(int removeIndex) {
     mediaItems.remove(removeIndex);
+    if (playlistChangedListener != null) {
+      playlistChangedListener.onQueueChanged();
+    }
   }
 
   public void moveItem(int oldIndex, int newIndex) {
     mediaItems.add(newIndex, mediaItems.remove(oldIndex));
+    if (playlistChangedListener != null) {
+      playlistChangedListener.onQueueChanged();
+    }
+
   }
 
   @Override
