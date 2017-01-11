@@ -160,6 +160,9 @@ public class PlaylistPlayer extends AbsPlayer {
   public void resume() {
     continuePlayingOnDone = true;
     ensurePlayer().setPlayWhenReady(true);
+    if (playbackListener != null) {
+      playbackListener.onPlayStateChanged(this);
+    }
   }
 
   @Override
@@ -167,6 +170,9 @@ public class PlaylistPlayer extends AbsPlayer {
     continuePlayingOnDone = false;
     Toast.makeText(context, "Playback will stop at the end of the current track",
         Toast.LENGTH_LONG).show();
+    if (playbackListener != null) {
+      playbackListener.onPlayStateChanged(this);
+    }
   }
 
   public boolean willContinuePlayingOnDone() {
