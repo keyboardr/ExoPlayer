@@ -131,7 +131,9 @@ public class PlaylistFragment extends Fragment {
   }
 
   public void onIndexChanged(int oldIndex, int newIndex) {
-    playlistAdapter.notifyItemChanged(oldIndex);
+    if (oldIndex >= 0) {
+      playlistAdapter.notifyItemChanged(oldIndex);
+    }
     playlistAdapter.notifyItemChanged(newIndex);
   }
 

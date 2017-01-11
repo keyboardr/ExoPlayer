@@ -49,14 +49,11 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
 
   private final MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
 
+    private int lastKnownIndex = -1;
+
     @Override
     public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
       PlaylistServiceClient.this.onQueueChanged();
-    }
-
-    @Override
-    public void onAudioInfoChanged(MediaControllerCompat.PlaybackInfo info) {
-      // TODO: 1/10/2017
     }
 
     @Override
@@ -64,6 +61,11 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
       if (playbackListener != null) {
         playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
         playbackListener.onSeekComplete(PlaylistServiceClient.this);
+      }
+      int currentMediaIndex = getCurrentMediaIndex();
+      if (currentMediaIndex != lastKnownIndex) {
+        onIndexChanged(lastKnownIndex, currentMediaIndex);
+        lastKnownIndex = currentMediaIndex;
       }
     }
 
@@ -73,11 +75,6 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
         playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
         playbackListener.onSeekComplete(PlaylistServiceClient.this);
       }
-    }
-
-    @Override
-    public void onSessionEvent(String event, Bundle extras) {
-      // TODO: 1/10/2017
     }
 
     @Override
