@@ -136,7 +136,11 @@ public class PlaylistPlayer extends AbsPlayer {
     if (mediaItems.isEmpty()) {
       return null;
     }
-    return mediaItems.get(getCurrentMediaIndex()).mediaItem;
+    int currentMediaIndex = getCurrentMediaIndex();
+    if (currentMediaIndex >= mediaItems.size()) {
+      return null;
+    }
+    return mediaItems.get(currentMediaIndex).mediaItem;
   }
 
   public int getCurrentMediaIndex() {
