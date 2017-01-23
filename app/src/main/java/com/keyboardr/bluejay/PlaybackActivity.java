@@ -29,6 +29,9 @@ import com.keyboardr.bluejay.ui.playlist.SetFragment;
 public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.Holder,
     NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder {
 
+  @SuppressWarnings("PointlessBooleanExpression")
+  private static final boolean DEBUG_BYPASS_QUEUE_DEDUPE = BuildConfig.DEBUG && false;
+
   private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
   @Nullable
   private ViewSwitcher monitorPlaylistSwitcher;
@@ -154,6 +157,13 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   @Override
   public boolean canAddToQueue() {
     return mediaBrowser.isConnected();
+  }
+
+  @Override
+  public boolean queueContains(@NonNull MediaItem mediaItem) {
+    SetFragment setlistFragment = getSetlistFragment();
+    return !DEBUG_BYPASS_QUEUE_DEDUPE && setlistFragment != null
+        && setlistFragment.queueContains(mediaItem);
   }
 
   @Override

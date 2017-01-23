@@ -307,6 +307,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
           .setSubtitle(playlistItem.mediaItem.artist)
           .setIconUri(playlistItem.mediaItem.thumbnailUri)
           .setMediaUri(playlistItem.mediaItem.toUri())
+          .setMediaId(playlistItem.mediaItem.getTransientId() + "")
           .setExtras(extras).build();
       MediaSessionCompat.QueueItem queueItem = new MediaSessionCompat.QueueItem(description,
           playlistItem.id);

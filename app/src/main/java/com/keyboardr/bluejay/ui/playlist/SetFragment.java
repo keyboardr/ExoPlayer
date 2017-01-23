@@ -26,7 +26,6 @@ import java.util.List;
 
 public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     PlaylistControlsFragment.Holder {
-
   public interface Holder {
     void endSet();
   }
@@ -147,6 +146,17 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
         return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+
+  public boolean queueContains(MediaItem mediaItem) {
+    for (MediaSessionCompat.QueueItem queueItem : getPlaylist()) {
+      if (Long.valueOf(queueItem.getDescription().getMediaId()).equals(
+          mediaItem.getTransientId())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void endSetConfirmed() {

@@ -20,6 +20,11 @@
     <string name="monitor">Monitor</string>
     <string name="playlist">Playlist</string>
     <string name="filter">Filter</string>
+    <string name="done">Done</string>
+    <string name="confirm_add_title">Track already in setlist</string>
+    <string name="confirm_add_message">Are you sure you want to add %s to the setlist
+        again?</string>
+    <string name="add_track">Add track</string>
 
     <string-array name="sort_methods">
         <item>ID</item>

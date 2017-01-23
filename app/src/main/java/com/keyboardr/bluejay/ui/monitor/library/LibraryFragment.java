@@ -1,13 +1,17 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
@@ -44,6 +48,8 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     boolean canAddToQueue();
 
     void addToQueue(@NonNull MediaItem mediaItem);
+
+    boolean queueContains(@NonNull MediaItem mediaItem);
   }
 
   private static final int SWITCHER_LOADING = 0;
@@ -90,49 +96,11 @@ public class LibraryFragment extends android.support.v4.app.Fragment
 
     @Override
     public void onDecoratorSelected(@NonNull MediaItem mediaItem, @NonNull View view) {
-      getParent().addToQueue(mediaItem);
-      BottomNavHolder bottomNavHolder = FragmentUtils.getParent(LibraryFragment.this,
-          BottomNavHolder.class);
-      if (bottomNavHolder == null) {
-        return;
+      if (getParent().queueContains(mediaItem)) {
+        ConfirmAddDialogFragment.show(LibraryFragment.this, mediaItem);
+      } else {
+        doAddToQueue(mediaItem, view);
       }
-      View playlistTabView = bottomNavHolder.getPlaylistTabView();
-      if (playlistTabView == null) {
-        return;
-      }
-      final ViewGroupOverlay overlay = ((ViewGroup) playlistTabView.getParent().getParent())
-          .getOverlay();
-      final ImageView albumArt = (ImageView) view.findViewById(R.id.media_item_album_art);
-      if (albumArt == null) {
-        return;
-      }
-      final ViewGroup originalParent = (ViewGroup) albumArt.getParent();
-      final ViewGroup.LayoutParams originalLayoutParams = albumArt.getLayoutParams();
-      overlay.add(albumArt);
-
-      int[] albumArtLocation = new int[2];
-      int[] tabLocation = new int[2];
-      albumArt.getLocationOnScreen(albumArtLocation);
-      playlistTabView.getLocationOnScreen(tabLocation);
-
-      int xOffset = tabLocation[0] - albumArtLocation[0] + (playlistTabView.getWidth() / 2)
-          - albumArt.getWidth();
-      int yOffset = tabLocation[1] - albumArtLocation[1] - (playlistTabView.getHeight() / 2)
-          - albumArt.getHeight();
-      int duration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
-      albumArt.animate().setDuration(duration).translationX(xOffset).translationY(yOffset)
-          .scaleX(0).scaleY(0).setInterpolator(new AccelerateDecelerateInterpolator())
-          .withEndAction(new Runnable() {
-            @Override
-            public void run() {
-              overlay.remove(albumArt);
-              albumArt.setTranslationX(0);
-              albumArt.setTranslationY(0);
-              albumArt.setScaleX(1);
-              albumArt.setScaleY(1);
-              originalParent.addView(albumArt, originalLayoutParams);
-            }
-          });
     }
 
     @Override
@@ -246,5 +214,94 @@ public class LibraryFragment extends android.support.v4.app.Fragment
       return true;
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  private void doAddToQueue(@NonNull MediaItem mediaItem, @Nullable View view) {
+    getParent().addToQueue(mediaItem);
+    if (view == null) {
+      return;
+    }
+    BottomNavHolder bottomNavHolder = FragmentUtils.getParent(LibraryFragment.this,
+        BottomNavHolder.class);
+    if (bottomNavHolder == null) {
+      return;
+    }
+    View playlistTabView = bottomNavHolder.getPlaylistTabView();
+    if (playlistTabView == null) {
+      return;
+    }
+    final ViewGroupOverlay overlay = ((ViewGroup) playlistTabView.getParent().getParent())
+        .getOverlay();
+    final ImageView albumArt = (ImageView) view.findViewById(R.id.media_item_album_art);
+    if (albumArt == null) {
+      return;
+    }
+    final ViewGroup originalParent = (ViewGroup) albumArt.getParent();
+    final ViewGroup.LayoutParams originalLayoutParams = albumArt.getLayoutParams();
+    overlay.add(albumArt);
+
+    int[] albumArtLocation = new int[2];
+    int[] tabLocation = new int[2];
+    albumArt.getLocationOnScreen(albumArtLocation);
+    playlistTabView.getLocationOnScreen(tabLocation);
+
+    int xOffset = tabLocation[0] - albumArtLocation[0] + (playlistTabView.getWidth() / 2)
+        - albumArt.getWidth();
+    int yOffset = tabLocation[1] - albumArtLocation[1] - (playlistTabView.getHeight() / 2)
+        - albumArt.getHeight();
+    int duration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
+    albumArt.animate().setDuration(duration).translationX(xOffset).translationY(yOffset)
+        .scaleX(0).scaleY(0).setInterpolator(new AccelerateDecelerateInterpolator())
+        .withEndAction(new Runnable() {
+          @Override
+          public void run() {
+            overlay.remove(albumArt);
+            albumArt.setTranslationX(0);
+            albumArt.setTranslationY(0);
+            albumArt.setScaleX(1);
+            albumArt.setScaleY(1);
+            originalParent.addView(albumArt, originalLayoutParams);
+          }
+        });
+  }
+
+  public static class ConfirmAddDialogFragment extends DialogFragment {
+    private static final String ARG_MEDIA_ITEM = "mediaItem";
+
+    public static ConfirmAddDialogFragment show(@NonNull LibraryFragment parent,
+                                                @NonNull MediaItem mediaItem) {
+      ConfirmAddDialogFragment fragment = new ConfirmAddDialogFragment();
+      Bundle args = new Bundle();
+      args.putParcelable(ARG_MEDIA_ITEM, mediaItem);
+      fragment.setArguments(args);
+      fragment.show(parent.getChildFragmentManager(), null);
+      return fragment;
+    }
+
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+      final MediaItem mediaItem = getArguments().getParcelable(ARG_MEDIA_ITEM);
+      builder.setTitle(R.string.confirm_add_title);
+      //noinspection ConstantConditions
+      builder.setMessage(builder.getContext().getString(R.string.confirm_add_message,
+          mediaItem.title));
+      builder.setPositiveButton(R.string.add_track, new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+          FragmentUtils.getParentChecked(ConfirmAddDialogFragment.this, LibraryFragment.class)
+              .doAddToQueue(mediaItem, null);
+          dialogInterface.dismiss();
+        }
+      });
+      builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+          dialogInterface.cancel();
+        }
+      });
+      return builder.create();
+    }
   }
 }

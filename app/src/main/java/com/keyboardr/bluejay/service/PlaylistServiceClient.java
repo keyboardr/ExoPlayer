@@ -223,6 +223,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
     mediaController.sendCommand(PlaylistMediaService.COMMAND_MOVE, params, null);
   }
 
+  @NonNull
   public List<MediaSessionCompat.QueueItem> getQueue() {
     List<MediaSessionCompat.QueueItem> queue = mediaController.getQueue();
     if (queue == null) {

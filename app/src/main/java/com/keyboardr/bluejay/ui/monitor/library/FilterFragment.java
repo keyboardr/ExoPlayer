@@ -74,7 +74,7 @@ public class FilterFragment extends DialogFragment {
   @Override
   public Dialog onCreateDialog(Bundle savedInstanceState) {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-    builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+    builder.setPositiveButton(R.string.done, new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialogInterface, int i) {
         dialogInterface.dismiss();
