@@ -17,14 +17,15 @@
         android:id="@+id/media_item_album_art"
         android:layout_width="36dp"
         android:layout_height="36dp"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:src="@drawable/album_art_empty"/>
+        android:src="@drawable/album_art_empty"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/media_item_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItem"
         app:layout_constraintEnd_toStartOf="@+id/media_item_icon"

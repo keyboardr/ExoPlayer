@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.util.MathUtil;
@@ -46,6 +47,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   private final TextView subText;
   private final ImageView icon;
   private final ImageView menu;
+  private final ImageView albumArt;
 
   private MediaItem mediaItem;
 
@@ -69,8 +71,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         parent, false));
     title = (TextView) itemView.findViewById(R.id.media_item_title);
     subText = (TextView) itemView.findViewById(R.id.media_item_subtext);
-    icon = ((ImageView) itemView.findViewById(R.id.media_item_icon));
-    menu = ((ImageView) itemView.findViewById(R.id.media_item_menu));
+    icon = (ImageView) itemView.findViewById(R.id.media_item_icon);
+    menu = (ImageView) itemView.findViewById(R.id.media_item_menu);
+    albumArt = (ImageView) itemView.findViewById(R.id.media_item_album_art);
 
     this.mediaViewDecorator = mediaViewDecorator;
     this.dragStartListener = dragStartListener;
@@ -120,6 +123,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     CharSequence subtext = TextUtils.concat(mediaItem.artist, " - ",
         MathUtil.getSongDuration(mediaItem.getDuration()));
     subText.setText(subtext);
+
+    Glide.with(albumArt.getContext()).load(mediaItem.thumbnailUri).crossFade()
+        .fallback(R.drawable.album_art_empty).into(albumArt);
 
     if (dragStartListener == null) {
       if (mediaViewDecorator != null) {

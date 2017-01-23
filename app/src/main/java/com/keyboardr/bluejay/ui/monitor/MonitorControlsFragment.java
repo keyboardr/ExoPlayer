@@ -101,7 +101,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
       if (mediaItem == null) {
         return null;
       }
-      return mediaItem.getAlbumArtAsIcon(getContext());
+      return mediaItem.getAlbumArt(getContext());
     }
   }
 }

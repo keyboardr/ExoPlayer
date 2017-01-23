@@ -79,7 +79,7 @@ public class MediaItem implements Parcelable {
 
   @WorkerThread
   @NonNull
-  public Icon getAlbumArtAsIcon(@NonNull Context context) {
+  public Icon getAlbumArt(@NonNull Context context) {
     if (thumbnailUri != null) {
       try {
         return Icon.createWithBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver()
