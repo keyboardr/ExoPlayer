@@ -111,9 +111,6 @@ public class PlaylistPlayer extends AbsPlayer {
     if (playlistChangedListener != null) {
       playlistChangedListener.onQueueChanged();
     }
-    if (playbackListener != null) {
-      playbackListener.onPlayStateChanged(this);
-    }
   }
 
   public void removeItem(int removeIndex) {

@@ -17,12 +17,24 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
   }
 
   @Override
+  protected void attachPlayer() {
+    super.attachPlayer();
+    playPause.setImageResource(R.drawable.asl_none_single_continuous);
+  }
+
+  @Override
   protected void updatePlayPauseButton() {
-    if (player.isPaused() || player.isStopped()) {
-      playPause.setImageResource(R.drawable.ic_play_arrow);
+    boolean activated = player.isPlaying() || player.willContinuePlayingOnDone();
+    if (activated) {
+      playPause.setActivated(true);
+      playPause.setImageState(
+          new int[]{(player.willContinuePlayingOnDone() ? 1 : -1) * R.attr.state_continuous},
+          true);
     } else {
-      playPause.setImageResource(player.willContinuePlayingOnDone()
-          ? R.drawable.ic_play_circle_filled : R.drawable.ic_play_circle_outline);
+      playPause.setActivated(false);
+      playPause.setImageState(
+          new int[]{R.attr.state_continuous},
+          true);
     }
   }
 

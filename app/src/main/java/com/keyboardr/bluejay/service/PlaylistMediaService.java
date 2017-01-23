@@ -123,6 +123,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
   private MediaSessionCompat mediaSession;
   private PlaylistPlayer player;
+  private PlaybackStateCompat lastPlaybackState;
   private BroadcastReceiver isAliveReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -266,8 +267,41 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     extras.putBoolean(EXTRA_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
     extras.putInt(EXTRA_INDEX, player.getCurrentMediaIndex());
     stateBuilder.setExtras(extras);
-    mediaSession.setPlaybackState(stateBuilder.build());
+    PlaybackStateCompat playbackState = stateBuilder.build();
+    if (!isNewPlaybackState(playbackState)) {
+      return;
+    }
+    lastPlaybackState = playbackState;
+    mediaSession.setPlaybackState(playbackState);
 
+  }
+
+  private boolean isNewPlaybackState(PlaybackStateCompat playbackState) {
+    if (lastPlaybackState == null) {
+      return true;
+    }
+    if (lastPlaybackState.getState() != playbackState.getState()) {
+      return true;
+    }
+    if (lastPlaybackState.getBufferedPosition() != playbackState.getBufferedPosition()) {
+      return true;
+    }
+    if (lastPlaybackState.getActions() != playbackState.getActions()) {
+      return true;
+    }
+    if (lastPlaybackState.getActiveQueueItemId() != playbackState.getActiveQueueItemId()) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)
+        != playbackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getInt(EXTRA_INDEX)
+        != playbackState.getExtras().getInt(EXTRA_INDEX)) {
+      return true;
+    }
+
+    return !playbackState.equals(lastPlaybackState);
   }
 
   private void updateMetadata() {

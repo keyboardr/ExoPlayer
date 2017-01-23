@@ -76,7 +76,6 @@ public abstract class AbsPlayer implements Player {
           manifest + "]");
       if (playbackListener != null) {
         playbackListener.onPlayStateChanged(AbsPlayer.this);
-        playbackListener.onSeekComplete(AbsPlayer.this);
       }
     }
 
@@ -98,7 +97,6 @@ public abstract class AbsPlayer implements Player {
     public void onPositionDiscontinuity() {
       Log.d(TAG, "onPositionDiscontinuity() called");
       if (playbackListener != null) {
-        playbackListener.onPlayStateChanged(AbsPlayer.this);
         playbackListener.onSeekComplete(AbsPlayer.this);
       }
     }

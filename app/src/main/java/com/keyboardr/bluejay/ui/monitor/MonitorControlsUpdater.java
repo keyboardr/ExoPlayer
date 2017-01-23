@@ -12,48 +12,48 @@ import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 
 public class MonitorControlsUpdater extends PlayerControlsUpdater<MonitorPlayer> {
 
-    public MonitorControlsUpdater(@NonNull View view, @NonNull MonitorPlayer player,
-                                  @NonNull LoaderManager loaderManager,
-                                  @Nullable OnAlbumArtListener albumArtListener) {
-        super(view, player, loaderManager, albumArtListener);
-    }
+  public MonitorControlsUpdater(@NonNull View view, @NonNull MonitorPlayer player,
+                                @NonNull LoaderManager loaderManager,
+                                @Nullable OnAlbumArtListener albumArtListener) {
+    super(view, player, loaderManager, albumArtListener);
+  }
 
-    @Override
-    protected void attachPlayer() {
-        super.attachPlayer();
-        if (seekBar instanceof SeekBar) {
-            ((SeekBar) seekBar).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-                @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser && player.getDuration() > 0) {
-                        player.seekTo((int) (((float) progress) * ((float) player.getDuration())
-                                / (float) seekBar.getMax()));
-                    }
-                }
-
-                @Override
-                public void onStartTrackingTouch(SeekBar seekBar) {
-
-                }
-
-                @Override
-                public void onStopTrackingTouch(SeekBar seekBar) {
-
-                }
-            });
+  @Override
+  protected void attachPlayer() {
+    super.attachPlayer();
+    if (seekBar instanceof SeekBar) {
+      ((SeekBar) seekBar).setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+          if (fromUser && player.getDuration() > 0) {
+            player.seekTo((int) (((float) progress) * ((float) player.getDuration())
+                                     / (float) seekBar.getMax()));
+          }
         }
-    }
 
-    @Override
-    protected void updatePlayPauseButton() {
-        playPause.setImageResource(player.isPlaying() ?
-                R.drawable.ic_pause : R.drawable.ic_play_arrow);
-    }
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
 
-    @Override
-    protected void onPlayClicked() {
-        if (player.getCurrentMediaItem() != null) {
-            player.togglePlayPause();
         }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
+        }
+      });
     }
+    playPause.setImageResource(R.drawable.asl_play_pause);
+  }
+
+  @Override
+  protected void updatePlayPauseButton() {
+    playPause.setActivated(player.isPlaying());
+  }
+
+  @Override
+  protected void onPlayClicked() {
+    if (player.getCurrentMediaItem() != null) {
+      player.togglePlayPause();
+    }
+  }
 }

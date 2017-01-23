@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/single"
+        android:drawable="@drawable/ic_play_arrow_single"
+        android:state_activated="true"
+        app:state_continuous="false"/>
+
+    <item
+        android:id="@+id/continuous"
+        android:drawable="@drawable/ic_play_arrow_continuous"
+        android:state_activated="true"
+        app:state_continuous="true"/>
+    <item
+        android:id="@+id/none"
+        android:drawable="@drawable/ic_play_arrow"/>
+
+    <transition
+        android:drawable="@drawable/avd_none_to_single"
+        android:fromId="@id/none"
+        android:toId="@id/single"/>
+
+    <transition
+        android:drawable="@drawable/avd_none_to_continuous"
+        android:fromId="@id/none"
+        android:toId="@id/continuous"/>
+
+    <transition
+        android:drawable="@drawable/avd_single_to_continuous"
+        android:fromId="@id/single"
+        android:toId="@id/continuous"/>
+    <transition
+        android:drawable="@drawable/avd_single_to_none"
+        android:fromId="@id/single"
+        android:toId="@id/none"/>
+
+    <transition
+        android:drawable="@drawable/avd_continuous_to_single"
+        android:fromId="@id/continuous"
+        android:toId="@id/single"/>
+    <transition
+        android:drawable="@drawable/avd_continuous_to_none"
+        android:fromId="@id/continuous"
+        android:toId="@id/none"/>
+
+
+</animated-selector>
