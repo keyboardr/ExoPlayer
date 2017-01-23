@@ -4,13 +4,13 @@
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
                                              android:layout_height="wrap_content"
+                                             android:animateLayoutChanges="true"
                                              android:background="@drawable/bg_media_item"
                                              android:elevation="2dp"
                                              android:paddingBottom="16dp"
                                              android:paddingEnd="0dp"
                                              android:paddingStart="24dp"
                                              android:paddingTop="16dp"
-                                             android:animateLayoutChanges="true"
                                              android:stateListAnimator="@animator/card_elevation_selector">
 
     <ImageView
@@ -22,50 +22,29 @@
 
     <TextView
         android:id="@+id/media_item_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItem"
+        app:layout_constraintEnd_toStartOf="@+id/media_item_icon"
         app:layout_constraintStart_toEndOf="@id/media_item_album_art"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_goneMarginStart="0dp"
         tools:text="Song Name"/>
 
     <TextView
-        android:id="@+id/media_item_artist"
-        android:layout_width="wrap_content"
+        android:id="@+id/media_item_subtext"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
         android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItemSecondary"
         android:textColor="?android:textColorSecondary"
+        app:layout_constraintEnd_toStartOf="@+id/media_item_icon"
         app:layout_constraintStart_toStartOf="@id/media_item_title"
         app:layout_constraintTop_toBottomOf="@+id/media_item_title"
-        tools:text="Song Artist"/>
-
-    <TextView
-        android:id="@+id/media_item_divider"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:duplicateParentState="true"
-        android:text=" - "
-        android:textAppearance="?android:textAppearanceListItemSecondary"
-        android:textColor="?android:textColorSecondary"
-        app:layout_constraintLeft_toRightOf="@+id/media_item_artist"
-        app:layout_constraintTop_toTopOf="@+id/media_item_artist"
-        tools:ignore="HardcodedText"/>
-
-    <TextView
-        android:id="@+id/media_item_duration"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:duplicateParentState="true"
-        android:textAppearance="?android:textAppearanceListItemSecondary"
-        android:textColor="?android:textColorSecondary"
-        app:layout_constraintLeft_toRightOf="@+id/media_item_divider"
-        app:layout_constraintTop_toTopOf="@+id/media_item_divider"
-        tools:text="3:15"/>
-
+        tools:text="Song Artist - 3:25"/>
 
     <ImageView
         android:id="@+id/media_item_icon"

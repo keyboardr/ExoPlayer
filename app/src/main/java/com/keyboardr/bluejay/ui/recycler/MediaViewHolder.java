@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -42,8 +43,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   }
 
   private final TextView title;
-  private final TextView artist;
-  private final TextView duration;
+  private final TextView subText;
   private final ImageView icon;
   private final ImageView menu;
 
@@ -68,8 +68,7 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_media,
         parent, false));
     title = (TextView) itemView.findViewById(R.id.media_item_title);
-    artist = (TextView) itemView.findViewById(R.id.media_item_artist);
-    duration = (TextView) itemView.findViewById(R.id.media_item_duration);
+    subText = (TextView) itemView.findViewById(R.id.media_item_subtext);
     icon = ((ImageView) itemView.findViewById(R.id.media_item_icon));
     menu = ((ImageView) itemView.findViewById(R.id.media_item_menu));
 
@@ -118,9 +117,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     this.mediaItem = mediaItem;
 
     title.setText(mediaItem.title);
-    artist.setText(mediaItem.artist);
-
-    duration.setText(MathUtil.getSongDuration(mediaItem.getDuration()));
+    CharSequence subtext = TextUtils.concat(mediaItem.artist, " - ",
+        MathUtil.getSongDuration(mediaItem.getDuration()));
+    subText.setText(subtext);
 
     if (dragStartListener == null) {
       if (mediaViewDecorator != null) {
