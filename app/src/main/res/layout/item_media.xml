@@ -4,6 +4,7 @@
                                              xmlns:tools="http://schemas.android.com/tools"
                                              android:layout_width="match_parent"
                                              android:layout_height="wrap_content"
+                                             android:animateLayoutChanges="true"
                                              android:background="@drawable/bg_media_item"
                                              android:elevation="2dp"
                                              android:paddingBottom="16dp"
@@ -17,23 +18,23 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:src="@drawable/album_art_empty"
-        app:layout_constraintStart_toStartOf="@id/media_item_album_art_placeholder"
-        app:layout_constraintEnd_toEndOf="@id/media_item_album_art_placeholder"
-        app:layout_constraintTop_toTopOf="@id/media_item_album_art_placeholder"
-        app:layout_constraintBottom_toBottomOf="@id/media_item_album_art_placeholder"/>
+        app:layout_constraintBottom_toBottomOf="@+id/media_item_album_art_placeholder"
+        app:layout_constraintEnd_toEndOf="@+id/media_item_album_art_placeholder"
+        app:layout_constraintStart_toStartOf="@+id/media_item_album_art_placeholder"
+        app:layout_constraintTop_toTopOf="@+id/media_item_album_art_placeholder"/>
 
     <android.support.v4.widget.Space
         android:id="@+id/media_item_album_art_placeholder"
-        android:layout_height="36dp"
         android:layout_width="36dp"
+        android:layout_height="36dp"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <TextView
         android:id="@+id/media_item_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
         android:duplicateParentState="true"
         android:textAppearance="?android:textAppearanceListItem"
         app:layout_constraintEnd_toStartOf="@+id/media_item_icon"

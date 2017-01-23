@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.transition.TransitionManager;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -118,7 +117,6 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   }
 
   public void bindMediaItem(@NonNull MediaItem mediaItem, boolean activated, boolean enabled) {
-    TransitionManager.beginDelayedTransition((ViewGroup) itemView);
     this.mediaItem = mediaItem;
 
     title.setText(mediaItem.title);
