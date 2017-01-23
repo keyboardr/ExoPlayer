@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:colorBackgroundFloating"
-        android:elevation="8dp"
+        android:elevation="@dimen/controls_elevation"
         android:paddingBottom="24dp"
         android:paddingLeft="24dp"
         android:paddingRight="24dp"
