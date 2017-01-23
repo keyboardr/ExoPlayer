@@ -17,12 +17,16 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroupOverlay;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.ImageView;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -82,8 +86,45 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     }
 
     @Override
-    public void onDecoratorSelected(@NonNull MediaItem mediaItem) {
+    public void onDecoratorSelected(@NonNull MediaItem mediaItem, @NonNull View view) {
       getParent().addToQueue(mediaItem);
+      BottomNavHolder bottomNavHolder = FragmentUtils.getParent(LibraryFragment.this,
+          BottomNavHolder.class);
+      if (bottomNavHolder != null) {
+        View playlistTabView = bottomNavHolder.getPlaylistTabView();
+        if (playlistTabView != null) {
+          final ViewGroupOverlay overlay = ((ViewGroup) playlistTabView.getParent().getParent())
+              .getOverlay();
+          final ImageView albumArt = (ImageView) view.findViewById(R.id.media_item_album_art);
+          final ViewGroup originalParent = (ViewGroup) albumArt.getParent();
+          final ViewGroup.LayoutParams originalLayoutParams = albumArt.getLayoutParams();
+          overlay.add(albumArt);
+
+          int[] albumArtLocation = new int[2];
+          int[] tabLocation = new int[2];
+          albumArt.getLocationOnScreen(albumArtLocation);
+          playlistTabView.getLocationOnScreen(tabLocation);
+
+          int xOffset = tabLocation[0] - albumArtLocation[0] + (playlistTabView.getWidth() / 2)
+              - albumArt.getWidth();
+          int yOffset = tabLocation[1] - albumArtLocation[1] - (playlistTabView.getHeight() / 2)
+              - albumArt.getHeight();
+          int duration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
+          albumArt.animate().setDuration(duration).translationX(xOffset).translationY(yOffset)
+              .scaleX(0).scaleY(0).setInterpolator(new AccelerateDecelerateInterpolator())
+              .withEndAction(new Runnable() {
+                @Override
+                public void run() {
+                  overlay.remove(albumArt);
+                  albumArt.setTranslationX(0);
+                  albumArt.setTranslationY(0);
+                  albumArt.setScaleX(1);
+                  albumArt.setScaleY(1);
+                  originalParent.addView(albumArt, originalLayoutParams);
+                }
+              });
+        }
+      }
     }
 
     @Override

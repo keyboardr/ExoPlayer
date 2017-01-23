@@ -14,12 +14,12 @@ import android.view.ViewGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
+import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -42,7 +42,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   @Override
   public void onAlbumArtReset() {
-    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
     if (parent != null) {
       parent.setPlaylistAlbumArt(null);
     }
@@ -50,7 +50,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   @Override
   public void onAlbumArtReady(@NonNull Icon albumArt) {
-    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
     if (parent != null) {
       parent.setPlaylistAlbumArt(albumArt);
     }

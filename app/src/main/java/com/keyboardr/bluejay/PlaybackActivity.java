@@ -20,13 +20,14 @@ import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
+import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.NoSetFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.ui.playlist.SetFragment;
 
 public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.Holder,
-    NoSetFragment.Holder, SetFragment.Holder {
+    NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder {
 
   private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
   @Nullable
@@ -195,15 +196,23 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     playlistServiceConn.onConnectionSuspended();
   }
 
+  @Override
   public void setMonitorAlbumArt(@Nullable Icon icon) {
     if (monitorTabBackground != null) {
       monitorTabBackground.setImageIcon(icon);
     }
   }
 
+  @Override
   public void setPlaylistAlbumArt(@Nullable Icon icon) {
     if (playlistTabBackground != null) {
       playlistTabBackground.setImageIcon(icon);
     }
+  }
+
+  @Nullable
+  @Override
+  public View getPlaylistTabView() {
+    return playlistTab;
   }
 }

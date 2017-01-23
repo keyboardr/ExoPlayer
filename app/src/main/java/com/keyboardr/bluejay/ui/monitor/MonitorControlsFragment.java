@@ -11,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Spinner;
 
-import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.MonitorPlayer;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
+import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.CachedLoader;
 import com.keyboardr.bluejay.util.FragmentUtils;
@@ -72,7 +72,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
 
   @Override
   public void onAlbumArtReset() {
-    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
     if (parent != null) {
       parent.setMonitorAlbumArt(null);
     }
@@ -80,7 +80,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
 
   @Override
   public void onAlbumArtReady(@NonNull Icon albumArt) {
-    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
     if (parent != null) {
       parent.setMonitorAlbumArt(albumArt);
     }
