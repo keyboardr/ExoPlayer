@@ -4,6 +4,7 @@ import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.view.View;
@@ -26,6 +27,12 @@ import java.util.concurrent.TimeUnit;
 public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlayer
     .PlaybackListener {
 
+  public interface OnAlbumArtListener {
+    void onAlbumArtReset();
+
+    void onAlbumArtReady(@NonNull Icon albumArt);
+  }
+
   private static final String ARG_MEDIA_ITEM = "mediaItem";
 
   protected final ImageView playPause;
@@ -37,6 +44,9 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   private final TextView artist;
   private final TextView position;
   private final TextView duration;
+
+  @Nullable
+  private final OnAlbumArtListener albumArtListener;
 
   @NonNull
   private final LoaderManager loaderManager;
@@ -73,19 +83,27 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
       if (albumArt != null) {
         albumArt.setImageIcon(albumArtData);
       }
+      if (albumArtListener != null) {
+        albumArtListener.onAlbumArtReady(data);
+      }
     }
 
     @Override
     public void onLoaderReset(Loader<Icon> loader) {
       albumArtData = null;
+      if (albumArtListener != null) {
+        albumArtListener.onAlbumArtReset();
+      }
     }
   };
 
   public PlayerControlsUpdater(@NonNull View view, @NonNull P player,
-                               @NonNull LoaderManager loaderManager) {
+                               @NonNull LoaderManager loaderManager,
+                               @Nullable OnAlbumArtListener albumArtListener) {
     this.view = view;
     this.player = player;
     this.loaderManager = loaderManager;
+    this.albumArtListener = albumArtListener;
 
     title = ((TextView) view.findViewById(R.id.controls_title));
     artist = ((TextView) view.findViewById(R.id.controls_artist));

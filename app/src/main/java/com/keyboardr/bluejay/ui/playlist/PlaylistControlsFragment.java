@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui.playlist;
 
+import android.graphics.drawable.Icon;
 import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
@@ -25,7 +27,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager
-    .DefaultDeviceSelector {
+    .DefaultDeviceSelector, PlayerControlsUpdater.OnAlbumArtListener {
 
   @Override
   public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
@@ -36,6 +38,22 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   public void onNoDeviceFound() {
     // TODO: 11/6/2016 replace with error bar
     Toast.makeText(getContext(), "No USB Audio found", Toast.LENGTH_LONG).show();
+  }
+
+  @Override
+  public void onAlbumArtReset() {
+    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    if (parent != null) {
+      parent.setPlaylistAlbumArt(null);
+    }
+  }
+
+  @Override
+  public void onAlbumArtReady(@NonNull Icon albumArt) {
+    PlaybackActivity parent = FragmentUtils.getParent(this, PlaybackActivity.class);
+    if (parent != null) {
+      parent.setPlaylistAlbumArt(albumArt);
+    }
   }
 
   public interface Holder extends PlaylistPlayer.PlaylistChangedListener {
@@ -75,7 +93,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     if (!AudioSelectionManager.SPINNER_ENABLED) {
       view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
     }
-    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
+    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager(), this);
     audioSelectionManager = new AudioSelectionManager(getContext(),
         (Spinner) view.findViewById(R.id.controls_spinner), player, this);
   }

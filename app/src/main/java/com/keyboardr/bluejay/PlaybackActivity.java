@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckedTextView;
+import android.widget.ImageView;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
@@ -33,6 +35,10 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   private CheckedTextView monitorTab;
   @Nullable
   private CheckedTextView playlistTab;
+  @Nullable
+  private ImageView monitorTabBackground;
+  @Nullable
+  private ImageView playlistTabBackground;
 
   private static final int INDEX_MONITOR = 0;
   private static final int INDEX_PLAYLIST = 1;
@@ -90,6 +96,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         }
       });
     }
+    monitorTabBackground = (ImageView) findViewById(R.id.bottom_tab_monitor_bg);
     playlistTab = (CheckedTextView) findViewById(R.id.bottom_tab_playlist);
     if (playlistTab != null) {
       playlistTab.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +106,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         }
       });
     }
+    playlistTabBackground = (ImageView) findViewById(R.id.bottom_tab_playlist_bg);
 
     if (savedInstanceState != null) {
       if (monitorPlaylistSwitcher != null) {
@@ -185,5 +193,17 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   public void endSet() {
     mediaBrowser.disconnect();
     playlistServiceConn.onConnectionSuspended();
+  }
+
+  public void setMonitorAlbumArt(@Nullable Icon icon) {
+    if (monitorTabBackground != null) {
+      monitorTabBackground.setImageIcon(icon);
+    }
+  }
+
+  public void setPlaylistAlbumArt(@Nullable Icon icon) {
+    if (playlistTabBackground != null) {
+      playlistTabBackground.setImageIcon(icon);
+    }
   }
 }
