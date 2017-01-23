@@ -1,21 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.keyboardr.bluejay.PlaybackActivity">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/activity_main"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              tools:context="com.keyboardr.bluejay.PlaybackActivity">
 
     <ViewSwitcher
         android:id="@+id/monitor_playlist_switcher"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:inAnimation="@android:anim/fade_in"
         android:outAnimation="@android:anim/fade_out">
 
-        <include layout="@layout/monitor" />
-        <include layout="@layout/playlist" />
+        <include layout="@layout/monitor"/>
+
+        <include layout="@layout/playlist"/>
     </ViewSwitcher>
 
 
-</FrameLayout>
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/bottom_tab_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:colorBackgroundFloating"
+        android:elevation="8dp">
+
+        <ImageView
+            android:id="@+id/bottom_tab_monitor_bg"
+            style="@style/BottomNavBackground"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_tab_monitor"
+            app:layout_constraintLeft_toLeftOf="@+id/bottom_tab_monitor"
+            app:layout_constraintRight_toRightOf="@+id/bottom_tab_monitor"
+            app:layout_constraintTop_toTopOf="@+id/bottom_tab_monitor"
+            tools:src="@mipmap/ic_launcher"/>
+
+
+        <CheckedTextView
+            android:id="@+id/bottom_tab_monitor"
+            style="@style/BottomNavTab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:drawableTop="@drawable/ic_monitor"
+            android:text="@string/monitor"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bottom_tab_playlist"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <ImageView
+            android:id="@+id/bottom_tab_playlist_bg"
+            style="@style/BottomNavBackground"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toBottomOf="@+id/bottom_tab_playlist"
+            app:layout_constraintLeft_toLeftOf="@+id/bottom_tab_playlist"
+            app:layout_constraintRight_toRightOf="@+id/bottom_tab_playlist"
+            app:layout_constraintTop_toTopOf="@+id/bottom_tab_playlist"
+            tools:src="@drawable/album_art_empty"/>
+
+        <CheckedTextView
+            android:id="@+id/bottom_tab_playlist"
+            style="@style/BottomNavTab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_queue_music"
+            android:text="@string/playlist"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"/>
+    </android.support.constraint.ConstraintLayout>
+
+</LinearLayout>

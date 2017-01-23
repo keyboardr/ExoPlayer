@@ -4,18 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
 import android.media.AudioManager;
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.View;
+import android.widget.CheckedTextView;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
@@ -31,6 +29,10 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
   @Nullable
   private ViewSwitcher monitorPlaylistSwitcher;
+  @Nullable
+  private CheckedTextView monitorTab;
+  @Nullable
+  private CheckedTextView playlistTab;
 
   private static final int INDEX_MONITOR = 0;
   private static final int INDEX_PLAYLIST = 1;
@@ -76,13 +78,35 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+
+    // Init switcher and tabs for phones
     monitorPlaylistSwitcher = (ViewSwitcher) findViewById(R.id.monitor_playlist_switcher);
+    monitorTab = (CheckedTextView) findViewById(R.id.bottom_tab_monitor);
+    if (monitorTab != null) {
+      monitorTab.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          setDisplayedChild(INDEX_MONITOR);
+        }
+      });
+    }
+    playlistTab = (CheckedTextView) findViewById(R.id.bottom_tab_playlist);
+    if (playlistTab != null) {
+      playlistTab.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          setDisplayedChild(INDEX_PLAYLIST);
+        }
+      });
+    }
+
     if (savedInstanceState != null) {
       if (monitorPlaylistSwitcher != null) {
-        monitorPlaylistSwitcher.setDisplayedChild(savedInstanceState.getBoolean(STATE_SHOW_PLAYLIST)
+        setDisplayedChild(savedInstanceState.getBoolean(STATE_SHOW_PLAYLIST)
             ? INDEX_PLAYLIST : INDEX_MONITOR);
       }
     }
+
     mediaBrowser = new MediaBrowserCompat(this, new ComponentName(this, PlaylistMediaService
         .class), playlistServiceConn, null);
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -131,46 +155,16 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     }
   }
 
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    super.onCreateOptionsMenu(menu);
-    getMenuInflater().inflate(R.menu.main, menu);
-    return true;
-  }
-
-  @Override
-  public boolean onPrepareOptionsMenu(Menu menu) {
-    super.onPrepareOptionsMenu(menu);
-    MenuItem showPlaylistToggle = menu.findItem(R.id.show_playlist);
-    if (monitorPlaylistSwitcher == null) {
-      showPlaylistToggle.setVisible(false);
-    } else {
-      showPlaylistToggle.setVisible(true);
-      boolean showingPlaylist = monitorPlaylistSwitcher.getDisplayedChild() == INDEX_PLAYLIST;
-      showPlaylistToggle.setChecked(showingPlaylist);
-      ColorStateList tintList = getResources().getColorStateList(R.color.checkable_menu_item,
-          getSupportActionBar().getThemedContext().getTheme());
-      assert tintList != null;
-      @ColorInt int tintColor = !showingPlaylist ? tintList.getColorForState(
-          new int[]{android.R.attr.checked}, 0)
-          : tintList.getDefaultColor();
-      showPlaylistToggle.getIcon().setTint(tintColor);
+  private void setDisplayedChild(int child) {
+    if (monitorPlaylistSwitcher != null && child != monitorPlaylistSwitcher.getDisplayedChild()) {
+      monitorPlaylistSwitcher.setDisplayedChild(child);
     }
-    return true;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.show_playlist:
-        boolean wasChecked = item.isChecked();
-        if (monitorPlaylistSwitcher != null) {
-          monitorPlaylistSwitcher.setDisplayedChild(wasChecked ? INDEX_MONITOR : INDEX_PLAYLIST);
-        }
-        invalidateOptionsMenu();
-        return true;
+    if (monitorTab != null) {
+      monitorTab.setChecked(child == INDEX_MONITOR);
     }
-    return super.onOptionsItemSelected(item);
+    if (playlistTab != null) {
+      playlistTab.setChecked(child == INDEX_PLAYLIST);
+    }
   }
 
   @Nullable
