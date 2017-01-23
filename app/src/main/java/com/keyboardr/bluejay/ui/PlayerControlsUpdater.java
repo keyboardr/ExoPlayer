@@ -1,6 +1,6 @@
 package com.keyboardr.bluejay.ui;
 
-import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -55,28 +55,28 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     }
   };
 
-  private Bitmap albumArtData;
+  private Icon albumArtData;
 
   private MediaItem lastMediaItem;
 
-  private LoaderManager.LoaderCallbacks<Bitmap> albumArtCalbacks = new LoaderManager
-      .LoaderCallbacks<Bitmap>() {
+  private LoaderManager.LoaderCallbacks<Icon> albumArtCalbacks = new LoaderManager
+      .LoaderCallbacks<Icon>() {
     @Override
-    public Loader<Bitmap> onCreateLoader(int id, Bundle args) {
+    public Loader<Icon> onCreateLoader(int id, Bundle args) {
       return new MonitorControlsFragment.AlbumArtLoader(view.getContext(),
           (MediaItem) args.getParcelable(ARG_MEDIA_ITEM));
     }
 
     @Override
-    public void onLoadFinished(Loader<Bitmap> loader, Bitmap data) {
+    public void onLoadFinished(Loader<Icon> loader, Icon data) {
       albumArtData = data;
       if (albumArt != null) {
-        albumArt.setImageBitmap(albumArtData);
+        albumArt.setImageIcon(albumArtData);
       }
     }
 
     @Override
-    public void onLoaderReset(Loader<Bitmap> loader) {
+    public void onLoaderReset(Loader<Icon> loader) {
       albumArtData = null;
     }
   };
@@ -108,7 +108,7 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
     updateVisibility(mediaItem == null);
 
-    albumArt.setImageBitmap(albumArtData);
+    albumArt.setImageIcon(albumArtData);
 
     Bundle loaderArgs = new Bundle();
     loaderArgs.putParcelable(ARG_MEDIA_ITEM, mediaItem);

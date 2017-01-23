@@ -3,7 +3,7 @@ package com.keyboardr.bluejay.model;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -13,6 +13,8 @@ import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 import android.util.Log;
+
+import com.keyboardr.bluejay.R;
 
 import java.io.IOException;
 
@@ -76,17 +78,17 @@ public class MediaItem implements Parcelable {
   }
 
   @WorkerThread
-  @Nullable
-  public Bitmap getAlbumArt(@NonNull Context context) {
-    if (thumbnailUri == null) {
-      return null;
+  @NonNull
+  public Icon getAlbumArtAsIcon(@NonNull Context context) {
+    if (thumbnailUri != null) {
+      try {
+        return Icon.createWithBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver()
+            , thumbnailUri));
+      } catch (IOException e) {
+        Log.w(TAG, "getAlbumArt: no media found", e);
+      }
     }
-    try {
-      return MediaStore.Images.Media.getBitmap(context.getContentResolver(), thumbnailUri);
-    } catch (IOException e) {
-      Log.w(TAG, "getAlbumArt: no media found", e);
-      return null;
-    }
+    return Icon.createWithResource(context, R.drawable.album_art_empty);
   }
 
   public long getDuration() {

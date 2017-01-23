@@ -1,7 +1,7 @@
 package com.keyboardr.bluejay.ui.monitor;
 
 import android.content.Context;
-import android.graphics.Bitmap;
+import android.graphics.drawable.Icon;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -67,7 +67,7 @@ public class MonitorControlsFragment extends Fragment {
         player.release();
     }
 
-    public static class AlbumArtLoader extends CachedLoader<Bitmap> {
+    public static class AlbumArtLoader extends CachedLoader<Icon> {
 
         private final MediaItem mediaItem;
 
@@ -78,11 +78,11 @@ public class MonitorControlsFragment extends Fragment {
 
         @Override
         @Nullable
-        public Bitmap loadInBackground() {
+        public Icon loadInBackground() {
             if (mediaItem == null) {
                 return null;
             }
-            return mediaItem.getAlbumArt(getContext());
+            return mediaItem.getAlbumArtAsIcon(getContext());
         }
     }
 }

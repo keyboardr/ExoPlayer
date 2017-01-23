@@ -281,7 +281,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         MediaMetadataCompat metadata = metadataBuilder
             .putText(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.title)
             .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.artist)
-            .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, mediaItem.getAlbumArt(this))
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,
                 mediaItem.thumbnailUri != null ? mediaItem.thumbnailUri
                     .toString() : null)
