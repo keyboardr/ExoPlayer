@@ -27,7 +27,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:colorBackgroundFloating"
-        android:elevation="8dp">
+        android:elevation="16dp">
 
         <ImageView
             android:id="@+id/bottom_tab_monitor_bg"
@@ -52,7 +52,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/bottom_tab_playlist"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toStartOf="parent"/>
+            app:layout_constraintStart_toStartOf="parent"
+            tools:layout_editor_absoluteX="0dp"/>
 
         <ImageView
             android:id="@+id/bottom_tab_playlist_bg"
@@ -75,7 +76,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"/>
+            app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"
+            tools:layout_editor_absoluteX="180dp"/>
     </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>

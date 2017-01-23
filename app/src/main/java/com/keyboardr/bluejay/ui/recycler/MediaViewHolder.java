@@ -1,13 +1,10 @@
 package com.keyboardr.bluejay.ui.recycler;
 
-import android.graphics.Typeface;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.SpannableString;
-import android.text.style.StyleSpan;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -117,43 +114,51 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     }
   }
 
-  public void bindMediaItem(@NonNull MediaItem mediaItem, boolean selected, boolean enabled) {
-    itemView.setSelected(selected);
-    itemView.setEnabled(enabled);
-    SpannableString titleString = new SpannableString(mediaItem.title);
-    titleString.setSpan(new StyleSpan(enabled
-            ? (selected ? Typeface.BOLD : Typeface.NORMAL)
-            : Typeface.ITALIC),
-        0, titleString.length(), 0);
-    title.setText(titleString);
+  public void bindMediaItem(@NonNull MediaItem mediaItem, boolean activated, boolean enabled) {
+    this.mediaItem = mediaItem;
+
+    title.setText(mediaItem.title);
     artist.setText(mediaItem.artist);
 
     duration.setText(MathUtil.getSongDuration(mediaItem.getDuration()));
 
-    this.mediaItem = mediaItem;
+    if (dragStartListener == null) {
+      if (mediaViewDecorator != null) {
+        int iconForItem = mediaViewDecorator.getIconForItem(mediaItem);
+        if (iconForItem <= 0) {
+          icon.setVisibility(View.GONE);
+        } else {
+          icon.setVisibility(View.VISIBLE);
+          icon.setImageResource(iconForItem);
+        }
 
-    if (mediaViewDecorator != null) {
-      int iconForItem = mediaViewDecorator.getIconForItem(mediaItem);
-      if (iconForItem <= 0) {
+        if (mediaViewDecorator.showMoreOption()) {
+          menu.setVisibility(View.VISIBLE);
+        } else {
+          menu.setVisibility(View.INVISIBLE);
+        }
+      } else {
         icon.setVisibility(View.GONE);
-      } else {
-        icon.setVisibility(View.VISIBLE);
-        icon.setImageResource(iconForItem);
-      }
-
-      if (mediaViewDecorator.showMoreOption()) {
-        menu.setVisibility(View.VISIBLE);
-      } else {
         menu.setVisibility(View.INVISIBLE);
       }
-    } else if (dragStartListener != null
-        && dragStartListener.canDrag(mediaItem, selected, enabled)) {
-      icon.setImageResource(R.drawable.ic_drag_handle);
-      icon.setVisibility(View.VISIBLE);
+    }
+
+    bindMediaItemPartial(activated, enabled);
+  }
+
+  public void bindMediaItemPartial(boolean activated, boolean enabled) {
+    itemView.setActivated(activated);
+    itemView.setEnabled(enabled);
+
+    if (dragStartListener != null) {
+      if (dragStartListener.canDrag(mediaItem, activated, enabled)) {
+        icon.setImageResource(R.drawable.ic_drag_handle);
+        icon.setVisibility(View.VISIBLE);
+      } else {
+        icon.setVisibility(View.INVISIBLE);
+      }
       menu.setVisibility(View.GONE);
-    } else {
-      icon.setVisibility(View.GONE);
-      menu.setVisibility(View.INVISIBLE);
     }
   }
+
 }

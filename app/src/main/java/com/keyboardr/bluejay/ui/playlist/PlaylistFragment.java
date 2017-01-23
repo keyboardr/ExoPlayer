@@ -17,6 +17,7 @@ import android.widget.ViewAnimator;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
+import com.keyboardr.bluejay.ui.recycler.MediaItemAnimator;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -61,6 +62,7 @@ public class PlaylistFragment extends Fragment {
     recyclerView.setLayoutManager(layoutManager);
     recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager
         .getOrientation()));
+    recyclerView.setItemAnimator(new MediaItemAnimator());
 
     ItemTouchHelper.SimpleCallback touchCallback = new ItemTouchHelper.SimpleCallback
         (ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -164,6 +166,16 @@ public class PlaylistFragment extends Fragment {
           PlaylistServiceClient.mediaItemFromQueueItem(getParent().getPlaylist().get(position)),
           position == getCurrentTrackIndex(),
           position >= getCurrentTrackIndex());
+    }
+
+    @Override
+    public void onBindViewHolder(MediaViewHolder holder, int position, List<Object> payloads) {
+      if (payloads == null || payloads.size() == 0) {
+        onBindViewHolder(holder, position);
+      } else {
+        holder.bindMediaItemPartial(position == getCurrentTrackIndex(),
+            position >= getCurrentTrackIndex());
+      }
     }
 
     @Override

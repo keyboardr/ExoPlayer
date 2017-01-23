@@ -9,7 +9,9 @@
                                              android:paddingBottom="16dp"
                                              android:paddingEnd="0dp"
                                              android:paddingStart="24dp"
-                                             android:paddingTop="16dp">
+                                             android:paddingTop="16dp"
+                                             android:animateLayoutChanges="true"
+                                             android:stateListAnimator="@animator/card_elevation_selector">
 
     <ImageView
         android:id="@+id/media_item_album_art"

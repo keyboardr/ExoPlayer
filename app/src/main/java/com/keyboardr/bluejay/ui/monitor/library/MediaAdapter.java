@@ -36,6 +36,11 @@ public class MediaAdapter extends RecyclerView.Adapter<MediaViewHolder> {
   }
 
   @Override
+  public void onBindViewHolder(MediaViewHolder holder, int position, List<Object> payloads) {
+    super.onBindViewHolder(holder, position, payloads);
+  }
+
+  @Override
   public int getItemCount() {
     return mediaItems.size();
   }
