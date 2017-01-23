@@ -15,6 +15,9 @@ import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroupOverlay;
@@ -197,6 +200,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    getActivity().invalidateOptionsMenu();
     getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
   }
 
@@ -223,4 +227,24 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     adapter.notifyDataSetChanged();
   }
 
+  @Override
+  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+    inflater.inflate(R.menu.frag_library, menu);
+  }
+
+  @Override
+  public void onPrepareOptionsMenu(Menu menu) {
+    View view = getView();
+    menu.findItem(R.id.filter_library).setVisible(view != null
+        && view.findViewById(R.id.filter_fragment) == null);
+  }
+
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    if (item.getItemId() == R.id.filter_library) {
+      new FilterFragment().show(getChildFragmentManager(), null);
+      return true;
+    }
+    return super.onOptionsItemSelected(item);
+  }
 }

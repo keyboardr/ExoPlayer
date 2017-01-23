@@ -1,13 +1,16 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -16,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.Spinner;
 
 import com.keyboardr.bluejay.R;
@@ -27,7 +31,7 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 import java.util.ArrayList;
 import java.util.Set;
 
-public class FilterFragment extends Fragment {
+public class FilterFragment extends DialogFragment {
 
   private static final String STATE_SHORTLISTS = "shortlists";
 
@@ -64,6 +68,28 @@ public class FilterFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
       Bundle savedInstanceState) {
     return inflater.inflate(R.layout.fragment_filter, container, false);
+  }
+
+  @NonNull
+  @Override
+  public Dialog onCreateDialog(Bundle savedInstanceState) {
+    AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+    builder.setPositiveButton("Done", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialogInterface, int i) {
+        dialogInterface.dismiss();
+      }
+    });
+    FrameLayout frameLayout = new FrameLayout(builder.getContext());
+    frameLayout.setMinimumHeight(
+        getResources().getDimensionPixelSize(R.dimen.min_filter_dialog_height));
+    View contentView = onCreateView(LayoutInflater.from(builder.getContext()), frameLayout,
+        savedInstanceState);
+    builder.setView(frameLayout);
+    frameLayout.addView(contentView);
+    //noinspection ConstantConditions
+    onViewCreated(contentView, savedInstanceState);
+    return builder.create();
   }
 
   @Override

@@ -19,6 +19,7 @@
     <string name="no_media_playing">No tracks playing</string>
     <string name="monitor">Monitor</string>
     <string name="playlist">Playlist</string>
+    <string name="filter">Filter</string>
 
     <string-array name="sort_methods">
         <item>ID</item>

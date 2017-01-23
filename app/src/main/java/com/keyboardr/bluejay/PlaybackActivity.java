@@ -109,10 +109,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     }
     playlistTabBackground = (ImageView) findViewById(R.id.bottom_tab_playlist_bg);
 
-    if (savedInstanceState != null) {
-      if (monitorPlaylistSwitcher != null) {
+    if (monitorPlaylistSwitcher != null) {
+      if (savedInstanceState != null) {
         setDisplayedChild(savedInstanceState.getBoolean(STATE_SHOW_PLAYLIST)
             ? INDEX_PLAYLIST : INDEX_MONITOR);
+      } else {
+        setDisplayedChild(monitorPlaylistSwitcher.getDisplayedChild());
       }
     }
 
@@ -170,6 +172,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     }
     if (monitorTab != null) {
       monitorTab.setChecked(child == INDEX_MONITOR);
+      getLibraryFragment().setHasOptionsMenu(monitorTab.isChecked());
     }
     if (playlistTab != null) {
       playlistTab.setChecked(child == INDEX_PLAYLIST);
