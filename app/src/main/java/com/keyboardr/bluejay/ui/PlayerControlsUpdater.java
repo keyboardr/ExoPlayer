@@ -9,6 +9,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
+import android.support.v4.util.Pair;
+import android.support.v7.graphics.Palette;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
@@ -60,6 +62,7 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   private final TextView artist;
   private final TextView position;
   private final TextView duration;
+  private final View backgroundOverlay;
 
   @Nullable
   private final OnAlbumArtListener albumArtListener;
@@ -85,28 +88,47 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
   private MediaItem lastMediaItem;
 
-  private LoaderManager.LoaderCallbacks<Icon> albumArtCalbacks = new LoaderManager
-      .LoaderCallbacks<Icon>() {
+  private LoaderManager.LoaderCallbacks<Pair<Icon, Palette>> albumArtCalbacks = new LoaderManager
+      .LoaderCallbacks<Pair<Icon, Palette>>() {
 
     @Override
-    public Loader<Icon> onCreateLoader(int id, Bundle args) {
+    public Loader<Pair<Icon, Palette>> onCreateLoader(int id, Bundle args) {
       return new MonitorControlsFragment.AlbumArtLoader(view.getContext(),
           (MediaItem) args.getParcelable(ARG_MEDIA_ITEM));
     }
 
     @Override
-    public void onLoadFinished(Loader<Icon> loader, @Nullable Icon data) {
-      if (Objects.equals(albumArtData, data)) {
+    public void onLoadFinished(Loader<Pair<Icon, Palette>> loader,
+                               @Nullable Pair<Icon, Palette> data) {
+      if (Objects.equals(albumArtData, data == null ? null : data.first)) {
         return;
       }
       boolean entering = albumArtData == null;
-      boolean exiting = data == null;
+      boolean exiting = data == null || data.first == null;
 
-      albumArtData = data;
+      albumArtData = data == null ? null : data.first;
       if (albumArt != null) {
         final int fullDuration = albumArtContainer.getContext().getResources()
             .getInteger(android.R.integer.config_mediumAnimTime);
         if (exiting) {
+          backgroundOverlay.setBackground(view.getBackground());
+          backgroundOverlay.setVisibility(View.VISIBLE);
+          view.setBackground(null);
+          int startX = albumArtContainer.getLeft() + albumArtContainer.getWidth() / 2;
+          int startY = albumArtContainer.getTop() + albumArtContainer.getHeight() / 2;
+          float startRadius = (float) Math.hypot(view.getWidth() - startX,
+              view.getHeight() - startY);
+          Animator backgroundReveal = ViewAnimationUtils.createCircularReveal(backgroundOverlay,
+              startX, startY, startRadius, 0);
+          backgroundReveal.setDuration(fullDuration / 2);
+          backgroundReveal.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+              backgroundOverlay.setVisibility(View.GONE);
+            }
+          });
+          backgroundReveal.start();
+
           albumArtContainer.animate().scaleX(0).scaleY(0)
               .setDuration(fullDuration).setInterpolator(ANTICIPATE_INTERPOLATOR)
               .withEndAction(new Runnable() {
@@ -118,51 +140,74 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
                   albumArtContainer.setScaleY(1);
                 }
               });
-        } else if (entering) {
-          albumArt.setImageIcon(albumArtData);
-          albumArtContainer.setScaleX(0);
-          albumArtContainer.setScaleY(0);
-          albumArtContainer.setVisibility(View.VISIBLE);
-          albumArtContainer.animate().scaleX(1).scaleY(1)
-              .setDuration(fullDuration).setInterpolator(OVERSHOOT_INTERPOLATOR);
         } else {
-          ViewPropertyAnimator animation = albumArtContainer.animate().scaleX(1.2f).scaleY(1.2f)
-              .translationZ(4f)
-              .setDuration(fullDuration / 2).setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR)
-              .withEndAction(new Runnable() {
-                @Override
-                public void run() {
-                  albumArtContainer.animate().scaleX(1f).scaleY(1).translationZ(0)
-                      .setDuration(fullDuration / 2)
-                      .setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR);
-                }
-              });
-          albumArtOverlay.setImageIcon(albumArtData);
-          int centerX = albumArtOverlay.getWidth() /
-              2;
-          int centerY = albumArtOverlay.getHeight() / 2;
-          Animator circularReveal = ViewAnimationUtils.createCircularReveal(albumArtOverlay,
-              centerX, centerY, 0,
-              (float) Math.hypot(centerX, centerY));
-          circularReveal.setDuration(animation.getDuration() * 2);
-          albumArtOverlay.setVisibility(View.VISIBLE);
-          circularReveal.addListener(new AnimatorListenerAdapter() {
+          final int color = data.second.getDarkMutedColor(
+              backgroundOverlay.getContext().getColor(R.color.colorPrimaryDark));
+          backgroundOverlay.setBackgroundColor(color);
+          backgroundOverlay.setVisibility(View.VISIBLE);
+          int startX = albumArtContainer.getLeft() + albumArtContainer.getWidth() / 2;
+          int startY = albumArtContainer.getTop() + albumArtContainer.getHeight() / 2;
+          float endRadius = (float) Math.hypot(view.getWidth() - startX,
+              view.getHeight() - startY);
+          Animator backgroundReveal = ViewAnimationUtils.createCircularReveal(backgroundOverlay,
+              startX, startY, 0, endRadius);
+          backgroundReveal.setDuration(fullDuration / 2);
+          backgroundReveal.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-              albumArt.setImageIcon(albumArtData);
-              albumArtOverlay.setVisibility(View.INVISIBLE);
+              ((ViewGroup) backgroundOverlay.getParent()).setBackgroundColor(color);
+              backgroundOverlay.setVisibility(View.GONE);
             }
           });
-          circularReveal.start();
+          backgroundReveal.start();
+
+
+          if (entering) {
+            albumArt.setImageIcon(albumArtData);
+            albumArtContainer.setScaleX(0);
+            albumArtContainer.setScaleY(0);
+            albumArtContainer.setVisibility(View.VISIBLE);
+            albumArtContainer.animate().scaleX(1).scaleY(1)
+                .setDuration(fullDuration).setInterpolator(OVERSHOOT_INTERPOLATOR);
+          } else {
+            ViewPropertyAnimator animation = albumArtContainer.animate().scaleX(1.2f).scaleY(1.2f)
+                .translationZ(4f)
+                .setDuration(fullDuration / 2).setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR)
+                .withEndAction(new Runnable() {
+                  @Override
+                  public void run() {
+                    albumArtContainer.animate().scaleX(1f).scaleY(1).translationZ(0)
+                        .setDuration(fullDuration / 2)
+                        .setInterpolator(ACCELERATE_DECELERATE_INTERPOLATOR);
+                  }
+                });
+            albumArtOverlay.setImageIcon(albumArtData);
+            int centerX = albumArtOverlay.getWidth() /
+                2;
+            int centerY = albumArtOverlay.getHeight() / 2;
+            Animator albumArtReveal = ViewAnimationUtils.createCircularReveal(albumArtOverlay,
+                centerX, centerY, 0,
+                (float) Math.hypot(centerX, centerY));
+            albumArtReveal.setDuration(animation.getDuration() * 2);
+            albumArtOverlay.setVisibility(View.VISIBLE);
+            albumArtReveal.addListener(new AnimatorListenerAdapter() {
+              @Override
+              public void onAnimationEnd(Animator animation) {
+                albumArt.setImageIcon(albumArtData);
+                albumArtOverlay.setVisibility(View.INVISIBLE);
+              }
+            });
+            albumArtReveal.start();
+          }
         }
       }
       if (albumArtListener != null) {
-        albumArtListener.onAlbumArtReady(data);
+        albumArtListener.onAlbumArtReady(albumArtData);
       }
     }
 
     @Override
-    public void onLoaderReset(Loader<Icon> loader) {
+    public void onLoaderReset(Loader<Pair<Icon, Palette>> loader) {
       albumArtData = null;
       if (albumArtListener != null) {
         albumArtListener.onAlbumArtReset();
@@ -187,6 +232,7 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     albumArt = (ImageView) view.findViewById(R.id.controls_album_art);
     albumArtContainer = (ViewGroup) view.findViewById(R.id.controls_album_art_container);
     albumArtOverlay = (ImageView) view.findViewById(R.id.controls_album_art_overlay);
+    backgroundOverlay = view.findViewById(R.id.controls_background_overlay);
 
     attachPlayer();
   }
@@ -198,7 +244,7 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     title.setText(
         mediaItem == null ? view.getContext().getText(R.string.no_media_playing) : mediaItem.title);
     artist.setText(mediaItem == null ? "" : mediaItem.artist);
-    seekBar.setMax(mediaItem == null ? 100 : (int) Math.ceil(mediaItem.getDuration() / 1000));
+    seekBar.setMax(mediaItem == null ? 0 : (int) Math.ceil(mediaItem.getDuration() / 1000));
 
     updateVisibility(mediaItem != null);
 

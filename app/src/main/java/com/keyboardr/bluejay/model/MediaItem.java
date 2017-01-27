@@ -3,6 +3,7 @@ package com.keyboardr.bluejay.model;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Parcel;
@@ -11,12 +12,15 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
+import android.support.v4.util.Pair;
+import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.keyboardr.bluejay.R;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Objects;
 
 import static android.content.ContentValues.TAG;
@@ -80,16 +84,19 @@ public class MediaItem implements Parcelable {
 
   @WorkerThread
   @NonNull
-  public Icon getAlbumArt(@NonNull Context context) {
+  public Pair<Icon, Palette> getAlbumArt(@NonNull Context context) {
     if (thumbnailUri != null) {
       try {
-        return Icon.createWithBitmap(MediaStore.Images.Media.getBitmap(context.getContentResolver()
-            , thumbnailUri));
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver()
+            , thumbnailUri);
+        return new Pair<>(Icon.createWithBitmap(bitmap), Palette.from(bitmap).generate());
       } catch (IOException e) {
         Log.w(TAG, "getAlbumArt: no media found", e);
       }
     }
-    return Icon.createWithResource(context, R.drawable.album_art_empty);
+    return new Pair<>(Icon.createWithResource(context, R.drawable.album_art_empty), Palette.from
+        (Collections.singletonList(
+            new Palette.Swatch(context.getColor(R.color.colorPrimaryDark), 100))));
   }
 
   public long getDuration() {
