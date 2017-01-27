@@ -1,5 +1,10 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -7,6 +12,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Path;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
@@ -18,6 +24,7 @@ import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.transition.ArcMotion;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -245,24 +252,33 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     albumArt.getLocationOnScreen(albumArtLocation);
     playlistTabView.getLocationOnScreen(tabLocation);
 
-    int xOffset = tabLocation[0] - albumArtLocation[0] + (playlistTabView.getWidth() / 2)
-        - albumArt.getWidth();
-    int yOffset = tabLocation[1] - albumArtLocation[1] - (playlistTabView.getHeight() / 2)
-        - albumArt.getHeight();
     int duration = getResources().getInteger(android.R.integer.config_mediumAnimTime);
-    albumArt.animate().setDuration(duration).translationX(xOffset).translationY(yOffset)
-        .scaleX(0).scaleY(0).setInterpolator(new AccelerateDecelerateInterpolator())
-        .withEndAction(new Runnable() {
-          @Override
-          public void run() {
-            overlay.remove(albumArt);
-            albumArt.setTranslationX(0);
-            albumArt.setTranslationY(0);
-            albumArt.setScaleX(1);
-            albumArt.setScaleY(1);
-            originalParent.addView(albumArt, originalLayoutParams);
-          }
-        });
+
+    Path translationPath = new ArcMotion().getPath(albumArtLocation[0], albumArtLocation[1],
+        tabLocation[0] + playlistTabView.getWidth() / 2 - albumArt.getWidth(),
+        tabLocation[1] - playlistTabView.getHeight() / 2 - albumArt.getHeight());
+    ObjectAnimator pathAnimation = ObjectAnimator.ofFloat(albumArt, View.X, View.Y,
+        translationPath);
+    pathAnimation.setInterpolator(new AccelerateDecelerateInterpolator());
+    ObjectAnimator scaleAnimation = ObjectAnimator.ofPropertyValuesHolder(albumArt,
+        PropertyValuesHolder.ofFloat(View.SCALE_X, 0),
+        PropertyValuesHolder.ofFloat(View.SCALE_Y, 0));
+
+    AnimatorSet animatorSet = new AnimatorSet();
+    animatorSet.addListener(new AnimatorListenerAdapter() {
+      @Override
+      public void onAnimationEnd(Animator animation) {
+        overlay.remove(albumArt);
+        albumArt.setTranslationX(0);
+        albumArt.setTranslationY(0);
+        albumArt.setScaleX(1);
+        albumArt.setScaleY(1);
+        originalParent.addView(albumArt, originalLayoutParams);
+      }
+    });
+    animatorSet.play(pathAnimation).with(scaleAnimation);
+    animatorSet.setDuration(duration);
+    animatorSet.start();
   }
 
   public static class ConfirmAddDialogFragment extends DialogFragment {
