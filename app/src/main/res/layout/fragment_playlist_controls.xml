@@ -5,23 +5,30 @@
                                              android:layout_width="match_parent"
                                              android:layout_height="wrap_content"
                                              android:clipToPadding="false"
-                                             android:paddingBottom="24dp"
-                                             android:paddingLeft="24dp"
-                                             android:paddingRight="24dp"
-                                             android:paddingTop="16dp"
                                              tools:context="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment">
+
+    <View
+        android:id="@+id/controls_background_overlay"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:layout_editor_absoluteX="0dp"/>
 
     <TextView
         android:id="@+id/controls_title"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
         android:layout_marginStart="8dp"
         android:enabled="false"
         android:maxLines="1"
         android:text="@string/no_media_playing"
         android:textAppearance="?android:textAppearanceLarge"
-        app:layout_constraintLeft_toRightOf="@+id/controls_album_art_container"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/controls_album_art_container"
         app:layout_constraintTop_toTopOf="@+id/controls_album_art_container"
         tools:enabled="true"
         tools:text="Song Name"/>
@@ -30,12 +37,13 @@
         android:id="@+id/controls_artist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="24dp"
         android:layout_marginTop="4dp"
         android:maxLines="1"
         android:textAppearance="?android:textAppearanceMedium"
         android:visibility="invisible"
-        app:layout_constraintLeft_toLeftOf="@+id/controls_title"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/controls_title"
         app:layout_constraintTop_toBottomOf="@+id/controls_title"
         tools:text="Artist Name"
         tools:visibility="visible"/>
@@ -44,11 +52,13 @@
         android:id="@+id/controls_album_art_container"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
+        app:layout_goneMarginTop="24dp"
         android:background="@drawable/album_art_outline"
         android:outlineProvider="bounds"
         android:visibility="invisible"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/controls_spinner"
         tools:visibility="visible">
 
@@ -57,6 +67,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:src="@drawable/album_art_empty"/>
+
         <ImageView
             android:id="@+id/controls_album_art_overlay"
             android:layout_width="match_parent"
@@ -68,12 +79,13 @@
         android:id="@+id/controls_play_pause"
         android:layout_width="48dp"
         android:layout_height="48dp"
+        android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:background="?android:selectableItemBackgroundBorderless"
         android:enabled="false"
         android:padding="8dp"
         android:src="@drawable/ic_play_arrow"
-        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/controls_album_art_container"/>
 
     <ProgressBar
@@ -81,12 +93,13 @@
         style="?android:progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginEnd="24dp"
         android:enabled="false"
         android:indeterminate="false"
         app:layout_constraintBottom_toBottomOf="@+id/controls_play_pause"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintLeft_toRightOf="@+id/controls_play_pause"
-        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/controls_play_pause"
         app:layout_constraintTop_toTopOf="@+id/controls_play_pause"
         tools:progress="15"/>
 
@@ -94,10 +107,11 @@
         android:id="@+id/controls_duration"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@id/controls_seek"
         app:layout_constraintTop_toBottomOf="@+id/controls_seek"
-        tools:layout_editor_absoluteX="285dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:text="3:15"
         tools:visibility="visible"/>
 
@@ -116,6 +130,10 @@
         android:id="@+id/controls_spinner"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"/>
+        android:layout_marginEnd="24dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 </android.support.constraint.ConstraintLayout>
