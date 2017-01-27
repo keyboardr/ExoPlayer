@@ -17,6 +17,7 @@ import android.util.Log;
 import com.keyboardr.bluejay.R;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static android.content.ContentValues.TAG;
 
@@ -170,6 +171,29 @@ public class MediaItem implements Parcelable {
     this.path = in.readString();
     this.transientMediaId = in.readLong();
     this.thumbnailUri = in.readParcelable(Uri.class.getClassLoader());
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    MediaItem mediaItem = (MediaItem) o;
+    return albumId == mediaItem.albumId &&
+        duration == mediaItem.duration &&
+        transientMediaId == mediaItem.transientMediaId &&
+        Objects.equals(title, mediaItem.title) &&
+        Objects.equals(artist, mediaItem.artist) &&
+        Objects.equals(path, mediaItem.path) &&
+        Objects.equals(thumbnailUri, mediaItem.thumbnailUri);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(title, artist, albumId, duration, path, transientMediaId, thumbnailUri);
   }
 
   public static final Parcelable.Creator<MediaItem> CREATOR = new Parcelable.Creator<MediaItem>() {

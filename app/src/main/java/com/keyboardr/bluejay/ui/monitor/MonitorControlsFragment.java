@@ -79,7 +79,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
   }
 
   @Override
-  public void onAlbumArtReady(@NonNull Icon albumArt) {
+  public void onAlbumArtReady(@Nullable Icon albumArt) {
     BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
     if (parent != null) {
       parent.setMonitorAlbumArt(albumArt);
