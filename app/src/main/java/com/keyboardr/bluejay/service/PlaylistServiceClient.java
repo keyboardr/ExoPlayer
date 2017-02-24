@@ -10,6 +10,7 @@ import android.support.v4.media.MediaMetadataCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
+import android.util.Log;
 
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
@@ -17,6 +18,8 @@ import com.keyboardr.bluejay.player.PlaylistPlayer;
 
 import java.util.Collections;
 import java.util.List;
+
+import static android.content.ContentValues.TAG;
 
 
 /**
@@ -47,13 +50,24 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   @Nullable
   protected PlaybackListener playbackListener;
 
+  @Nullable
+  private List<MediaSessionCompat.QueueItem> queue;
+
   private final MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
 
     private int lastKnownIndex = -1;
 
     @Override
     public void onQueueChanged(List<MediaSessionCompat.QueueItem> queue) {
-      PlaylistServiceClient.this.onQueueChanged();
+      boolean notify = false;
+      if (PlaylistServiceClient.this.queue == null || PlaylistServiceClient.this.queue.size() !=
+          queue.size()) {
+        notify = true;
+      }
+      PlaylistServiceClient.this.queue = queue;
+      if (notify) {
+        PlaylistServiceClient.this.onQueueChanged();
+      }
     }
 
     @Override
@@ -204,12 +218,17 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {
+    queue = null;
     Bundle params = new Bundle();
     params.putParcelable(PlaylistMediaService.EXTRA_MEDIA_ITEM, mediaItem);
     mediaController.sendCommand(PlaylistMediaService.COMMAND_ADD_TO_QUEUE, params, null);
   }
 
   public void moveItem(int oldIndex, int newIndex) {
+    Log.d(TAG, "moveItem: ");
+    if (queue != null) {
+      queue.add(newIndex, queue.remove(oldIndex));
+    }
     Bundle params = new Bundle();
     params.putInt(PlaylistMediaService.EXTRA_INDEX, oldIndex);
     params.putInt(PlaylistMediaService.EXTRA_NEW_INDEX, newIndex);
@@ -217,6 +236,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   }
 
   public void removeItem(int removeIndex) {
+    queue = null;
     Bundle params = new Bundle();
     params.putInt(PlaylistMediaService.EXTRA_INDEX, removeIndex);
     params.putInt(PlaylistMediaService.EXTRA_NEW_INDEX, -1);
@@ -225,11 +245,28 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
 
   @NonNull
   public List<MediaSessionCompat.QueueItem> getQueue() {
+    if (this.queue != null) {
+      return this.queue;
+    }
     List<MediaSessionCompat.QueueItem> queue = mediaController.getQueue();
     if (queue == null) {
       return Collections.emptyList();
     }
+    this.queue = queue;
     return queue;
+  }
+
+  private boolean queueEqual(List<MediaSessionCompat.QueueItem> left, List<MediaSessionCompat
+      .QueueItem> right) {
+    if (left.size() != right.size()) {
+      return false;
+    }
+    for (int i = 0; i < left.size(); i++) {
+      if (left.get(i).getQueueId() != right.get(i).getQueueId()) {
+        return false;
+      }
+    }
+    return true;
   }
 
   public int getCurrentMediaIndex() {

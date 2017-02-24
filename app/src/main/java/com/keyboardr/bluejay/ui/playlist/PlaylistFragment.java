@@ -114,6 +114,11 @@ public class PlaylistFragment extends Fragment {
         getParent().removeTrack(removeIndex);
         playlistAdapter.notifyItemRemoved(removeIndex);
       }
+
+      @Override
+      public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+        super.onSelectedChanged(viewHolder, actionState);
+      }
     };
     itemTouchHelper = new ItemTouchHelper(touchCallback);
     itemTouchHelper.attachToRecyclerView(recyclerView);
