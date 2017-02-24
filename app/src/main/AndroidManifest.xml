@@ -31,7 +31,7 @@
 
         <provider
             android:name=".provider.BluejayProvider"
-            android:authorities="com.keyboardr.bluejay.provider"
+            android:authorities="@string/authority"
             android:exported="false"/>
     </application>
 

@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BlueJay Debug</string>
+    <string name="authority">com.keyboardr.bluejay.debug.provider</string>
+</resources>

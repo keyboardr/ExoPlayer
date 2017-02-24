@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BlueJay</string>
+    <string name="authority">com.keyboardr.bluejay.provider</string>
+</resources>

@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">BlueJay</string>
     <string name="library_empty">No items found</string>
     <string name="audio_output_default">(default)</string>
     <string name="audio_output_wired_headphones">Wired headphones</string>
