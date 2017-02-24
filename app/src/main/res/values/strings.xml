@@ -25,6 +25,8 @@
     <string name="confirm_add_message">Are you sure you want to add %s to the setlist
         again?</string>
     <string name="add_track">Add track</string>
+    <string name="edit_metadata">Edit metadata</string>
+    <string name="close">Close</string>
 
     <string-array name="sort_methods">
         <item>ID</item>

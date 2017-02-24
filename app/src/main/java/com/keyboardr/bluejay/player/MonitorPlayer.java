@@ -1,7 +1,9 @@
 package com.keyboardr.bluejay.player;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
+import android.support.v4.content.LocalBroadcastManager;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
@@ -13,6 +15,9 @@ import com.keyboardr.bluejay.model.MediaItem;
  */
 
 public class MonitorPlayer extends AbsPlayer {
+
+  public static final String ACTION_MONITOR_TRACK_CHANGED = "com.keyboardr.bluejay.player"
+      + ".MonitorPlayer.ACTION_MONITOR_TRACK_CHANGED";
 
   private static final String TAG = "MonitorPlayer";
 
@@ -28,6 +33,8 @@ public class MonitorPlayer extends AbsPlayer {
     player.prepare(getMediaSource(mediaItem));
     currentItem = mediaItem;
     player.setPlayWhenReady(playWhenReady);
+    LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent
+        (ACTION_MONITOR_TRACK_CHANGED));
   }
 
   @SuppressWarnings("WeakerAccess")

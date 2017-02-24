@@ -88,6 +88,11 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
     }
   }
 
+  @Nullable
+  public MediaItem getCurrentTrack() {
+    return player.getCurrentMediaItem();
+  }
+
   public static class AlbumArtLoader extends CachedLoader<Pair<Icon, Palette>> {
 
     private final MediaItem mediaItem;

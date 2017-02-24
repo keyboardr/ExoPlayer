@@ -19,15 +19,17 @@ import android.widget.ImageView;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
+import com.keyboardr.bluejay.ui.MonitorEditorFragment;
 import com.keyboardr.bluejay.ui.NoSetFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.ui.playlist.SetFragment;
 
 public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.Holder,
-    NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder {
+    NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder, MonitorEditorFragment.Holder {
 
   @SuppressWarnings("PointlessBooleanExpression")
   private static final boolean DEBUG_BYPASS_QUEUE_DEDUPE = BuildConfig.DEBUG && false;
@@ -150,8 +152,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   @Override
   public void playMediaItemOnMonitor(@NonNull MediaItem mediaItem) {
-    ((MonitorControlsFragment) getSupportFragmentManager()
-        .findFragmentById(R.id.monitor_fragment)).playMedia(mediaItem);
+    getMonitorControlsFragment().playMedia(mediaItem);
+  }
+
+  private MonitorControlsFragment getMonitorControlsFragment() {
+    return (MonitorControlsFragment) getSupportFragmentManager()
+        .findFragmentById(R.id.monitor_fragment);
   }
 
   @Override
@@ -204,6 +210,18 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   }
 
   @Override
+  public void editMetadata() {
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.playlist, MonitorEditorFragment.newInstance()).commitNow();
+  }
+
+  @Nullable
+  @Override
+  public MediaItem getCurrentMonitorTrack() {
+    return getMonitorControlsFragment().getCurrentTrack();
+  }
+
+  @Override
   public void endSet() {
     mediaBrowser.disconnect();
     playlistServiceConn.onConnectionSuspended();
@@ -228,5 +246,16 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   @Override
   public View getPlaylistTabView() {
     return playlistTab;
+  }
+
+  @Override
+  public void closeMetadataEditor() {
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+  }
+
+  @Override
+  public ShortlistManager getShortlistManager() {
+    return getLibraryFragment().getShortlistManager();
   }
 }

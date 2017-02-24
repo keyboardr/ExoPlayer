@@ -77,7 +77,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
             app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"
-            tools:layout_editor_absoluteX="180dp"/>
+            tools:layout_editor_absoluteX="300dp"/>
     </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>

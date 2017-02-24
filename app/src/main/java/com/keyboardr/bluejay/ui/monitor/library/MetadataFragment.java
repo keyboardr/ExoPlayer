@@ -78,7 +78,7 @@ public class MetadataFragment extends DialogFragment {
     return metadataFragment;
   }
 
-  private static MetadataFragment newInstance(@NonNull MediaItem mediaItem) {
+  public static MetadataFragment newInstance(@NonNull MediaItem mediaItem) {
     Bundle args = new Bundle();
     args.putParcelable(ARG_MEDIA_ITEM, mediaItem);
     MetadataFragment fragment = new MetadataFragment();

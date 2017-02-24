@@ -10,4 +10,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/start_new_setlist" />
+    <Button
+        android:id="@+id/edit_metadata"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/edit_metadata"/>
 </LinearLayout>

@@ -14,6 +14,8 @@ public class NoSetFragment extends Fragment {
 
     public interface Holder {
         void startNewSetlist();
+
+        void editMetadata();
     }
 
     public static NoSetFragment newInstance() {
@@ -33,6 +35,14 @@ public class NoSetFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 FragmentUtils.getParent(NoSetFragment.this, Holder.class).startNewSetlist();
+            }
+        });
+
+        View editMetadata = view.findViewById(R.id.edit_metadata);
+        editMetadata.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentUtils.getParent(NoSetFragment.this, Holder.class).editMetadata();
             }
         });
     }
