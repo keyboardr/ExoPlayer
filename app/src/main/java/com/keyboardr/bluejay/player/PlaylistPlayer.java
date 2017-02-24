@@ -22,7 +22,7 @@ import java.util.List;
 
 public class PlaylistPlayer extends AbsPlayer {
 
-  private static final boolean DEBUG_SHORT_SONGS = true;
+  private static final boolean DEBUG_SHORT_SONGS = false;
 
   public interface PlaylistChangedListener {
     void onQueueChanged();
