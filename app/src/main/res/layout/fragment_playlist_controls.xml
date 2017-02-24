@@ -15,8 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:layout_editor_absoluteX="0dp"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/controls_title"
@@ -111,7 +110,7 @@
         android:layout_marginBottom="24dp"
         android:visibility="invisible"
         app:layout_constraintEnd_toEndOf="@id/controls_seek"
-        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        app:layout_constraintTop_toBottomOf="@+id/controls_play_pause"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:text="3:15"
         tools:visibility="visible"/>
@@ -122,8 +121,7 @@
         android:layout_height="wrap_content"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="@id/controls_seek"
-        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
-        tools:layout_editor_absoluteX="48dp"
+        app:layout_constraintTop_toBottomOf="@+id/controls_play_pause"
         tools:text="0:15"
         tools:visibility="visible"/>
 
