@@ -121,7 +121,7 @@ public class ShortlistManager {
 
     int index = Collections.binarySearch(shortlists, shortlist);
     if (index >= 0) {
-      shortlists.add(index, shortlist);
+      shortlists.remove(index);
     }
     queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
         MediaShortlistContract.SHORTLIST_ID + " = ? AND "

@@ -198,17 +198,22 @@ public class MetadataFragment extends DialogFragment {
     }
 
     @Override
-    public boolean isChecked() {
-      return shortlistManager.isInShortlist(mediaItem, shortlist);
+    protected Boolean getCheckedState() {
+      return isInShortlist() ? Boolean.TRUE : null;
     }
 
     @Override
-    public void setChecked(boolean checked) {
-      if (checked) {
+    protected void toggleState() {
+      if (!isInShortlist()) {
         shortlistManager.add(mediaItem, shortlist);
       } else {
         shortlistManager.remove(mediaItem, shortlist);
       }
     }
+
+    private boolean isInShortlist() {
+      return shortlistManager.isInShortlist(mediaItem, shortlist);
+    }
+
   }
 }

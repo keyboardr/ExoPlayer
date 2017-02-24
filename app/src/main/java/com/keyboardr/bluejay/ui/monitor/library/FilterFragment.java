@@ -34,11 +34,13 @@ import java.util.Set;
 public class FilterFragment extends DialogFragment {
 
   private static final String STATE_SHORTLISTS = "shortlists";
+  private static final String STATE_DESELECTED_SHORTLISTS = "deselected_shortlists";
 
   private Spinner sortSpinner;
   private RecyclerView shortlistsView;
 
   private Set<Shortlist> selectedShortlists = new ArraySet<>();
+  private Set<Shortlist> deselectedShortlists = new ArraySet<>();
   private BroadcastReceiver shortlistsChangedReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -56,9 +58,14 @@ public class FilterFragment extends DialogFragment {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     if (savedInstanceState != null) {
-      ArrayList<Shortlist> shortlists = savedInstanceState.getParcelableArrayList(STATE_SHORTLISTS);
-      if (shortlists != null) {
-        selectedShortlists.addAll(shortlists);
+      ArrayList<Shortlist> selected = savedInstanceState.getParcelableArrayList(STATE_SHORTLISTS);
+      if (selected != null) {
+        selectedShortlists.addAll(selected);
+      }
+      ArrayList<Shortlist> deselected = savedInstanceState.getParcelableArrayList
+          (STATE_DESELECTED_SHORTLISTS);
+      if (deselected != null) {
+        deselectedShortlists.addAll(deselected);
       }
     }
   }
@@ -142,25 +149,36 @@ public class FilterFragment extends DialogFragment {
     }
 
     @Override
-    protected void setChecked(boolean checked) {
-      if (checked) {
+    protected void toggleState() {
+      Boolean oldState = getCheckedState();
+      if (oldState == null) {
         selectedShortlists.add(shortlist);
       } else {
-        selectedShortlists.remove(shortlist);
+        if (oldState) {
+          selectedShortlists.remove(shortlist);
+          deselectedShortlists.add(shortlist);
+        } else {
+          deselectedShortlists.remove(shortlist);
+        }
       }
       updateFilterInfo();
     }
 
     @Override
-    protected boolean isChecked() {
-      return selectedShortlists.contains(shortlist);
+    @Nullable
+    protected Boolean getCheckedState() {
+      return selectedShortlists.contains(shortlist)
+          ? Boolean.TRUE
+          : (deselectedShortlists.contains(shortlist)
+                 ? Boolean.FALSE
+                 : null);
     }
   }
 
   private void updateFilterInfo() {
     //noinspection WrongConstant
     getParent().setLibraryFilter(new FilterInfo(sortSpinner.getSelectedItemPosition(),
-        selectedShortlists));
+        selectedShortlists, deselectedShortlists));
   }
 
   @NonNull

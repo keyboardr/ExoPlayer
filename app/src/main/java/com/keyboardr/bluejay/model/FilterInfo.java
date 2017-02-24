@@ -32,10 +32,14 @@ public class FilterInfo implements Parcelable {
 
   @NonNull
   public final Set<Shortlist> requiredShortlists;
+  @NonNull
+  public final Set<Shortlist> disallowedShortlists;
 
-  public FilterInfo(@SortMethod int sortMethod, @NonNull Set<Shortlist> requiredShortlists) {
+  public FilterInfo(@SortMethod int sortMethod, @NonNull Set<Shortlist> requiredShortlists,
+                    @NonNull Set<Shortlist> disallowedShortlists) {
     this.sortMethod = sortMethod;
     this.requiredShortlists = requiredShortlists;
+    this.disallowedShortlists = disallowedShortlists;
   }
 
   @NonNull
@@ -50,14 +54,30 @@ public class FilterInfo implements Parcelable {
       if (shortlists == null) {
         shortlists = new ArrayList<>();
       }
-      for (Shortlist required : requiredShortlists) {
-        if (!shortlists.contains(required)) {
-          source.remove(i);
-          break;
-        }
+
+      if (containsDisallowed(shortlists) || !containsAllRequired(shortlists)) {
+        source.remove(i);
       }
     }
     Collections.sort(source, getSorting());
+  }
+
+  private boolean containsDisallowed(List<Shortlist> shortlists) {
+    for (Shortlist shortlist : shortlists) {
+      if (disallowedShortlists.contains(shortlist)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private boolean containsAllRequired(List<Shortlist> shortlists) {
+    for (Shortlist required : requiredShortlists) {
+      if (!shortlists.contains(required)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   private static class MediaItemComparator implements Comparator<MediaItem> {
@@ -93,6 +113,7 @@ public class FilterInfo implements Parcelable {
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeInt(this.sortMethod);
     dest.writeTypedList(new ArrayList<>(requiredShortlists));
+    dest.writeTypedList(new ArrayList<>(disallowedShortlists));
   }
 
   protected FilterInfo(Parcel in) {
@@ -101,6 +122,9 @@ public class FilterInfo implements Parcelable {
     ArrayList<Shortlist> shortlists = in.readArrayList(null);
     requiredShortlists = new ArraySet<>();
     requiredShortlists.addAll(shortlists);
+    shortlists = in.readArrayList(null);
+    disallowedShortlists = new ArraySet<>();
+    disallowedShortlists.addAll(shortlists);
   }
 
   public static final Parcelable.Creator<FilterInfo> CREATOR = new Parcelable.Creator<FilterInfo>
