@@ -14,11 +14,14 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.ArraySet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
 
@@ -41,6 +44,7 @@ public class FilterFragment extends DialogFragment {
 
   private Set<Shortlist> selectedShortlists = new ArraySet<>();
   private Set<Shortlist> deselectedShortlists = new ArraySet<>();
+  private String filterText;
   private BroadcastReceiver shortlistsChangedReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -126,6 +130,22 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
+    ((EditText) view.findViewById(R.id.filter_text)).addTextChangedListener(new TextWatcher() {
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+        filterText = charSequence.toString();
+        updateFilterInfo();
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+      }
+    });
+
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
         new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
   }
@@ -140,6 +160,8 @@ public class FilterFragment extends DialogFragment {
   public void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
     outState.putParcelableArrayList(STATE_SHORTLISTS, new ArrayList<>(selectedShortlists));
+    outState.putParcelableArrayList(STATE_DESELECTED_SHORTLISTS,
+        new ArrayList<>(deselectedShortlists));
   }
 
   private class FilterShortlistViewHolder extends ShortlistViewHolder {
@@ -178,7 +200,7 @@ public class FilterFragment extends DialogFragment {
   private void updateFilterInfo() {
     //noinspection WrongConstant
     getParent().setLibraryFilter(new FilterInfo(sortSpinner.getSelectedItemPosition(),
-        selectedShortlists, deselectedShortlists));
+        selectedShortlists, deselectedShortlists, filterText));
   }
 
   @NonNull

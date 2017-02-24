@@ -25,7 +25,7 @@ abstract class ShortlistAdapter<T extends ShortlistViewHolder>
 
   @Override
   public int getItemCount() {
-    return shortlistManager.getShortlists().size();
+    return shortlistManager.isReady() ? shortlistManager.getShortlists().size() : 0;
   }
 
   @Override

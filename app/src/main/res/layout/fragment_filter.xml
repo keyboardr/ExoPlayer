@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:tools="http://schemas.android.com/tools"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:padding="16dp">
 
     <TextView
@@ -15,21 +15,49 @@
         android:id="@+id/sort"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_column="1"
         android:layout_columnWeight="1"
+        android:layout_row="0"
         android:entries="@array/sort_methods"
         android:padding="8dp"/>
 
     <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_column="0"
+        android:labelFor="@+id/filter_text"
+        android:text="@string/title_filter"/>
+
+    <!-- Dummy view to keep EditText from getting focus on start -->
+    <View
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
         android:layout_row="1"
+        android:focusable="true"
+        android:focusableInTouchMode="true"/>
+
+    <EditText
+        android:id="@+id/filter_text"
+        android:layout_width="wrap_content"
+        android:layout_column="1"
+        android:layout_columnWeight="1"
+        android:layout_row="1"
+        android:inputType="text"
+        android:nextFocusLeft="@+id/sort"
+        android:nextFocusUp="@+id/sort"/>
+
+    <TextView
+        android:layout_marginTop="8dp"
+        android:layout_column="0"
         android:text="@string/shortlists_label"/>
 
     <android.support.v7.widget.RecyclerView
-        android:layout_column="0"
-        android:layout_row="2"
-        android:layout_columnSpan="2"
+        android:id="@+id/shortlists"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools:listitem="@android:layout/simple_list_item_multiple_choice"
-        android:id="@+id/shortlists"/>
+        android:layout_column="0"
+        android:layout_columnSpan="2"
+        tools:listitem="@android:layout/simple_list_item_multiple_choice"/>
 </GridLayout>

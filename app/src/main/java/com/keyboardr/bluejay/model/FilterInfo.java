@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.ArraySet;
 
 import com.keyboardr.bluejay.provider.ShortlistManager;
@@ -34,12 +36,15 @@ public class FilterInfo implements Parcelable {
   public final Set<Shortlist> requiredShortlists;
   @NonNull
   public final Set<Shortlist> disallowedShortlists;
+  @Nullable
+  public final String filterString;
 
   public FilterInfo(@SortMethod int sortMethod, @NonNull Set<Shortlist> requiredShortlists,
-                    @NonNull Set<Shortlist> disallowedShortlists) {
+                    @NonNull Set<Shortlist> disallowedShortlists, @Nullable String filterString) {
     this.sortMethod = sortMethod;
     this.requiredShortlists = requiredShortlists;
     this.disallowedShortlists = disallowedShortlists;
+    this.filterString = filterString;
   }
 
   @NonNull
@@ -55,11 +60,19 @@ public class FilterInfo implements Parcelable {
         shortlists = new ArrayList<>();
       }
 
-      if (containsDisallowed(shortlists) || !containsAllRequired(shortlists)) {
+      if (!containsFilterString(item) || containsDisallowed(shortlists)
+          || !containsAllRequired(shortlists)) {
         source.remove(i);
       }
     }
     Collections.sort(source, getSorting());
+  }
+
+  private boolean containsFilterString(@NonNull MediaItem mediaItem) {
+    return TextUtils.isEmpty(filterString)
+        || mediaItem.title.toString().toLowerCase().contains(filterString.toLowerCase())
+        || mediaItem.artist.toString().toLowerCase().contains(filterString.toLowerCase());
+
   }
 
   private boolean containsDisallowed(List<Shortlist> shortlists) {
@@ -114,6 +127,7 @@ public class FilterInfo implements Parcelable {
     dest.writeInt(this.sortMethod);
     dest.writeTypedList(new ArrayList<>(requiredShortlists));
     dest.writeTypedList(new ArrayList<>(disallowedShortlists));
+    dest.writeString(filterString);
   }
 
   protected FilterInfo(Parcel in) {
@@ -125,6 +139,7 @@ public class FilterInfo implements Parcelable {
     shortlists = in.readArrayList(null);
     disallowedShortlists = new ArraySet<>();
     disallowedShortlists.addAll(shortlists);
+    filterString = in.readString();
   }
 
   public static final Parcelable.Creator<FilterInfo> CREATOR = new Parcelable.Creator<FilterInfo>

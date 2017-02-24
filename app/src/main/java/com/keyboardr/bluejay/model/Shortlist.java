@@ -4,6 +4,8 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import java.util.Objects;
+
 public class Shortlist implements Parcelable, Comparable<Shortlist> {
     private final long id;
     private final String name;
@@ -53,5 +55,23 @@ public class Shortlist implements Parcelable, Comparable<Shortlist> {
     @Override
     public int compareTo(@NonNull Shortlist shortlist) {
         return getId() > shortlist.getId() ? 1 : getId() == shortlist.getId() ? 0 : -1;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        Shortlist shortlist = (Shortlist) o;
+        return id == shortlist.id &&
+            Objects.equals(name, shortlist.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, name);
     }
 }
