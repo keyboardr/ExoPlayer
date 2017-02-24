@@ -133,6 +133,9 @@ public class ShortlistManager {
     if (cachedShortlists != null) {
       return cachedShortlists;
     }
+    if (shortlists == null) {
+      return Collections.emptyList();
+    }
     ArrayList<Shortlist> result = new ArrayList<>(shortlists.size());
     for (int i = 0; i < shortlists.size(); i++) {
       result.add(shortlists.valueAt(i));
