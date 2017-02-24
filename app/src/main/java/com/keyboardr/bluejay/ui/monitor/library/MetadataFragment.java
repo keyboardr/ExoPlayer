@@ -15,7 +15,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -27,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.flexbox.FlexboxLayoutManager;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
@@ -110,8 +110,7 @@ public class MetadataFragment extends DialogFragment {
     ((TextView) view.findViewById(R.id.artist)).setText(mediaItem.artist);
 
     shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
-    shortlistsView.setLayoutManager(new GridLayoutManager(getContext(), 3));
-    // TODO: 12/2/2016 set span count based on width
+    shortlistsView.setLayoutManager(new FlexboxLayoutManager());
     shortlistsView.setAdapter(new ShortlistAdapter<MetadataShortlistViewHolder>(shortlistManager) {
 
       @Override

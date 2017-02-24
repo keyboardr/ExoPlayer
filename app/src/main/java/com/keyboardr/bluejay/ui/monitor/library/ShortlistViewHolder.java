@@ -26,6 +26,9 @@ public abstract class ShortlistViewHolder extends RecyclerView.ViewHolder implem
         android.R.layout.simple_list_item_multiple_choice, parent, false));
     checkableView = (CheckedTextView) itemView.findViewById(android.R.id.text1);
     checkableView.setOnClickListener(this);
+    ViewGroup.LayoutParams layoutParams = checkableView.getLayoutParams();
+    layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+    checkableView.setLayoutParams(layoutParams);
   }
 
   public void bindItem(@NonNull Shortlist shortlist) {
