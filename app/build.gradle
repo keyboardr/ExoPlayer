@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        config {
+            keyAlias 'keyboardr'
+            keyPassword 'father'
+            storeFile file('C:/Users/Keyboardr/AndroidstudioProjects/dancedj/key.store')
+            storePassword 'IRTehH4x0r'
+        }
+    }
     compileSdkVersion project.ext.compileSdkVersion
     buildToolsVersion project.ext.buildToolsVersion
     defaultConfig {
@@ -15,6 +23,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            applicationIdSuffix ".debug"
         }
     }
 }
