@@ -110,7 +110,7 @@
         android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/controls_seek"
-        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        app:layout_constraintTop_toBottomOf="@+id/controls_play_pause"
         tools:ignore="RtlSymmetry"
         tools:text="3:15"
         tools:visibility="visible"/>
@@ -122,7 +122,7 @@
         android:paddingStart="16dp"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="@id/controls_seek"
-        app:layout_constraintTop_toBottomOf="@+id/controls_seek"
+        app:layout_constraintTop_toBottomOf="@+id/controls_play_pause"
         tools:ignore="RtlSymmetry"
         tools:text="0:15"
         tools:visibility="visible"/>
