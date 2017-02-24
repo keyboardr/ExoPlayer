@@ -2,6 +2,7 @@ package com.keyboardr.bluejay.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,7 +15,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -47,25 +47,29 @@ public class FilterInfo implements Parcelable {
     this.filterString = filterString;
   }
 
-  @NonNull
-  private Comparator<MediaItem> getSorting() {
-    return new MediaItemComparator(sortMethod);
+  public String getSortColumn() {
+    switch (sortMethod) {
+      case SortMethod.ID:
+        return MediaStore.Audio.Media._ID;
+      case SortMethod.TITLE:
+        return MediaStore.Audio.Media.TITLE;
+      case SortMethod.ARTIST:
+        return MediaStore.Audio.Media.ARTIST;
+      case SortMethod.DURATION:
+        return MediaStore.Audio.Media.DURATION;
+      default:
+        throw new IllegalStateException("Unknown SortMethod: " + sortMethod);
+    }
   }
 
-  public void apply(@NonNull List<MediaItem> source, @NonNull ShortlistManager shortlistManager) {
-    for (int i = source.size() - 1; i >= 0; i--) {
-      MediaItem item = source.get(i);
-      List<Shortlist> shortlists = shortlistManager.getShortlists(item);
-      if (shortlists == null) {
-        shortlists = new ArrayList<>();
-      }
-
-      if (!containsFilterString(item) || containsDisallowed(shortlists)
-          || !containsAllRequired(shortlists)) {
-        source.remove(i);
-      }
+  public boolean isAllowed(@NonNull MediaItem mediaItem,
+                           @NonNull ShortlistManager shortlistManager) {
+    List<Shortlist> shortlists = shortlistManager.getShortlists(mediaItem);
+    if (shortlists == null) {
+      shortlists = Collections.emptyList();
     }
-    Collections.sort(source, getSorting());
+    return containsFilterString(mediaItem) && !containsDisallowed(shortlists)
+        && containsAllRequired(shortlists);
   }
 
   private boolean containsFilterString(@NonNull MediaItem mediaItem) {
@@ -91,30 +95,6 @@ public class FilterInfo implements Parcelable {
       }
     }
     return true;
-  }
-
-  private static class MediaItemComparator implements Comparator<MediaItem> {
-    @SortMethod
-    private final int sortMethod;
-
-    public MediaItemComparator(@SortMethod int sortMethod) {
-      this.sortMethod = sortMethod;
-    }
-
-    @Override
-    public int compare(MediaItem left, MediaItem right) {
-      switch (sortMethod) {
-        case SortMethod.ID:
-          return Long.compare(left.getTransientId(), right.getTransientId());
-        case SortMethod.TITLE:
-          return left.title.toString().compareTo(right.title.toString());
-        case SortMethod.ARTIST:
-          return left.artist.toString().compareTo(right.artist.toString());
-        case SortMethod.DURATION:
-          return Long.compare(left.getDuration(), right.getDuration());
-      }
-      return 0;
-    }
   }
 
   @Override

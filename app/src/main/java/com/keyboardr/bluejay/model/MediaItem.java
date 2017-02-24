@@ -16,6 +16,7 @@ import android.support.v4.util.Pair;
 import android.support.v7.graphics.Palette;
 import android.text.TextUtils;
 import android.util.Log;
+import android.util.LongSparseArray;
 
 import com.keyboardr.bluejay.R;
 
@@ -37,6 +38,8 @@ public class MediaItem implements Parcelable {
   private final long transientMediaId;
   @Nullable
   public final Uri thumbnailUri;
+
+  public static final LongSparseArray<Uri> thumbnailUriCache = new LongSparseArray<>();
 
   public static Builder build() {
     return new Builder();
@@ -60,6 +63,12 @@ public class MediaItem implements Parcelable {
     if (albumId == -1) {
       return null;
     }
+
+    Uri cached = thumbnailUriCache.get(albumId);
+    if (cached != null) {
+      return cached;
+    }
+
     try (Cursor cursor = context.getContentResolver().query(
         MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
         new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
@@ -71,7 +80,9 @@ public class MediaItem implements Parcelable {
         if (artPath == null) {
           return null;
         }
-        return new Uri.Builder().scheme(ContentResolver.SCHEME_FILE).path(artPath).build();
+        Uri uri = new Uri.Builder().scheme(ContentResolver.SCHEME_FILE).path(artPath).build();
+        thumbnailUriCache.put(albumId, uri);
+        return uri;
       }
     }
     return null;

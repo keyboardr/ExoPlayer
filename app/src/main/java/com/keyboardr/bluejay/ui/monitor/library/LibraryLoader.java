@@ -49,7 +49,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
     try {
       Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection,
-          null, null, mCancellationSignal);
+          null, filterInfo == null ? null : filterInfo.getSortColumn(), mCancellationSignal);
       if (cursor != null) {
         try {
           // Ensure the cursor window is filled.
@@ -70,7 +70,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
 
   @WorkerThread
   private List<MediaItem> processCursor(@Nullable Cursor cursor) {
-    if (mCursor != null) {
+    if (mCursor != null && mCursor != cursor) {
       mCursor.close();
     }
     mCursor = cursor;
@@ -84,18 +84,18 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
         int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
         int mediaIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
         do {
-          result.add(MediaItem.build()
+          MediaItem item = MediaItem.build()
               .setArtist(cursor.getString(artistColumn))
               .setTitle(cursor.getString(titleColumn))
               .setAlbumId(cursor.getLong(albumIdColumn))
               .setDuration(cursor.getLong(durationColumn))
               .setPath(cursor.getString(dataColumn))
-              .make(getContext(), cursor.getLong(mediaIdColumn)));
+              .make(getContext(), cursor.getLong(mediaIdColumn));
+          if (filterInfo == null || filterInfo.isAllowed(item, shortlistManager)) {
+            result.add(item);
+          }
         } while (cursor.moveToNext());
       }
-    }
-    if (filterInfo != null) {
-      filterInfo.apply(result, shortlistManager);
     }
     return result;
   }
