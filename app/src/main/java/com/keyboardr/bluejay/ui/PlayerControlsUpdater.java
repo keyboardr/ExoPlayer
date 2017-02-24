@@ -141,8 +141,8 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
                 }
               });
         } else {
-          final int color = data.second.getDarkMutedColor(
-              backgroundOverlay.getContext().getColor(R.color.colorPrimaryDark));
+          final int color = data.second.getDarkMutedColor(data.second.getDarkVibrantColor(
+              backgroundOverlay.getContext().getColor(R.color.colorPrimaryDark)));
           backgroundOverlay.setBackgroundColor(color);
           backgroundOverlay.setVisibility(View.VISIBLE);
           int startX = albumArtContainer.getLeft() + albumArtContainer.getWidth() / 2;
