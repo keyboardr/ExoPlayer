@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'keyboardr'
             keyPassword 'father'
-            storeFile file('C:/Users/Keyboardr/AndroidstudioProjects/dancedj/key.store')
+            storeFile file('../key.store')
             storePassword 'IRTehH4x0r'
         }
     }
@@ -29,6 +29,7 @@ android {
             applicationIdSuffix ".debug"
         }
     }
+    buildToolsVersion '25.0.0'
 }
 
 dependencies {
