@@ -1,63 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:colorPrimaryDark"
+        android:orientation="vertical"
+        android:outlineProvider="none"
+        app:expanded="true">
+
+        <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:paddingTop="16dp"
+            app:layout_scrollFlags="scroll">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/title_sort"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/title_sort"/>
 
-    <Spinner
-        android:id="@+id/sort"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="1"
-        android:layout_columnWeight="1"
-        android:layout_row="0"
-        android:entries="@array/sort_methods"
-        android:padding="8dp"/>
+            <Spinner
+                android:id="@+id/sort"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_row="0"
+                android:entries="@array/sort_methods"
+                android:padding="8dp"/>
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_column="0"
-        android:labelFor="@+id/filter_text"
-        android:text="@string/title_filter"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:labelFor="@+id/filter_text"
+                android:text="@string/title_filter"/>
 
-    <!-- Dummy view to keep EditText from getting focus on start -->
-    <View
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_column="1"
-        android:layout_columnWeight="1"
-        android:layout_row="1"
-        android:focusable="true"
-        android:focusableInTouchMode="true"/>
+            <!-- Dummy view to keep EditText from getting focus on start -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_row="1"
+                android:focusable="true"
+                android:focusableInTouchMode="true"/>
 
-    <EditText
-        android:id="@+id/filter_text"
-        android:layout_width="wrap_content"
-        android:layout_column="1"
-        android:layout_columnWeight="1"
-        android:layout_row="1"
-        android:inputType="text"
-        android:nextFocusLeft="@+id/sort"
-        android:nextFocusUp="@+id/sort"/>
+            <EditText
+                android:id="@+id/filter_text"
+                android:layout_width="wrap_content"
+                android:layout_column="1"
+                android:layout_columnWeight="1"
+                android:layout_row="1"
+                android:inputType="text"
+                android:nextFocusLeft="@+id/sort"
+                android:nextFocusUp="@+id/sort"/>
+        </GridLayout>
 
-    <TextView
-        android:layout_marginTop="8dp"
-        android:layout_column="0"
-        android:text="@string/shortlists_label"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/shortlists_label"
+            app:layout_scrollFlags="snap"
+            tools:ignore="RtlSymmetry"/>
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/shortlists"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_column="0"
-        android:layout_columnSpan="2"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@android:layout/simple_list_item_multiple_choice"/>
-</GridLayout>
+</android.support.design.widget.CoordinatorLayout>
