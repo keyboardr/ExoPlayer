@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,38 +13,47 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 
 public class NoSetFragment extends Fragment {
 
-    public interface Holder {
-        void startNewSetlist();
+  public interface Holder {
+    void startNewSetlist();
 
-        void editMetadata();
-    }
+    void editMetadata();
+  }
 
-    public static NoSetFragment newInstance() {
-        return new NoSetFragment();
-    }
+  public static NoSetFragment newInstance() {
+    return new NoSetFragment();
+  }
 
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_no_setlist, container, false);
-    }
+  @Nullable
+  @Override
+  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.fragment_no_setlist, container, false);
+  }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        view.findViewById(R.id.new_setlist).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentUtils.getParent(NoSetFragment.this, Holder.class).startNewSetlist();
-            }
-        });
+  @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    FragmentUtils.checkParent(this, Holder.class);
+  }
 
-        View editMetadata = view.findViewById(R.id.edit_metadata);
-        editMetadata.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FragmentUtils.getParent(NoSetFragment.this, Holder.class).editMetadata();
-            }
-        });
-    }
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    view.findViewById(R.id.new_setlist).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).startNewSetlist();
+      }
+    });
+
+    View editMetadata = view.findViewById(R.id.edit_metadata);
+    editMetadata.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).editMetadata();
+      }
+    });
+    editMetadata.setVisibility(getResources().getBoolean(R.bool.allow_library_editor)
+        ? View.VISIBLE : View.GONE);
+  }
 }
