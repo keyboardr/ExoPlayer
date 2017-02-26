@@ -138,12 +138,12 @@ public abstract class AbsPlayer implements Player {
   }
 
   @Override
-  public int getAudioOutputId() {
+  public int getAudioOutputType() {
     if (player == null) {
       return -1;
     }
     AudioDeviceInfo audioOutput = player.getAudioOutput();
-    return audioOutput != null ? audioOutput.getId() : -1;
+    return audioOutput != null ? audioOutput.getType() : AudioDeviceInfo.TYPE_UNKNOWN;
   }
 
   @NonNull

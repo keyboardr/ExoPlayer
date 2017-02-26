@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AudioSelectionManager {
-    public static final boolean SPINNER_ENABLED = false;
+    public static final boolean SPINNER_ENABLED = true;
 
     public interface DefaultDeviceSelector {
         boolean canBeDefault(AudioDeviceInfo deviceInfo);
@@ -64,12 +64,12 @@ public class AudioSelectionManager {
             ArrayList<AudioDeviceInfo> newDevices = (devices == null)
                     ? new ArrayList<AudioDeviceInfo>() : new ArrayList<>(Arrays.asList(devices));
             boolean currentRemoved = false;
-            int audioOutput = player.getAudioOutputId();
+            int audioOutput = player.getAudioOutputType();
             for (AudioDeviceInfo device : removedDevices) {
                 for (int i = newDevices.size() - 1; i >= 0; i--) {
                     if (device.getId() == newDevices.get(i).getId()) {
                         newDevices.remove(i);
-                        if (audioOutput != -1 && audioOutput == device.getId()) {
+                        if (audioOutput != -1 && audioOutput == device.getType()) {
                             currentRemoved = true;
                         }
                     }
@@ -78,7 +78,7 @@ public class AudioSelectionManager {
             if (newDevices.size() != originalSize) {
                 setDevices(newDevices.toArray(new AudioDeviceInfo[newDevices.size()]));
             }
-            if (currentRemoved) {
+            if (currentRemoved && SPINNER_ENABLED) {
                 player.setAudioOutput(null);
                 audioDeviceSpinner.setSelection(0);
             }
@@ -118,27 +118,40 @@ public class AudioSelectionManager {
 
     private void setDevices(@Nullable AudioDeviceInfo[] devices) {
         this.devices = devices;
-        if (SPINNER_ENABLED) {
-            if (audioOutputAdapter != null) {
-                audioOutputAdapter.notifyDataSetChanged();
-            }
+        AudioDeviceInfo selectedDefault = null;
+        if (defaultDeviceSelector == null) {
+            player.setAudioOutput(null);
         } else {
-            if (defaultDeviceSelector == null) {
-                player.setAudioOutput(null);
-            } else {
-                boolean found = false;
-                if (devices != null) {
-                    for (AudioDeviceInfo deviceInfo : devices) {
-                        if (defaultDeviceSelector.canBeDefault(deviceInfo)) {
-                            player.setAudioOutput(deviceInfo);
-                            found = true;
-                            break;
-                        }
+            if (devices != null) {
+                for (AudioDeviceInfo deviceInfo : devices) {
+                    if (defaultDeviceSelector.canBeDefault(deviceInfo)) {
+                        player.setAudioOutput(deviceInfo);
+                        selectedDefault = deviceInfo;
+                        break;
                     }
                 }
-                if (!found) {
-                    defaultDeviceSelector.onNoDeviceFound();
+            }
+            if (selectedDefault == null) {
+                defaultDeviceSelector.onNoDeviceFound();
+            }
+        }
+
+        if (SPINNER_ENABLED) {
+            audioOutputAdapter.notifyDataSetChanged();
+            boolean setSelection = false;
+            if (selectedDefault != null) {
+                for (int i = 0; i < audioOutputAdapter.getCount(); i++) {
+                    AudioDeviceInfo item = (AudioDeviceInfo) audioOutputAdapter.getItem(i);
+                    if (item != null && item.getId() == selectedDefault.getId()) {
+                        audioDeviceSpinner.setSelection(i);
+                        setSelection = true;
+                        break;
+                    }
                 }
+            }
+
+            if (!setSelection) {
+                audioDeviceSpinner.setSelection(0);
             }
         }
     }
