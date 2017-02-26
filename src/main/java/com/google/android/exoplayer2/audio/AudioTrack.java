@@ -583,6 +583,14 @@ public final class AudioTrack {
                         Log.d(TAG, "onRoutingChanged() called with: router = [" + router + "]");
                     }
                 }, null);
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                //noinspection deprecation
+                audioTrack.addOnRoutingChangedListener(new android.media.AudioTrack.OnRoutingChangedListener() {
+                    @Override
+                    public void onRoutingChanged(android.media.AudioTrack audioTrack) {
+                        Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
+                    }
+                }, null);
             }
         }
     }
