@@ -26,6 +26,7 @@ import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 
 import com.google.android.exoplayer2.C;
@@ -576,22 +577,27 @@ public final class AudioTrack {
             if (!audioTrack.setPreferredDevice(preferredOutputDevice)) {
                 Log.w(TAG, "applyPreferredOutputDevice: setPreferredDevice failed");
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                audioTrack.addOnRoutingChangedListener(new AudioRouting.OnRoutingChangedListener() {
-                    @Override
-                    public void onRoutingChanged(AudioRouting router) {
-                        Log.d(TAG, "onRoutingChanged() called with: router = [" + router + "]");
-                    }
-                }, null);
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                //noinspection deprecation
-                audioTrack.addOnRoutingChangedListener(new android.media.AudioTrack.OnRoutingChangedListener() {
-                    @Override
-                    public void onRoutingChanged(android.media.AudioTrack audioTrack) {
-                        Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
-                    }
-                }, null);
-            }
+            addListener();
+        }
+    }
+
+    @RequiresApi(23)
+    private void addListener() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            audioTrack.addOnRoutingChangedListener(new AudioRouting.OnRoutingChangedListener() {
+                @Override
+                public void onRoutingChanged(AudioRouting router) {
+                    Log.d(TAG, "onRoutingChanged() called with: router = [" + router + "]");
+                }
+            }, null);
+        } else {
+            //noinspection deprecation
+            audioTrack.addOnRoutingChangedListener(new android.media.AudioTrack.OnRoutingChangedListener() {
+                @Override
+                public void onRoutingChanged(android.media.AudioTrack audioTrack) {
+                    Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
+                }
+            }, null);
         }
     }
 
