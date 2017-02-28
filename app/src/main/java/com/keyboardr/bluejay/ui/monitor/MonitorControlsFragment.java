@@ -2,6 +2,7 @@ package com.keyboardr.bluejay.ui.monitor;
 
 import android.content.Context;
 import android.graphics.drawable.Icon;
+import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -22,8 +23,8 @@ import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.CachedLoader;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
-public class MonitorControlsFragment extends Fragment implements PlayerControlsUpdater
-    .OnAlbumArtListener {
+public class MonitorControlsFragment extends Fragment
+    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.DefaultDeviceSelector {
 
   @SuppressWarnings("unused")
   public static MonitorControlsFragment newInstance() {
@@ -50,7 +51,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, null);
+        (Spinner) view.findViewById(R.id.controls_spinner), player, this);
     uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager(), this);
   }
 
@@ -91,6 +92,15 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
   @Nullable
   public MediaItem getCurrentTrack() {
     return player.getCurrentMediaItem();
+  }
+
+  @Override
+  public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
+    return deviceInfo.getType() != AudioDeviceInfo.TYPE_USB_DEVICE;
+  }
+
+  @Override
+  public void onNoDeviceFound() {
   }
 
   public static class AlbumArtLoader extends CachedLoader<Pair<Icon, Palette>> {
