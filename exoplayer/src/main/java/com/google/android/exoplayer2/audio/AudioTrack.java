@@ -594,8 +594,13 @@ public final class AudioTrack {
             //noinspection deprecation
             audioTrack.addOnRoutingChangedListener(new android.media.AudioTrack.OnRoutingChangedListener() {
                 @Override
-                public void onRoutingChanged(android.media.AudioTrack audioTrack) {
+                public void onRoutingChanged(@Nullable android.media.AudioTrack audioTrack) {
                     Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
+                }
+
+                @Override
+                public void onRoutingChanged(AudioRouting router) {
+                    onRoutingChanged((android.media.AudioTrack) null);
                 }
             }, null);
         }

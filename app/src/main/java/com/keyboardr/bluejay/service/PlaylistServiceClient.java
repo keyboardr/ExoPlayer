@@ -53,9 +53,6 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   @Nullable
   private List<MediaSessionCompat.QueueItem> queue;
 
-  @Nullable
-  private List<MediaSessionCompat.QueueItem> queue;
-
   private final MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
 
     private int lastKnownIndex = -1;
