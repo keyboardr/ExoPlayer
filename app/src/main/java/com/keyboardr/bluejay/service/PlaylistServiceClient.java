@@ -53,6 +53,9 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   @Nullable
   private List<MediaSessionCompat.QueueItem> queue;
 
+  @Nullable
+  private List<MediaSessionCompat.QueueItem> queue;
+
   private final MediaControllerCompat.Callback callback = new MediaControllerCompat.Callback() {
 
     private int lastKnownIndex = -1;
@@ -112,8 +115,8 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   @Override
   public void setAudioOutput(@Nullable AudioDeviceInfo deviceInfo) {
     Bundle extras = new Bundle();
-    extras.putInt(PlaylistMediaService.EXTRA_OUTPUT_ID,
-        deviceInfo != null ? deviceInfo.getId() : -1);
+    extras.putInt(PlaylistMediaService.EXTRA_OUTPUT_TYPE,
+        deviceInfo != null ? deviceInfo.getType() : AudioDeviceInfo.TYPE_UNKNOWN);
     mediaController.sendCommand(PlaylistMediaService.COMMAND_SET_OUTPUT, extras, null);
   }
 
@@ -184,13 +187,13 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   }
 
   @Override
-  public int getAudioOutputId() {
+  public int getAudioOutputType() {
     Bundle extras = mediaController.getExtras();
     if (extras == null) {
       return -1;
     }
     extras.setClassLoader(getClass().getClassLoader());
-    return extras.getInt(PlaylistMediaService.EXTRA_OUTPUT_ID, -1);
+    return extras.getInt(PlaylistMediaService.EXTRA_OUTPUT_TYPE, -1);
   }
 
   @Override

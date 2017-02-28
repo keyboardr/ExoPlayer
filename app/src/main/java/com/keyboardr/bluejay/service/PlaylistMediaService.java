@@ -48,7 +48,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   static final String COMMAND_ADD_TO_QUEUE = "addToQueue";
   static final String COMMAND_MOVE = "move";
   static final String EXTRA_MEDIA_ITEM = "PlaylistMediaService.mediaItem";
-  static final String EXTRA_OUTPUT_ID = "outputId";
+  static final String EXTRA_OUTPUT_TYPE = "outputId";
   static final String EXTRA_INDEX = "index";
   static final String EXTRA_NEW_INDEX = "newIndex";
   static final String EXTRA_CONTINUE_ON_DONE = "continueOnDone";
@@ -84,22 +84,22 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       extras.setClassLoader(getClassLoader());
       switch (command) {
         case COMMAND_SET_OUTPUT:
-          int outputId = extras.getInt(EXTRA_OUTPUT_ID);
-          if (outputId == -1) {
+          int outputType = extras.getInt(EXTRA_OUTPUT_TYPE);
+          if (outputType == AudioDeviceInfo.TYPE_UNKNOWN) {
             player.setAudioOutput(null);
-            updateOutputId();
+            updateOutputType();
             return;
           }
           AudioDeviceInfo[] devices = getSystemService(AudioManager.class).getDevices(AudioManager
               .GET_DEVICES_OUTPUTS);
           for (AudioDeviceInfo deviceInfo : devices) {
-            if (deviceInfo.getId() == outputId) {
+            if (deviceInfo.getType() == outputType) {
               player.setAudioOutput(deviceInfo);
-              updateOutputId();
+              updateOutputType();
               return;
             }
           }
-          Log.w(TAG, "setPlayerOutput() output not found: " + outputId);
+          Log.w(TAG, "setPlayerOutput() output not found: " + outputType);
           break;
         case COMMAND_ADD_TO_QUEUE:
           MediaItem mediaItem = extras.getParcelable(EXTRA_MEDIA_ITEM);
@@ -154,7 +154,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
     setSessionToken(mediaSession.getSessionToken());
 
-    updateOutputId();
+    updateOutputType();
     updatePlaybackState();
     updateMetadata();
 
@@ -222,12 +222,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     result.sendResult(null);
   }
 
-  private void updateOutputId() {
+  private void updateOutputType() {
     Bundle extras = mediaSession.getController().getExtras();
     if (extras == null) {
       extras = new Bundle();
     }
-    extras.putInt(EXTRA_OUTPUT_ID, player.getAudioOutputId());
+    extras.putInt(EXTRA_OUTPUT_TYPE, player.getAudioOutputType());
     mediaSession.setExtras(extras);
   }
 

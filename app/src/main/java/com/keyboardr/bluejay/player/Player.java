@@ -36,7 +36,7 @@ public interface Player {
 
     void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo);
 
-    int getAudioOutputId();
+    int getAudioOutputType();
 
     @PlayState
     int getPlayState();
