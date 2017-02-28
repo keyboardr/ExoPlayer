@@ -15,6 +15,7 @@ android {
         applicationId "com.keyboardr.bluejay"
         minSdkVersion 23
         targetSdkVersion project.ext.targetSdkVersion
+        resConfigs "en"
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -29,7 +30,7 @@ android {
             applicationIdSuffix ".debug"
         }
     }
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.2'
 }
 
 dependencies {

@@ -15,6 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.google.android.exoplayer2.BuildConfig;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.player.Player;
 
@@ -22,7 +23,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class AudioSelectionManager {
-    public static final boolean SPINNER_ENABLED = true;
+    @SuppressWarnings("PointlessBooleanExpression")
+    public static final boolean SPINNER_ENABLED = BuildConfig.DEBUG && true;
 
     public interface DefaultDeviceSelector {
         boolean canBeDefault(AudioDeviceInfo deviceInfo);
