@@ -21,6 +21,7 @@ import com.keyboardr.bluejay.player.Player;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 
 public class AudioSelectionManager {
     @SuppressWarnings("PointlessBooleanExpression")
@@ -125,6 +126,12 @@ public class AudioSelectionManager {
             player.setAudioOutput(null);
         } else {
             if (devices != null) {
+              Arrays.sort(devices, new Comparator<AudioDeviceInfo>() {
+                @Override
+                public int compare(AudioDeviceInfo left, AudioDeviceInfo right) {
+                  return right.getType() - left.getType();
+                }
+              });
                 for (AudioDeviceInfo deviceInfo : devices) {
                     if (defaultDeviceSelector.canBeDefault(deviceInfo)) {
                         player.setAudioOutput(deviceInfo);
