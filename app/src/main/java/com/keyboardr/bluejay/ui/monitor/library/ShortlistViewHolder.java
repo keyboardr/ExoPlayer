@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckedTextView;
 
+import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.Shortlist;
 
 /**
@@ -22,8 +23,7 @@ public abstract class ShortlistViewHolder extends RecyclerView.ViewHolder implem
   private CheckedTextView checkableView;
 
   public ShortlistViewHolder(ViewGroup parent) {
-    super(LayoutInflater.from(parent.getContext()).inflate(
-        android.R.layout.simple_list_item_multiple_choice, parent, false));
+    super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_shortlist, parent, false));
     checkableView = (CheckedTextView) itemView.findViewById(android.R.id.text1);
     checkableView.setOnClickListener(this);
     ViewGroup.LayoutParams layoutParams = checkableView.getLayoutParams();
@@ -41,8 +41,10 @@ public abstract class ShortlistViewHolder extends RecyclerView.ViewHolder implem
     checkableView.setChecked(getCheckedState() != null);
     if (getCheckedState() == Boolean.FALSE) {
       checkableView.setPaintFlags(checkableView.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+      checkableView.setSelected(false);
     } else {
       checkableView.setPaintFlags(checkableView.getPaintFlags() & (~Paint.STRIKE_THRU_TEXT_FLAG));
+      checkableView.setSelected(true);
     }
   }
 

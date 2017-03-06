@@ -5,4 +5,7 @@
     <color name="colorAccent">#FF4081</color>
     <color name="bottomNavScrim">#aa333333</color>
     <color name="media_item_color">#444444</color>
+    <color name="shortlist_item_color">#666666</color>
+    <color name="touch_highlight_dark">#33ffffff</color>
+    <color name="touch_highlight_light">#1E000000</color>
 </resources>
