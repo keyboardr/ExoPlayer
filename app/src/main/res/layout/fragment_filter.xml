@@ -56,15 +56,30 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true"/>
 
+            <!-- drawableEnd is added to ensure text doesn't overrun the clear button -->
             <EditText
                 android:id="@+id/filter_text"
                 android:layout_width="wrap_content"
                 android:layout_column="1"
                 android:layout_columnWeight="1"
                 android:layout_row="1"
+                android:drawableEnd="@drawable/ic_close"
+                android:drawableTint="@android:color/transparent"
                 android:inputType="text"
                 android:nextFocusLeft="@+id/sort"
                 android:nextFocusUp="@+id/sort"/>
+
+            <ImageView
+                android:id="@+id/filter_clear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="1"
+                android:layout_gravity="end|center_vertical"
+                android:layout_marginEnd="4dp"
+                android:layout_row="1"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_close"
+                android:tint="?android:colorForeground"/>
         </GridLayout>
 
         <TextView

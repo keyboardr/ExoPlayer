@@ -130,7 +130,8 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
-    ((EditText) view.findViewById(R.id.filter_text)).addTextChangedListener(new TextWatcher() {
+    final EditText filterTextInput = (EditText) view.findViewById(R.id.filter_text);
+    filterTextInput.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
       }
@@ -143,6 +144,13 @@ public class FilterFragment extends DialogFragment {
 
       @Override
       public void afterTextChanged(Editable editable) {
+      }
+    });
+
+    view.findViewById(R.id.filter_clear).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        filterTextInput.setText("");
       }
     });
 
