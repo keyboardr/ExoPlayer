@@ -77,8 +77,8 @@
 
     <ImageView
         android:id="@+id/controls_play_pause"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/play_button_size"
+        android:layout_height="@dimen/play_button_size"
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:background="?android:selectableItemBackgroundBorderless"

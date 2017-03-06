@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="play_button_size">60dp</dimen>
+</resources>
