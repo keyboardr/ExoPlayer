@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.Manifest;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.PermissionChecker;
 import android.support.v4.os.OperationCanceledException;
 
 import com.keyboardr.bluejay.model.FilterInfo;
@@ -32,6 +34,8 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
   @Nullable
   private final FilterInfo filterInfo;
 
+  private volatile boolean canceled;
+
   public LibraryLoader(Context context, @Nullable FilterInfo filterInfo, @NonNull
       ShortlistManager shortlistManager) {
     super(context);
@@ -39,6 +43,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     this.shortlistManager = shortlistManager;
   }
 
+  @Nullable
   @Override
   public List<MediaItem> loadInBackground() {
     synchronized (this) {
@@ -47,6 +52,13 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
       }
       mCancellationSignal = new CancellationSignal();
     }
+    canceled = false;
+
+    if (PermissionChecker.checkSelfPermission(getContext(),
+        Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+      return null;
+    }
+
     try {
       Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection,
           null, filterInfo == null ? null : filterInfo.getSortColumn(), mCancellationSignal);
@@ -68,6 +80,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
   }
 
+  @Nullable
   @WorkerThread
   private List<MediaItem> processCursor(@Nullable Cursor cursor) {
     if (mCursor != null && mCursor != cursor) {
@@ -94,10 +107,10 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
           if (filterInfo == null || filterInfo.isAllowed(item, shortlistManager)) {
             result.add(item);
           }
-        } while (cursor.moveToNext());
+        } while (cursor.moveToNext() && !canceled);
       }
     }
-    return result;
+    return canceled ? null : result;
   }
 
   @Override
@@ -106,6 +119,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     synchronized (this) {
       if (mCancellationSignal != null) {
         mCancellationSignal.cancel();
+        canceled = true;
       }
     }
   }
