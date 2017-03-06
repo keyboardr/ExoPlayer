@@ -186,7 +186,7 @@ public class ShortlistManager {
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
     queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_PAIRS, null,
         MediaShortlistContract.CONTENT_URI, null, null, null,
-        MediaShortlistContract.MEDIA_ID);
+        MediaShortlistContract.SHORTLIST_ID);
   }
 
   private void setShortlistPairs(LongSparseArray<List<Shortlist>> shortlistMap) {
