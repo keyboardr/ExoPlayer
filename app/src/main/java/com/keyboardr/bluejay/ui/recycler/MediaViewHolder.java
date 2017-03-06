@@ -41,6 +41,10 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     void startDrag(@NonNull MediaViewHolder viewHolder);
 
     boolean canDrag(@NonNull MediaItem mediaItem, boolean selected, boolean enabled);
+
+    boolean canClick(@NonNull MediaItem mediaItem);
+
+    void onMediaItemClicked(@NonNull MediaItem mediaItem);
   }
 
   private final TextView title;
@@ -116,7 +120,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     }
   }
 
-  public void bindMediaItem(@NonNull MediaItem mediaItem, boolean activated, boolean enabled) {
+  public void bindMediaItem(@NonNull final MediaItem mediaItem, boolean activated,
+                            boolean enabled) {
     this.mediaItem = mediaItem;
 
     title.setText(mediaItem.title);
@@ -146,6 +151,16 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         icon.setVisibility(View.GONE);
         menu.setVisibility(View.INVISIBLE);
       }
+    } else {
+      itemView.setOnClickListener(
+          dragStartListener.canClick(mediaItem) ? new View.OnClickListener() {
+
+
+            @Override
+            public void onClick(View view) {
+              dragStartListener.onMediaItemClicked(mediaItem);
+            }
+          } : null);
     }
 
     bindMediaItemPartial(activated, enabled);

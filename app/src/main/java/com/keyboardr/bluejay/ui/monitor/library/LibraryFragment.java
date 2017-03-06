@@ -41,6 +41,7 @@ import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
+import com.keyboardr.bluejay.ui.MonitorContainer;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -49,8 +50,7 @@ import java.util.List;
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
-  public interface Holder {
-    void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
+  public interface Holder extends MonitorContainer{
 
     boolean canAddToQueue();
 
