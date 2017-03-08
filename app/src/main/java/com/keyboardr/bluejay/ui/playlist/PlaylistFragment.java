@@ -120,7 +120,6 @@ public class PlaylistFragment extends Fragment {
             && super.canDropOver(recyclerView, current, target);
       }
 
-
       @Override
       public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
                             RecyclerView.ViewHolder target) {
