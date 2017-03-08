@@ -14,6 +14,7 @@ import android.support.v4.media.MediaBrowserCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.ImageView;
 import android.widget.ViewSwitcher;
@@ -90,6 +91,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_main);
+    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     // Init switcher and tabs for phones
     monitorPlaylistSwitcher = (ViewSwitcher) findViewById(R.id.monitor_playlist_switcher);
