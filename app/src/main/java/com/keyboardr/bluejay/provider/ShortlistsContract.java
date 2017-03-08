@@ -16,4 +16,7 @@ public interface ShortlistsContract extends ProviGenBaseContract {
 
     @Column(Column.Type.TEXT)
     String NAME = "name";
+
+    @Column(Column.Type.INTEGER)
+    String POSITION = "position";
 }
