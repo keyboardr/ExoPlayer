@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.os.ResultReceiver;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -131,10 +132,15 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
   };
 
+  private PowerManager.WakeLock wakeLock;
+
   @Override
   public void onCreate() {
     super.onCreate();
 
+    wakeLock = getSystemService(PowerManager.class)
+        .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+    wakeLock.acquire();
     stateBuilder.addCustomAction(COMMAND_ADD_TO_QUEUE, COMMAND_ADD_TO_QUEUE,
         R.drawable.ic_playlist_add);
     stateBuilder.addCustomAction(COMMAND_MOVE, COMMAND_MOVE, R.drawable.ic_drag_handle);
@@ -204,6 +210,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     player.release();
     player = null;
     unregisterReceiver(isAliveReceiver);
+    wakeLock.release();
   }
 
   @Nullable
