@@ -60,8 +60,10 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
 
     try {
-      Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection,
-          null, filterInfo == null ? null : filterInfo.getSortColumn(), mCancellationSignal);
+      String sortOrder =
+          filterInfo == null ? MediaStore.Audio.Media._ID + " ASC" : filterInfo.getSortColumn();
+      Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection, null,
+          sortOrder, mCancellationSignal);
       if (cursor != null) {
         try {
           // Ensure the cursor window is filled.
