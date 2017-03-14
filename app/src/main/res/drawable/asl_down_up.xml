@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/up"
+        android:drawable="@drawable/ic_arrow_upward"
+        android:state_checked="true"/>
+    <item
+        android:id="@+id/down"
+        android:drawable="@drawable/ic_arrow_downward"/>
+    <transition
+        android:fromId="@id/up"
+        android:toId="@id/down"
+        android:drawable="@drawable/avd_up_to_down">
+    </transition>
+    <transition
+        android:fromId="@id/down"
+        android:toId="@id/up"
+        android:drawable="@drawable/avd_down_to_up">
+    </transition>
+</animated-selector>

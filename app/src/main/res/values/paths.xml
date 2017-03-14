@@ -5,4 +5,5 @@
     <string name="path_continuous" translatable="false">M 15.5 16 L 15.5 15 L 16.5 15 L 16.5 16 Z M 14 16 L 14 15 L 15 15 L 15 16 Z M 12.5 16 L 12.5 15 L 13.5 15 L 13.5 16 L 13.5 16 Z</string>
     <string name="path_single" translatable="false">M 14.9 17 L 14 17 L 14 15.5 L 14.9 15.5 Z M 14.9 15.5 L 14 15.5 L 14 13.7 L 14.9 13.5 Z M 14.9 13.5 L 13 14 L 13 13.3 L 14.8 12.7 L 14.9 12.7 Z</string>
     <string name="path_none" translatable="false">M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 L 9 9 Z</string>
+    <string name="path_arrow_down" translatable="false">M20,12l-1.41,-1.41L13,16.17V4h-2v12.17l-5.58,-5.59L4,12l8,8 8,-8z</string>
 </resources>
