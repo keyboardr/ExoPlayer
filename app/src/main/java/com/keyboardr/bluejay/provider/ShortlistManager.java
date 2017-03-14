@@ -188,11 +188,9 @@ public class ShortlistManager {
       if (listShortlistId == shortlist.getId()) {
         positionedShortlists.remove(i);
         positions.remove(shortlist.getId());
-        dirtyRangeBottom = Math.min(dirtyRangeBottom, i);
-        dirtyRangeTop = Math.max(dirtyRangeTop, positionedShortlists.size());
         break;
       } else {
-        positions.put(listShortlistId, i - 1);
+        positions.put(listShortlistId, positions.get(listShortlistId) - 1);
       }
     }
 
@@ -200,7 +198,6 @@ public class ShortlistManager {
         shortlist.getId()), null, null);
     queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
         MediaShortlistContract.SHORTLIST_ID + " = " + shortlist.getId(), null);
-    queueUpdatePositions(500);
     notifyShortlistsChanged();
   }
 
@@ -218,13 +215,9 @@ public class ShortlistManager {
     dirtyRangeTop = Math.max(dirtyRangeTop, newIndex);
     dirtyRangeBottom = Math.min(dirtyRangeBottom, newIndex);
 
-    queueUpdatePositions(5000);
-    notifyShortlistsChanged();
-  }
-
-  private void queueUpdatePositions(long delay) {
     queryHandler.removeMessages(ShortlistQueryHandler.MESSAGE_UPDATE_POSITIONS);
-    queryHandler.sendEmptyMessageDelayed(ShortlistQueryHandler.MESSAGE_UPDATE_POSITIONS, delay);
+    queryHandler.sendEmptyMessageDelayed(ShortlistQueryHandler.MESSAGE_UPDATE_POSITIONS, 5000);
+    notifyShortlistsChanged();
   }
 
   public void renameShortlist(@NonNull Shortlist shortlist, @NonNull String name) {
@@ -291,8 +284,8 @@ public class ShortlistManager {
     public void handleMessage(Message msg) {
       if (msg.what == MESSAGE_UPDATE_POSITIONS) {
         ShortlistManager manager = getInstance(context);
-        int top = clamp(manager.dirtyRangeTop, manager.positionedShortlists.size() - 1, 0);
-        int bottom = clamp(manager.dirtyRangeBottom, manager.positionedShortlists.size() - 1, 0);
+        int top = manager.dirtyRangeTop;
+        int bottom = manager.dirtyRangeBottom;
         manager.dirtyRangeTop = manager.dirtyRangeBottom = -1;
 
         for (int i = bottom; i <= top; i++) {
@@ -307,10 +300,6 @@ public class ShortlistManager {
       } else {
         super.handleMessage(msg);
       }
-    }
-
-    private static int clamp(int value, int max, int min) {
-      return Math.max(min, Math.min(max, value));
     }
 
     @Override
@@ -371,9 +360,6 @@ public class ShortlistManager {
               shortlistManager.shortlists.put(shortlist.getId(), shortlist);
               shortlistManager.positions.put(shortlist.getId(), position);
               shortlistManager.positionedShortlists.add(position, shortlist);
-              if (shortlistManager.dirtyRangeTop >= 0) {
-                shortlistManager.dirtyRangeTop = Math.max(shortlistManager.dirtyRangeTop, position);
-              }
               shortlistManager.notifyShortlistsChanged();
             }
             break;
