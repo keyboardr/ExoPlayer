@@ -21,7 +21,6 @@ import com.keyboardr.bluejay.model.Shortlist;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class ShortlistManager {
@@ -36,14 +35,6 @@ public class ShortlistManager {
       + "ShortlistManager.ACTION_SHORTLISTS_CHANGED";
 
   private static final String TAG = "ShortlistManager";
-
-  private static final Comparator<? super Shortlist> POSITION_COMPARATOR = new Comparator<Shortlist>
-      () {
-    @Override
-    public int compare(Shortlist left, Shortlist right) {
-      return left.getPosition() - right.getPosition();
-    }
-  };
 
   // Indexed by media id, Sorted by shortlist id
   @Nullable
@@ -66,11 +57,6 @@ public class ShortlistManager {
         ShortlistsContract.CONTENT_URI, null, null, null, ShortlistsContract._ID);
   }
 
-  public void requry() {
-    queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_SHORTLIST, null, ShortlistsContract
-        .CONTENT_URI, null, null, null, ShortlistsContract._ID);
-  }
-
   @Nullable
   public List<Shortlist> getShortlists(@NonNull MediaItem mediaItem) {
     if (shortlistMap == null) {
@@ -88,7 +74,6 @@ public class ShortlistManager {
         result.remove(i);
       }
     }
-    Collections.sort(result, POSITION_COMPARATOR);
     return result;
   }
 
@@ -152,7 +137,6 @@ public class ShortlistManager {
     for (int i = 0; i < shortlists.size(); i++) {
       result.add(shortlists.valueAt(i));
     }
-    Collections.sort(result, POSITION_COMPARATOR);
     cachedShortlists = Collections.unmodifiableList(result);
     return result;
   }
@@ -168,7 +152,6 @@ public class ShortlistManager {
     }
     ContentValues values = new ContentValues();
     values.put(ShortlistsContract.NAME, name);
-    values.put(ShortlistsContract.POSITION, getShortlists().size());
     queryHandler.startInsert(ShortlistQueryHandler.TOKEN_SHORTLIST, null,
         ShortlistsContract.CONTENT_URI, values);
   }
@@ -247,10 +230,9 @@ public class ShortlistManager {
             if (cursor.moveToFirst()) {
               int idColumn = cursor.getColumnIndexOrThrow(ShortlistsContract._ID);
               int nameColumn = cursor.getColumnIndexOrThrow(ShortlistsContract.NAME);
-              int posColumn = cursor.getColumnIndexOrThrow(ShortlistsContract.POSITION);
               do {
                 shortlists.add(new Shortlist(cursor.getLong(idColumn),
-                    cursor.getString(nameColumn), cursor.getInt(posColumn)));
+                    cursor.getString(nameColumn)));
               } while (cursor.moveToNext());
             }
             ShortlistManager manager = shortlistManager.get();
@@ -288,9 +270,7 @@ public class ShortlistManager {
               String name = cursor.getString(cursor.getColumnIndexOrThrow
                   (ShortlistsContract
                       .NAME));
-              int position = cursor.getInt(cursor.getColumnIndexOrThrow(ShortlistsContract
-                  .POSITION));
-              Shortlist shortlist = new Shortlist(id, name, position);
+              Shortlist shortlist = new Shortlist(id, name);
               ShortlistManager shortlistManager = this.shortlistManager.get();
               if (shortlistManager != null) {
                 shortlistManager.shortlists.put(shortlist.getId(), shortlist);

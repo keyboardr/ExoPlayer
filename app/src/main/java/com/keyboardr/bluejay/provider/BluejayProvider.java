@@ -15,81 +15,65 @@ import com.tjeannin.provigen.ProviGenProvider;
 import com.tjeannin.provigen.model.Contract;
 
 public class BluejayProvider extends ProviGenProvider {
-  public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
+    public static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider";
 
-  private static final String DB_NAME = "bluejaydb";
-  private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
-      MetadataContract.class};
-  public static final int VERSION = 4;
+    private static final String DB_NAME = "bluejaydb";
+    private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
+            MetadataContract.class};
 
-  @Override
-  public SQLiteOpenHelper openHelper(Context context) {
-    return new ProviGenOpenHelper(context, DB_NAME, null, VERSION, CLASSES) {
-      @Override
-      public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {
-        super.onUpgrade(database, oldVersion, newVersion);
-
-        if (oldVersion < 4) {
-          String updateCommand = String.format("UPDATE %1$s SET %2$s = "
-                  + "(SELECT COUNT(0) FROM %1$s tag WHERE tag.%3$s < %1$s.%3$s)",
-              ShortlistsContract.TABLE, ShortlistsContract.POSITION, ShortlistsContract._ID);
-          database.execSQL(updateCommand);
-        }
-      }
-    };
-  }
-
-  @Override
-  public Cursor query(@NonNull Uri uri, String[] projection, String selection,
-                      String[] selectionArgs,
-                      String sortOrder) {
-    SQLiteDatabase database = openHelper.getReadableDatabase();
-
-    Contract contract = findMatchingContract(uri);
-    Cursor cursor;
-
-    String table = contract.getTable();
-    table = swapQueryTableIfNecessary(table);
-    switch (uriMatcher.match(uri)) {
-      case ITEM:
-        cursor = database.query(table, projection, selection, selectionArgs, "", "", sortOrder);
-        break;
-      case ITEM_ID:
-        String itemId = String.valueOf(ContentUris.parseId(uri));
-        if (TextUtils.isEmpty(selection)) {
-          cursor = database.query(table, projection, contract.getIdField() + " = ? ",
-              new String[]{itemId}, "", "", sortOrder);
-        } else {
-          cursor = database.query(table, projection,
-              selection + " AND " + contract.getIdField() + " = ? ",
-              appendToStringArray(selectionArgs, itemId), "", "", sortOrder);
-        }
-        break;
-      default:
-        throw new IllegalArgumentException("Unknown uri " + uri);
+    @Override
+    public SQLiteOpenHelper openHelper(Context context) {
+        return new ProviGenOpenHelper(context, DB_NAME, null, 1, CLASSES);
     }
 
-    // Make sure that potential listeners are getting notified.
-    cursor.setNotificationUri(getContext().getContentResolver(), uri);
+    @Override
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs,
+                        String sortOrder) {
+        SQLiteDatabase database = openHelper.getReadableDatabase();
 
-    return cursor;
-  }
+        Contract contract = findMatchingContract(uri);
+        Cursor cursor;
 
-  @Override
-  public Class[] contractClasses() {
-    return CLASSES;
-  }
+        String table = contract.getTable();
+        table = swapQueryTableIfNecessary(table);
+        switch (uriMatcher.match(uri)) {
+            case ITEM:
+                cursor = database.query(table, projection, selection, selectionArgs, "", "", sortOrder);
+                break;
+            case ITEM_ID:
+                String itemId = String.valueOf(ContentUris.parseId(uri));
+                if (TextUtils.isEmpty(selection)) {
+                    cursor = database.query(table, projection, contract.getIdField() + " = ? ", new String[]{itemId}, "", "", sortOrder);
+                } else {
+                    cursor = database.query(table, projection, selection + " AND " + contract.getIdField() + " = ? ",
+                            appendToStringArray(selectionArgs, itemId), "", "", sortOrder);
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown uri " + uri);
+        }
 
-  @NonNull
-  private String swapQueryTableIfNecessary(@NonNull String table) {
-    switch (table) {
-      case MediaShortlistContract.TABLE:
-        return MediaShortlistContract.TABLE + " LEFT JOIN "
-            + ShortlistsContract.TABLE + " ON "
-            + MediaShortlistContract.MEDIA_ID + " = " +
-            ShortlistsContract.TABLE + "." + ShortlistsContract._ID;
-      default:
-        return table;
+        // Make sure that potential listeners are getting notified.
+        cursor.setNotificationUri(getContext().getContentResolver(), uri);
+
+        return cursor;
     }
-  }
+
+    @Override
+    public Class[] contractClasses() {
+        return CLASSES;
+    }
+
+    @NonNull
+    private String swapQueryTableIfNecessary(@NonNull String table) {
+        switch (table) {
+            case MediaShortlistContract.TABLE:
+                return MediaShortlistContract.TABLE + " LEFT JOIN "
+                        + ShortlistsContract.TABLE + " ON "
+                        + MediaShortlistContract.MEDIA_ID + " = " +
+                            ShortlistsContract.TABLE + "." + ShortlistsContract._ID;
+            default:
+                return table;
+        }
+    }
 }
