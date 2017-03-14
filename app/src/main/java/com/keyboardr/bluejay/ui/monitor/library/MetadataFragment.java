@@ -30,6 +30,7 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.util.FragmentUtils;
 
 /**
  * Metadata editor for a track
@@ -42,6 +43,7 @@ public class MetadataFragment extends DialogFragment {
   private TextInputEditText newShortlistText;
 
   public interface Holder {
+    ShortlistManager getShortlistManager();
   }
 
   private static final String ARG_MEDIA_ITEM = "mediaItem";
@@ -88,7 +90,10 @@ public class MetadataFragment extends DialogFragment {
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     this.mediaItem = getArguments().getParcelable(ARG_MEDIA_ITEM);
-    shortlistManager = ShortlistManager.getInstance(getContext());
+    shortlistManager = FragmentUtils.getParentChecked(this, Holder.class).getShortlistManager();
+    if (shortlistManager == null) {
+      dismiss();
+    }
   }
 
   @Nullable

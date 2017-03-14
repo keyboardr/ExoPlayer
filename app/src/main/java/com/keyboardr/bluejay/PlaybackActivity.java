@@ -20,6 +20,7 @@ import android.widget.ImageView;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.MonitorEditorFragment;
@@ -253,5 +254,10 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   public void closeMetadataEditor() {
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+  }
+
+  @Override
+  public ShortlistManager getShortlistManager() {
+    return getLibraryFragment().getShortlistManager();
   }
 }
