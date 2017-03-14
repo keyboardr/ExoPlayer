@@ -41,6 +41,7 @@
                 android:padding="8dp"/>
 
             <ToggleButton
+                android:id="@+id/sort_direction"
                 android:layout_column="2"
                 android:layout_row="0"
                 android:button="@drawable/asl_down_up"

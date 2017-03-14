@@ -21,9 +21,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
+import android.widget.ToggleButton;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
@@ -40,6 +42,8 @@ public class FilterFragment extends DialogFragment {
   private static final String STATE_DESELECTED_SHORTLISTS = "deselected_shortlists";
 
   private Spinner sortSpinner;
+  private ToggleButton sortToggle;
+
   private RecyclerView shortlistsView;
 
   private Set<Shortlist> selectedShortlists = new ArraySet<>();
@@ -154,6 +158,15 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
+    sortToggle = (ToggleButton) view.findViewById(R.id.sort_direction);
+    sortToggle.setOnCheckedChangeListener(
+        new CompoundButton.OnCheckedChangeListener() {
+          @Override
+          public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+            updateFilterInfo();
+          }
+        });
+
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
         new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
   }
@@ -208,6 +221,7 @@ public class FilterFragment extends DialogFragment {
   private void updateFilterInfo() {
     //noinspection WrongConstant
     getParent().setLibraryFilter(new FilterInfo(sortSpinner.getSelectedItemPosition(),
+        sortToggle.isChecked(),
         selectedShortlists, deselectedShortlists, filterText));
   }
 
