@@ -147,6 +147,15 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   }
 
   @Override
+  protected void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    if (monitorPlaylistSwitcher != null) {
+      outState.putBoolean(STATE_SHOW_PLAYLIST,
+          monitorPlaylistSwitcher.getDisplayedChild() == INDEX_PLAYLIST);
+    }
+  }
+
+  @Override
   protected void onDestroy() {
     mediaBrowser.disconnect();
     super.onDestroy();
