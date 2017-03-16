@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -15,8 +16,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.util.FragmentUtils;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Date;
 import java.util.List;
@@ -30,8 +37,6 @@ public class SetInfoFragment extends Fragment {
   public interface Holder {
 
     List<MediaSessionCompat.QueueItem> getPlaylist();
-
-    int getCurrentTrackIndex();
 
     long getCurrentPosition();
 
@@ -47,13 +52,23 @@ public class SetInfoFragment extends Fragment {
     }
   };
 
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onTrackIndexEvent(@NonNull final TrackIndexEvent event) {
+    update();
+  }
+
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onQueueChangeEvent(@NonNull final QueueChangeEvent event) {
+    update();
+  }
+
   public void update() {
     if (getView() == null) {
       return;
     }
     List<MediaSessionCompat.QueueItem> queue = getParent().getPlaylist();
     int numTracks = queue.size();
-    int currentIndex = getParent().getCurrentTrackIndex();
+    int currentIndex = Buses.PlaylistUtils.getCurrentTrackIndex();
 
     trackCount.setText(getContext().getString(R.string.info_track_count,
         Math.min(currentIndex + 1, numTracks), numTracks));
@@ -100,13 +115,14 @@ public class SetInfoFragment extends Fragment {
   @Override
   public void onStart() {
     super.onStart();
-    update();
+    Buses.PLAYLIST.register(this);
     getContext().registerReceiver(updateReceiver, new IntentFilter(Intent.ACTION_TIME_TICK));
   }
 
   @Override
   public void onStop() {
     super.onStop();
+    Buses.PLAYLIST.unregister(this);
     getContext().unregisterReceiver(updateReceiver);
   }
 }

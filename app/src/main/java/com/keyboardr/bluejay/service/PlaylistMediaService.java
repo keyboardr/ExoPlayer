@@ -28,9 +28,13 @@ import android.util.Log;
 
 import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
+
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +45,7 @@ import java.util.Objects;
  */
 
 public class PlaylistMediaService extends MediaBrowserServiceCompat
-    implements Player.PlaybackListener, PlaylistPlayer.PlaylistChangedListener {
+    implements Player.PlaybackListener, PlaylistPlayer.QueueChangedListener {
 
   public static final String ACTION_CHECK_IS_ALIVE = "checkIsAlive";
 
@@ -157,6 +161,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     player = new PlaylistPlayer(this);
     player.setPlaybackListener(this);
     player.addPlaylistChangedListener(this);
+    Buses.PLAYLIST.register(this);
 
     setSessionToken(mediaSession.getSessionToken());
 
@@ -206,6 +211,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     mediaSession.release();
     mediaSession = null;
     metadataMedia = null;
+
+    Buses.PLAYLIST.unregister(this);
 
     player.release();
     player = null;
@@ -374,8 +381,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     mediaSession.setQueue(buildQueue());
   }
 
-  @Override
-  public void onIndexChanged(int oldIndex, int newIndex) {
+  @Subscribe
+  public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
     updatePlaybackState();
     updateMetadata();
   }

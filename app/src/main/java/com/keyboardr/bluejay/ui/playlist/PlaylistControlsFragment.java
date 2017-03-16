@@ -17,7 +17,6 @@ import android.widget.Toast;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
-import com.keyboardr.bluejay.player.PlaylistPlayer;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
@@ -57,7 +56,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     }
   }
 
-  public interface Holder extends PlaylistPlayer.PlaylistChangedListener {
+  public interface Holder {
     MediaControllerCompat getMediaController();
   }
 
@@ -68,18 +67,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    player = new PlaylistServiceClient(getParent().getMediaController()) {
-
-      @Override
-      public void onQueueChanged() {
-        getParent().onQueueChanged();
-      }
-
-      @Override
-      public void onIndexChanged(int oldIndex, int newIndex) {
-        getParent().onIndexChanged(oldIndex, newIndex);
-      }
-    };
+    player = new PlaylistServiceClient(getParent().getMediaController());
   }
 
   @Override
@@ -136,10 +124,6 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   public List<MediaSessionCompat.QueueItem> getPlaylist() {
     return player != null ? player.getQueue()
         : Collections.<MediaSessionCompat.QueueItem>emptyList();
-  }
-
-  public int getCurrentTrackIndex() {
-    return player.getCurrentMediaIndex();
   }
 
   public long getCurrentPosition() {

@@ -15,7 +15,11 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.keyboardr.bluejay.BuildConfig;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,10 +28,8 @@ public class PlaylistPlayer extends AbsPlayer {
 
   private static final boolean DEBUG_SHORT_SONGS = true;
 
-  public interface PlaylistChangedListener {
+  public interface QueueChangedListener {
     void onQueueChanged();
-
-    void onIndexChanged(int oldIndex, int newIndex);
   }
 
   private List<PlaylistItem> mediaItems = new ArrayList<>();
@@ -36,7 +38,7 @@ public class PlaylistPlayer extends AbsPlayer {
   private boolean continuePlayingOnDone;
 
   @Nullable
-  private PlaylistChangedListener playlistChangedListener;
+  private QueueChangedListener queueChangedListener;
 
   public PlaylistPlayer(@NonNull Context context) {
     super(context, C.STREAM_TYPE_ALARM);
@@ -59,9 +61,7 @@ public class PlaylistPlayer extends AbsPlayer {
             continuePlayingOnDone = false;
             player.setPlayWhenReady(false);
           }
-          if (playlistChangedListener != null) {
-            playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
-          }
+          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex));
           if (playbackListener != null) {
             playbackListener.onPlayStateChanged(PlaylistPlayer.this);
           }
@@ -96,9 +96,9 @@ public class PlaylistPlayer extends AbsPlayer {
     }
   }
 
-  public void addPlaylistChangedListener(@Nullable PlaylistChangedListener
-                                             playlistChangedListener) {
-    this.playlistChangedListener = playlistChangedListener;
+  public void addPlaylistChangedListener(@Nullable QueueChangedListener
+                                             queueChangedListener) {
+    this.queueChangedListener = queueChangedListener;
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {
@@ -108,22 +108,22 @@ public class PlaylistPlayer extends AbsPlayer {
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
       prepareNextTrack(player);
     }
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
+    if (queueChangedListener != null) {
+      queueChangedListener.onQueueChanged();
     }
   }
 
   public void removeItem(int removeIndex) {
     mediaItems.remove(removeIndex);
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
+    if (queueChangedListener != null) {
+      queueChangedListener.onQueueChanged();
     }
   }
 
   public void moveItem(int oldIndex, int newIndex) {
     mediaItems.add(newIndex, mediaItems.remove(oldIndex));
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
+    if (queueChangedListener != null) {
+      queueChangedListener.onQueueChanged();
     }
 
   }
@@ -217,5 +217,10 @@ public class PlaylistPlayer extends AbsPlayer {
         return new PlaylistItem[size];
       }
     };
+  }
+
+  @Override
+  protected EventBus getBus() {
+    return Buses.PLAYLIST;
   }
 }

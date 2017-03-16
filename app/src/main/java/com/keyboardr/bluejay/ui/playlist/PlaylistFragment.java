@@ -17,6 +17,9 @@ import android.view.ViewGroup;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.MonitorContainer;
@@ -24,8 +27,13 @@ import com.keyboardr.bluejay.ui.recycler.MediaItemAnimator;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.keyboardr.bluejay.bus.Buses.PlaylistUtils.getCurrentTrackIndex;
 
 public class PlaylistFragment extends Fragment {
 
@@ -44,8 +52,6 @@ public class PlaylistFragment extends Fragment {
 
     @NonNull
     List<MediaSessionCompat.QueueItem> getPlaylist();
-
-    int getCurrentTrackIndex();
 
     void removeTrack(int index);
 
@@ -148,6 +154,13 @@ public class PlaylistFragment extends Fragment {
 
     recyclerView.setAdapter(playlistAdapter);
     switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
+    Buses.PLAYLIST.register(this);
+  }
+
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    Buses.PLAYLIST.unregister(this);
   }
 
   @NonNull
@@ -155,7 +168,8 @@ public class PlaylistFragment extends Fragment {
     return FragmentUtils.getParentChecked(this, Holder.class);
   }
 
-  public void onQueueChanged() {
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onQueueChanged(@NonNull QueueChangeEvent event) {
     playlistAdapter.notifyDataSetChanged();
     int itemCount = playlistAdapter.getItemCount();
     switcher.setDisplayedChild(itemCount == 0 ? 0 : 1);
@@ -164,12 +178,13 @@ public class PlaylistFragment extends Fragment {
     }
   }
 
-  public void onIndexChanged(int oldIndex, int newIndex) {
-    if (oldIndex >= 0) {
-      playlistAdapter.notifyItemChanged(oldIndex);
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
+    if (event.oldIndex >= 0) {
+      playlistAdapter.notifyItemChanged(event.oldIndex);
     }
-    playlistAdapter.notifyItemChanged(newIndex);
-    scrollIfInactive(newIndex);
+    playlistAdapter.notifyItemChanged(event.newIndex);
+    scrollIfInactive(event.newIndex);
   }
 
   private void scrollIfInactive(int newIndex) {
@@ -239,7 +254,4 @@ public class PlaylistFragment extends Fragment {
     }
   }
 
-  private int getCurrentTrackIndex() {
-    return getParent().getCurrentTrackIndex();
-  }
 }
