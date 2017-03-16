@@ -253,6 +253,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
       return Collections.emptyList();
     }
     this.queue = queue;
+    onQueueChanged();
     return queue;
   }
 
