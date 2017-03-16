@@ -79,7 +79,8 @@ public class PlaylistServiceClient implements Player {
       }
       int currentMediaIndex = getCurrentMediaIndex();
       if (currentMediaIndex != lastKnownIndex) {
-        Buses.PLAYLIST.postSticky(new TrackIndexEvent(lastKnownIndex, currentMediaIndex));
+        Buses.PLAYLIST.postSticky(
+            new TrackIndexEvent(lastKnownIndex, currentMediaIndex, getCurrentMediaItem()));
         lastKnownIndex = currentMediaIndex;
       }
     }

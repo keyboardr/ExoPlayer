@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
@@ -28,17 +27,10 @@ public class PlaylistPlayer extends AbsPlayer {
 
   private static final boolean DEBUG_SHORT_SONGS = true;
 
-  public interface QueueChangedListener {
-    void onQueueChanged();
-  }
-
   private List<PlaylistItem> mediaItems = new ArrayList<>();
   private int currentIndex;
   private int nextId;
   private boolean continuePlayingOnDone;
-
-  @Nullable
-  private QueueChangedListener queueChangedListener;
 
   public PlaylistPlayer(@NonNull Context context) {
     super(context, C.STREAM_TYPE_ALARM);
@@ -61,7 +53,8 @@ public class PlaylistPlayer extends AbsPlayer {
             continuePlayingOnDone = false;
             player.setPlayWhenReady(false);
           }
-          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex));
+          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
+              getCurrentMediaItem()));
           if (playbackListener != null) {
             playbackListener.onPlayStateChanged(PlaylistPlayer.this);
           }
@@ -96,36 +89,23 @@ public class PlaylistPlayer extends AbsPlayer {
     }
   }
 
-  public void addPlaylistChangedListener(@Nullable QueueChangedListener
-                                             queueChangedListener) {
-    this.queueChangedListener = queueChangedListener;
-  }
-
-  public void addToQueue(@NonNull MediaItem mediaItem) {
-    mediaItems.add(new PlaylistItem(mediaItem, nextId++));
+  public PlaylistItem addToQueue(@NonNull MediaItem mediaItem) {
+    PlaylistItem item = new PlaylistItem(mediaItem, nextId++);
+    mediaItems.add(item);
     SimpleExoPlayer player = ensurePlayer();
     if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
       prepareNextTrack(player);
     }
-    if (queueChangedListener != null) {
-      queueChangedListener.onQueueChanged();
-    }
+    return item;
   }
 
   public void removeItem(int removeIndex) {
     mediaItems.remove(removeIndex);
-    if (queueChangedListener != null) {
-      queueChangedListener.onQueueChanged();
-    }
   }
 
   public void moveItem(int oldIndex, int newIndex) {
     mediaItems.add(newIndex, mediaItems.remove(oldIndex));
-    if (queueChangedListener != null) {
-      queueChangedListener.onQueueChanged();
-    }
-
   }
 
   @Override

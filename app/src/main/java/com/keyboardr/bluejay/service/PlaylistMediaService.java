@@ -45,7 +45,7 @@ import java.util.Objects;
  */
 
 public class PlaylistMediaService extends MediaBrowserServiceCompat
-    implements Player.PlaybackListener, PlaylistPlayer.QueueChangedListener {
+    implements Player.PlaybackListener {
 
   public static final String ACTION_CHECK_IS_ALIVE = "checkIsAlive";
 
@@ -109,7 +109,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         case COMMAND_ADD_TO_QUEUE:
           MediaItem mediaItem = extras.getParcelable(EXTRA_MEDIA_ITEM);
           if (mediaItem != null) {
-            player.addToQueue(mediaItem);
+            PlaylistPlayer.PlaylistItem playlistItem = player.addToQueue(mediaItem);
+            if (queue == null) {
+              queue = new ArrayList<>();
+            }
+            queue.add(getQueueItem(playlistItem));
+            mediaSession.setQueue(queue);
           }
           break;
         case COMMAND_MOVE:
@@ -118,9 +123,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
           if (newIndex == -1) {
             player.removeItem(oldIndex);
+            queue.remove(oldIndex);
           } else {
             player.moveItem(oldIndex, newIndex);
+            queue.add(newIndex, queue.remove(oldIndex));
           }
+          mediaSession.setQueue(queue);
       }
     }
 
@@ -137,6 +145,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   };
 
   private PowerManager.WakeLock wakeLock;
+  private List<MediaSessionCompat.QueueItem> queue;
 
   @Override
   public void onCreate() {
@@ -160,7 +169,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
     player = new PlaylistPlayer(this);
     player.setPlaybackListener(this);
-    player.addPlaylistChangedListener(this);
     Buses.PLAYLIST.register(this);
 
     setSessionToken(mediaSession.getSessionToken());
@@ -346,22 +354,29 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   private List<MediaSessionCompat.QueueItem> buildQueue() {
     List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
     for (PlaylistPlayer.PlaylistItem playlistItem : player.getMediaList()) {
-      Bundle extras = new Bundle();
-      extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
-      extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
-      extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
-      MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-          .setTitle(playlistItem.mediaItem.title)
-          .setSubtitle(playlistItem.mediaItem.artist)
-          .setIconUri(playlistItem.mediaItem.thumbnailUri)
-          .setMediaUri(playlistItem.mediaItem.toUri())
-          .setMediaId(playlistItem.mediaItem.getTransientId() + "")
-          .setExtras(extras).build();
-      MediaSessionCompat.QueueItem queueItem = new MediaSessionCompat.QueueItem(description,
-          playlistItem.id);
+      MediaSessionCompat.QueueItem queueItem = getQueueItem(playlistItem);
       queue.add(queueItem);
     }
+    this.queue = queue;
     return queue;
+  }
+
+  @NonNull
+  private static MediaSessionCompat.QueueItem getQueueItem(PlaylistPlayer.PlaylistItem
+                                                                playlistItem) {
+    Bundle extras = new Bundle();
+    extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
+    extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
+    extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
+    MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+        .setTitle(playlistItem.mediaItem.title)
+        .setSubtitle(playlistItem.mediaItem.artist)
+        .setIconUri(playlistItem.mediaItem.thumbnailUri)
+        .setMediaUri(playlistItem.mediaItem.toUri())
+        .setMediaId(playlistItem.mediaItem.getTransientId() + "")
+        .setExtras(extras).build();
+    return new MediaSessionCompat.QueueItem(description,
+        playlistItem.id);
   }
 
   @Override
@@ -376,8 +391,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     updateMetadata();
   }
 
-  @Override
-  public void onQueueChanged() {
+  private void onQueueChanged() {
     mediaSession.setQueue(buildQueue());
   }
 
