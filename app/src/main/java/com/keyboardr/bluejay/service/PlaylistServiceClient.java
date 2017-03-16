@@ -13,6 +13,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
 import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
@@ -82,6 +83,16 @@ public class PlaylistServiceClient implements Player {
         Buses.PLAYLIST.postSticky(
             new TrackIndexEvent(lastKnownIndex, currentMediaIndex, getCurrentMediaItem()));
         lastKnownIndex = currentMediaIndex;
+      }
+      Bundle extras = state.getExtras();
+      if (extras != null) {
+        extras.setClassLoader(getClass().getClassLoader());
+      }
+      if (extras != null && extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME, -1) > 0) {
+        Buses.PLAYLIST.postSticky(
+            new PlaybackFinishEvent(extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME)));
+      } else {
+        Buses.PLAYLIST.removeStickyEvent(PlaybackFinishEvent.class);
       }
     }
 

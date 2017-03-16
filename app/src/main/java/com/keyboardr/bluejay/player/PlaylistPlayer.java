@@ -53,11 +53,11 @@ public class PlaylistPlayer extends AbsPlayer {
             continuePlayingOnDone = false;
             player.setPlayWhenReady(false);
           }
-          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
-              getCurrentMediaItem()));
           if (playbackListener != null) {
             playbackListener.onPlayStateChanged(PlaylistPlayer.this);
           }
+          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
+              getCurrentMediaItem()));
         }
       }
 

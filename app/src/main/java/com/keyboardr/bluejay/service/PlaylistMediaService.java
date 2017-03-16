@@ -60,6 +60,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   static final String EXTRA_MEDIA_ID = "mediaId";
   static final String EXTRA_ALBUM_ID = "albumId";
   static final String EXTRA_DURATION = "duration";
+  static final String EXTRA_FINISH_TIME = "finishTime";
 
   private static final String TAG = "PlaylistMediaService";
 
@@ -146,6 +147,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
   private PowerManager.WakeLock wakeLock;
   private List<MediaSessionCompat.QueueItem> queue;
+  private long finishTime = -1;
 
   @Override
   public void onCreate() {
@@ -174,8 +176,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     setSessionToken(mediaSession.getSessionToken());
 
     updateOutputType();
-    updatePlaybackState();
     updateMetadata();
+    updatePlaybackState();
 
     registerReceiver(isAliveReceiver, new IntentFilter(ACTION_CHECK_IS_ALIVE));
     startService(new Intent(this, PlaylistMediaService.class));
@@ -260,8 +262,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       playerState = PlaybackStateCompat.STATE_STOPPED;
       if (player.getCurrentMediaIndex() < player.getMediaList().size()) {
         actions = PlaybackStateCompat.ACTION_PLAY;
+        finishTime = -1;
       } else {
         actions = 0;
+        if (finishTime < 0) {
+          finishTime = System.currentTimeMillis();
+        }
       }
     } else if (player.isPaused()) {
       playerState = PlaybackStateCompat.STATE_PAUSED;
@@ -277,6 +283,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       actions = PlaybackStateCompat.ACTION_PLAY_PAUSE;
     }
 
+    if (!player.isStopped()) {
+      finishTime = -1;
+    }
+
     actions |= PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID;
     stateBuilder.setState(playerState, this.player.getCurrentPosition(), 1.0f);
     stateBuilder.setBufferedPosition(this.player.getDuration());
@@ -288,6 +298,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     extras.putParcelable(EXTRA_MEDIA_ITEM, currentMediaItem);
     extras.putBoolean(EXTRA_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
     extras.putInt(EXTRA_INDEX, player.getCurrentMediaIndex());
+    extras.putLong(EXTRA_FINISH_TIME, finishTime);
     stateBuilder.setExtras(extras);
     PlaybackStateCompat playbackState = stateBuilder.build();
     if (!isNewPlaybackState(playbackState)) {
@@ -295,7 +306,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
     lastPlaybackState = playbackState;
     mediaSession.setPlaybackState(playbackState);
-
   }
 
   private boolean isNewPlaybackState(PlaybackStateCompat playbackState) {
@@ -363,7 +373,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
   @NonNull
   private static MediaSessionCompat.QueueItem getQueueItem(PlaylistPlayer.PlaylistItem
-                                                                playlistItem) {
+                                                               playlistItem) {
     Bundle extras = new Bundle();
     extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
     extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());

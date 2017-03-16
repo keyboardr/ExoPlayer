@@ -17,6 +17,7 @@ import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
@@ -73,7 +74,14 @@ public class SetInfoFragment extends Fragment {
     trackCount.setText(getContext().getString(R.string.info_track_count,
         Math.min(currentIndex + 1, numTracks), numTracks));
 
+    if (numTracks == 0) {
+      runTime.setVisibility(View.INVISIBLE);
+      return;
+    }
+    runTime.setVisibility(View.VISIBLE);
+
     long timeLeft = 0;
+    long endTime;
     for (int i = currentIndex; i < numTracks; i++) {
       timeLeft += PlaylistServiceClient.mediaItemFromQueueItem(queue.get(i))
           .getDuration();
@@ -81,9 +89,17 @@ public class SetInfoFragment extends Fragment {
     if (currentIndex < numTracks) {
       timeLeft -= getParent().getCurrentPosition();
     }
+
+    PlaybackFinishEvent playbackFinishEvent = Buses.PLAYLIST.getStickyEvent(
+        PlaybackFinishEvent.class);
+    if (playbackFinishEvent == null) {
+      endTime = timeLeft + System.currentTimeMillis();
+    } else {
+      endTime = playbackFinishEvent.finishTime;
+    }
     runTime.setText(getString(R.string.info_end_time,
         DateFormat.getTimeFormat(getContext()).format(
-            new Date(timeLeft + System.currentTimeMillis()))));
+            new Date(endTime))));
   }
 
   @Override
