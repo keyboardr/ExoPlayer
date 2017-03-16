@@ -63,7 +63,9 @@ public class SetInfoFragment extends Fragment {
       timeLeft += PlaylistServiceClient.mediaItemFromQueueItem(queue.get(i))
           .getDuration();
     }
-    timeLeft -= getParent().getCurrentPosition();
+    if (currentIndex < numTracks) {
+      timeLeft -= getParent().getCurrentPosition();
+    }
     runTime.setText(getString(R.string.info_end_time,
         DateFormat.getTimeFormat(getContext()).format(
             new Date(timeLeft + System.currentTimeMillis()))));
