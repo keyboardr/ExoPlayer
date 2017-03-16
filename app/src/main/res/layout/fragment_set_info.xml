@@ -3,7 +3,7 @@
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
               android:layout_height="48dp"
-              android:background="@color/colorPrimaryDark"
+              android:background="#555555"
               android:elevation="16dp"
               android:gravity="center_vertical"
               android:orientation="horizontal"
@@ -15,14 +15,14 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textAppearance="@style/TextAppearance.AppCompat"
         tools:text="Track: 20/21"/>
 
     <TextView
         android:id="@+id/info_run_time"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textAppearance="@style/TextAppearance.AppCompat"
         tools:text="End time: 07:02"/>
 
 </LinearLayout>
