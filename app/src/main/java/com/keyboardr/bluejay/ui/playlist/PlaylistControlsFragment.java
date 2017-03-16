@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui.playlist;
 
+import android.content.Context;
 import android.graphics.drawable.Icon;
 import android.media.AudioDeviceInfo;
 import android.os.Bundle;
@@ -82,6 +83,12 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   }
 
   @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    FragmentUtils.checkParent(this, Holder.class);
+  }
+
+  @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
     return inflater.inflate(R.layout.fragment_playlist_controls, container, false);
@@ -135,8 +142,12 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     return player.getCurrentMediaIndex();
   }
 
+  public long getCurrentPosition() {
+    return player.getCurrentPosition();
+  }
+
   private Holder getParent() {
-    return FragmentUtils.getParent(this, Holder.class);
+    return FragmentUtils.getParentChecked(this, Holder.class);
   }
 
 }
