@@ -74,7 +74,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @Override
     public Loader<List<MediaItem>> onCreateLoader(int i, Bundle bundle) {
       return new LibraryLoader(getContext(), bundle == null ? null : ((FilterInfo) bundle
-          .getParcelable(ARG_FILTER)), getShortlistManager());
+          .getParcelable(ARG_FILTER)), shortlistManager);
     }
 
     @Override
@@ -150,7 +150,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    shortlistManager = new ShortlistManager(getContext());
+    shortlistManager = ShortlistManager.getInstance(getContext());
     LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver
         (shortlistsReadyReceiver, new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_READY));
   }
@@ -201,11 +201,6 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     super.onViewCreated(view, savedInstanceState);
     getActivity().invalidateOptionsMenu();
     getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
-  }
-
-  @Override
-  public ShortlistManager getShortlistManager() {
-    return shortlistManager;
   }
 
   @Override

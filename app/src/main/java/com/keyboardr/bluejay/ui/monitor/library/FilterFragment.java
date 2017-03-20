@@ -54,8 +54,6 @@ public class FilterFragment extends DialogFragment {
 
   public interface Holder {
     void setLibraryFilter(FilterInfo filter);
-
-    ShortlistManager getShortlistManager();
   }
 
   @Override
@@ -121,8 +119,8 @@ public class FilterFragment extends DialogFragment {
 
     shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
     shortlistsView.setLayoutManager(new LinearLayoutManager(getContext()));
-    shortlistsView.setAdapter(new ShortlistAdapter<FilterShortlistViewHolder>(getParent()
-        .getShortlistManager()) {
+    shortlistsView.setAdapter(new ShortlistAdapter<FilterShortlistViewHolder>(
+        ShortlistManager.getInstance(getContext())) {
 
       @Override
       public FilterShortlistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
