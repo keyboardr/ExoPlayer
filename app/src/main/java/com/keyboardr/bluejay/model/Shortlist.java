@@ -9,10 +9,12 @@ import java.util.Objects;
 public class Shortlist implements Parcelable, Comparable<Shortlist> {
     private final long id;
     private final String name;
+    private final int position;
 
-    public Shortlist(long id, String name) {
+    public Shortlist(long id, String name, int position) {
         this.id = id;
         this.name = name;
+        this.position = position;
     }
 
     public long getId() {
@@ -21,6 +23,10 @@ public class Shortlist implements Parcelable, Comparable<Shortlist> {
 
     public String getName() {
         return name;
+    }
+
+    public int getPosition() {
+        return position;
     }
 
     @Override
@@ -32,11 +38,13 @@ public class Shortlist implements Parcelable, Comparable<Shortlist> {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeLong(this.id);
         dest.writeString(this.name);
+        dest.writeInt(position);
     }
 
     protected Shortlist(Parcel in) {
         this.id = in.readLong();
         this.name = in.readString();
+        this.position = in.readInt();
     }
 
     public static final Parcelable.Creator<Shortlist> CREATOR = new Parcelable.Creator<Shortlist>
