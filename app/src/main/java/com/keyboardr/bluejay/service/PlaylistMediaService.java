@@ -28,9 +28,13 @@ import android.util.Log;
 
 import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
+
+import org.greenrobot.eventbus.Subscribe;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +45,7 @@ import java.util.Objects;
  */
 
 public class PlaylistMediaService extends MediaBrowserServiceCompat
-    implements Player.PlaybackListener, PlaylistPlayer.PlaylistChangedListener {
+    implements Player.PlaybackListener {
 
   public static final String ACTION_CHECK_IS_ALIVE = "checkIsAlive";
 
@@ -56,6 +60,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   static final String EXTRA_MEDIA_ID = "mediaId";
   static final String EXTRA_ALBUM_ID = "albumId";
   static final String EXTRA_DURATION = "duration";
+  static final String EXTRA_FINISH_TIME = "finishTime";
 
   private static final String TAG = "PlaylistMediaService";
 
@@ -105,7 +110,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         case COMMAND_ADD_TO_QUEUE:
           MediaItem mediaItem = extras.getParcelable(EXTRA_MEDIA_ITEM);
           if (mediaItem != null) {
-            player.addToQueue(mediaItem);
+            PlaylistPlayer.PlaylistItem playlistItem = player.addToQueue(mediaItem);
+            if (queue == null) {
+              queue = new ArrayList<>();
+            }
+            queue.add(getQueueItem(playlistItem));
+            mediaSession.setQueue(queue);
           }
           break;
         case COMMAND_MOVE:
@@ -114,9 +124,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
           if (newIndex == -1) {
             player.removeItem(oldIndex);
+            queue.remove(oldIndex);
           } else {
             player.moveItem(oldIndex, newIndex);
+            queue.add(newIndex, queue.remove(oldIndex));
           }
+          mediaSession.setQueue(queue);
       }
     }
 
@@ -133,6 +146,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   };
 
   private PowerManager.WakeLock wakeLock;
+  private List<MediaSessionCompat.QueueItem> queue;
+  private long finishTime = -1;
 
   @Override
   public void onCreate() {
@@ -156,13 +171,13 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
     player = new PlaylistPlayer(this);
     player.setPlaybackListener(this);
-    player.addPlaylistChangedListener(this);
+    Buses.PLAYLIST.register(this);
 
     setSessionToken(mediaSession.getSessionToken());
 
     updateOutputType();
-    updatePlaybackState();
     updateMetadata();
+    updatePlaybackState();
 
     registerReceiver(isAliveReceiver, new IntentFilter(ACTION_CHECK_IS_ALIVE));
     startService(new Intent(this, PlaylistMediaService.class));
@@ -207,6 +222,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     mediaSession = null;
     metadataMedia = null;
 
+    Buses.PLAYLIST.unregister(this);
+
     player.release();
     player = null;
     unregisterReceiver(isAliveReceiver);
@@ -245,8 +262,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       playerState = PlaybackStateCompat.STATE_STOPPED;
       if (player.getCurrentMediaIndex() < player.getMediaList().size()) {
         actions = PlaybackStateCompat.ACTION_PLAY;
+        finishTime = -1;
       } else {
         actions = 0;
+        if (finishTime < 0) {
+          finishTime = System.currentTimeMillis();
+        }
       }
     } else if (player.isPaused()) {
       playerState = PlaybackStateCompat.STATE_PAUSED;
@@ -262,6 +283,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       actions = PlaybackStateCompat.ACTION_PLAY_PAUSE;
     }
 
+    if (!player.isStopped()) {
+      finishTime = -1;
+    }
+
     actions |= PlaybackStateCompat.ACTION_PREPARE_FROM_MEDIA_ID;
     stateBuilder.setState(playerState, this.player.getCurrentPosition(), 1.0f);
     stateBuilder.setBufferedPosition(this.player.getDuration());
@@ -273,6 +298,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     extras.putParcelable(EXTRA_MEDIA_ITEM, currentMediaItem);
     extras.putBoolean(EXTRA_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
     extras.putInt(EXTRA_INDEX, player.getCurrentMediaIndex());
+    extras.putLong(EXTRA_FINISH_TIME, finishTime);
     stateBuilder.setExtras(extras);
     PlaybackStateCompat playbackState = stateBuilder.build();
     if (!isNewPlaybackState(playbackState)) {
@@ -280,7 +306,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
     lastPlaybackState = playbackState;
     mediaSession.setPlaybackState(playbackState);
-
   }
 
   private boolean isNewPlaybackState(PlaybackStateCompat playbackState) {
@@ -339,22 +364,29 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   private List<MediaSessionCompat.QueueItem> buildQueue() {
     List<MediaSessionCompat.QueueItem> queue = new ArrayList<>();
     for (PlaylistPlayer.PlaylistItem playlistItem : player.getMediaList()) {
-      Bundle extras = new Bundle();
-      extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
-      extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
-      extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
-      MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
-          .setTitle(playlistItem.mediaItem.title)
-          .setSubtitle(playlistItem.mediaItem.artist)
-          .setIconUri(playlistItem.mediaItem.thumbnailUri)
-          .setMediaUri(playlistItem.mediaItem.toUri())
-          .setMediaId(playlistItem.mediaItem.getTransientId() + "")
-          .setExtras(extras).build();
-      MediaSessionCompat.QueueItem queueItem = new MediaSessionCompat.QueueItem(description,
-          playlistItem.id);
+      MediaSessionCompat.QueueItem queueItem = getQueueItem(playlistItem);
       queue.add(queueItem);
     }
+    this.queue = queue;
     return queue;
+  }
+
+  @NonNull
+  private static MediaSessionCompat.QueueItem getQueueItem(PlaylistPlayer.PlaylistItem
+                                                               playlistItem) {
+    Bundle extras = new Bundle();
+    extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
+    extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
+    extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
+    MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
+        .setTitle(playlistItem.mediaItem.title)
+        .setSubtitle(playlistItem.mediaItem.artist)
+        .setIconUri(playlistItem.mediaItem.thumbnailUri)
+        .setMediaUri(playlistItem.mediaItem.toUri())
+        .setMediaId(playlistItem.mediaItem.getTransientId() + "")
+        .setExtras(extras).build();
+    return new MediaSessionCompat.QueueItem(description,
+        playlistItem.id);
   }
 
   @Override
@@ -369,13 +401,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     updateMetadata();
   }
 
-  @Override
-  public void onQueueChanged() {
+  private void onQueueChanged() {
     mediaSession.setQueue(buildQueue());
   }
 
-  @Override
-  public void onIndexChanged(int oldIndex, int newIndex) {
+  @Subscribe
+  public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
     updatePlaybackState();
     updateMetadata();
   }

@@ -12,9 +12,12 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
+import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
-import com.keyboardr.bluejay.player.PlaylistPlayer;
 
 import java.util.Collections;
 import java.util.List;
@@ -25,8 +28,7 @@ import static android.content.ContentValues.TAG;
 /**
  * A client object for communicating with a {@link PlaylistMediaService}
  */
-public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
-    .PlaylistChangedListener {
+public class PlaylistServiceClient implements Player {
 
   @NonNull
   public static MediaItem mediaItemFromQueueItem(@NonNull MediaSessionCompat.QueueItem queueItem) {
@@ -66,7 +68,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
       }
       PlaylistServiceClient.this.queue = queue;
       if (notify) {
-        PlaylistServiceClient.this.onQueueChanged();
+        Buses.PLAYLIST.postSticky(QueueChangeEvent.newInstance(queue));
       }
     }
 
@@ -78,8 +80,19 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
       }
       int currentMediaIndex = getCurrentMediaIndex();
       if (currentMediaIndex != lastKnownIndex) {
-        onIndexChanged(lastKnownIndex, currentMediaIndex);
+        Buses.PLAYLIST.postSticky(
+            new TrackIndexEvent(lastKnownIndex, currentMediaIndex, getCurrentMediaItem()));
         lastKnownIndex = currentMediaIndex;
+      }
+      Bundle extras = state.getExtras();
+      if (extras != null) {
+        extras.setClassLoader(getClass().getClassLoader());
+      }
+      if (extras != null && extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME, -1) > 0) {
+        Buses.PLAYLIST.postSticky(
+            new PlaybackFinishEvent(extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME)));
+      } else {
+        Buses.PLAYLIST.removeStickyEvent(PlaybackFinishEvent.class);
       }
     }
 
@@ -107,6 +120,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
   @Override
   public void release() {
     mediaController.unregisterCallback(callback);
+    Buses.PLAYLIST.removeAllStickyEvents();
   }
 
   @Override
@@ -253,6 +267,7 @@ public abstract class PlaylistServiceClient implements Player, PlaylistPlayer
       return Collections.emptyList();
     }
     this.queue = queue;
+    Buses.PLAYLIST.postSticky(QueueChangeEvent.newInstance(queue));
     return queue;
   }
 

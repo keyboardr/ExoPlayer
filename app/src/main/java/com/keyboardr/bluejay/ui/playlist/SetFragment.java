@@ -24,8 +24,10 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.List;
 
+import static com.keyboardr.bluejay.bus.Buses.PlaylistUtils.getCurrentTrackIndex;
+
 public class SetFragment extends Fragment implements PlaylistFragment.Holder,
-    PlaylistControlsFragment.Holder {
+    PlaylistControlsFragment.Holder, SetInfoFragment.Holder {
   public interface Holder {
     void endSet();
   }
@@ -72,10 +74,6 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
         R.id.playlist_control_fragment);
   }
 
-  private PlaylistFragment getPlaylistFragment() {
-    return (PlaylistFragment) getChildFragmentManager().findFragmentById(R.id.playlist_fragment);
-  }
-
   @Override
   public MediaControllerCompat getMediaController() {
     return mediaController;
@@ -88,18 +86,8 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
   }
 
   @Override
-  public int getCurrentTrackIndex() {
-    return getPlaylistControlsFragment().getCurrentTrackIndex();
-  }
-
-  @Override
-  public void onQueueChanged() {
-    getPlaylistFragment().onQueueChanged();
-  }
-
-  @Override
-  public void onIndexChanged(int oldIndex, int newIndex) {
-    getPlaylistFragment().onIndexChanged(oldIndex, newIndex);
+  public long getCurrentPosition() {
+    return getPlaylistControlsFragment().getCurrentPosition();
   }
 
   @Override

@@ -31,6 +31,7 @@ public class FilterInfo implements Parcelable {
 
   @SortMethod
   public final int sortMethod;
+  public final boolean sortAscending;
 
   @NonNull
   public final Set<Shortlist> requiredShortlists;
@@ -39,27 +40,40 @@ public class FilterInfo implements Parcelable {
   @Nullable
   public final String filterString;
 
-  public FilterInfo(@SortMethod int sortMethod, @NonNull Set<Shortlist> requiredShortlists,
+  public FilterInfo(@SortMethod int sortMethod, boolean sortAscending,
+                    @NonNull Set<Shortlist> requiredShortlists,
                     @NonNull Set<Shortlist> disallowedShortlists, @Nullable String filterString) {
     this.sortMethod = sortMethod;
+    this.sortAscending = sortAscending;
     this.requiredShortlists = requiredShortlists;
     this.disallowedShortlists = disallowedShortlists;
     this.filterString = filterString;
   }
 
   public String getSortColumn() {
+    StringBuilder builder;
     switch (sortMethod) {
       case SortMethod.ID:
-        return MediaStore.Audio.Media._ID;
+        builder = new StringBuilder(MediaStore.Audio.Media._ID);
+        break;
       case SortMethod.TITLE:
-        return MediaStore.Audio.Media.TITLE;
+        builder = new StringBuilder(MediaStore.Audio.Media.TITLE);
+        break;
       case SortMethod.ARTIST:
-        return MediaStore.Audio.Media.ARTIST;
+        builder = new StringBuilder(MediaStore.Audio.Media.ARTIST);
+        break;
       case SortMethod.DURATION:
-        return MediaStore.Audio.Media.DURATION;
+        builder = new StringBuilder(MediaStore.Audio.Media.DURATION);
+        break;
       default:
         throw new IllegalStateException("Unknown SortMethod: " + sortMethod);
     }
+    if (sortMethod == SortMethod.TITLE || sortMethod == SortMethod.ARTIST) {
+      builder.append(" COLLATE NOCASE");
+    }
+    builder.append(" ");
+    builder.append(sortAscending ? "ASC" : "DESC");
+    return builder.toString();
   }
 
   public boolean isAllowed(@NonNull MediaItem mediaItem,
@@ -105,6 +119,7 @@ public class FilterInfo implements Parcelable {
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeInt(this.sortMethod);
+    dest.writeInt(this.sortAscending ? 1 : 0);
     dest.writeTypedList(new ArrayList<>(requiredShortlists));
     dest.writeTypedList(new ArrayList<>(disallowedShortlists));
     dest.writeString(filterString);
@@ -113,6 +128,7 @@ public class FilterInfo implements Parcelable {
   protected FilterInfo(Parcel in) {
     //noinspection WrongConstant
     this.sortMethod = in.readInt();
+    sortAscending = in.readInt() == 1;
     ArrayList<Shortlist> shortlists = in.readArrayList(null);
     requiredShortlists = new ArraySet<>();
     requiredShortlists.addAll(shortlists);

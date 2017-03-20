@@ -24,6 +24,8 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 import com.keyboardr.bluejay.model.MediaItem;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.IOException;
 
 /**
@@ -159,6 +161,7 @@ public abstract class AbsPlayer implements Player {
       player.release();
       player = null;
     }
+    getBus().removeAllStickyEvents();
   }
 
   @Override
@@ -216,5 +219,7 @@ public abstract class AbsPlayer implements Player {
   public long getDuration() {
     return player == null ? 0 : player.getDuration();
   }
+
+  protected abstract EventBus getBus();
 
 }

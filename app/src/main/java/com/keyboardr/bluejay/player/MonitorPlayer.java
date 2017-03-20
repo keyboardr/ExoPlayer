@@ -8,7 +8,11 @@ import android.support.v4.content.LocalBroadcastManager;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.SimpleExoPlayer;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+
+import org.greenrobot.eventbus.EventBus;
 
 /**
  * A wrapper around the media player for Monitor playback.
@@ -32,6 +36,7 @@ public class MonitorPlayer extends AbsPlayer {
     SimpleExoPlayer player = ensurePlayer();
     player.prepare(getMediaSource(mediaItem));
     currentItem = mediaItem;
+    getBus().postSticky(new TrackIndexEvent(-1, -1, currentItem));
     player.setPlayWhenReady(playWhenReady);
     LocalBroadcastManager.getInstance(context).sendBroadcast(new Intent
         (ACTION_MONITOR_TRACK_CHANGED));
@@ -74,4 +79,8 @@ public class MonitorPlayer extends AbsPlayer {
     ensurePlayer().seekTo(positionMs);
   }
 
+  @Override
+  protected EventBus getBus() {
+    return Buses.MONITOR;
+  }
 }

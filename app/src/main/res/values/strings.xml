@@ -29,9 +29,13 @@
     <string name="close">Close</string>
     <string name="external_storage_rationale">BlueJay needs permission to load your music library</string>
     <string name="grant_permission">Grant permission</string>
+    <string name="up">Up</string>
+    <string name="down">Down</string>
+    <string name="info_track_count">Track: %1$d/%2$d</string>
+    <string name="info_end_time">End time: %s</string>
 
     <string-array name="sort_methods">
-        <item>ID</item>
+        <item>Default</item>
         <item>Title</item>
         <item>Artist</item>
         <item>Duration</item>
