@@ -1,4 +1,4 @@
-package com.keyboardr.bluejay.ui.monitor.library;
+package com.keyboardr.bluejay.ui.shortlists;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
@@ -8,7 +8,7 @@ import com.keyboardr.bluejay.provider.ShortlistManager;
 /**
  * Simple adapter for showing all shortlists in the ShortlistManager
  */
-abstract class ShortlistAdapter<T extends ShortlistViewHolder>
+public abstract class ShortlistAdapter<T extends ShortlistViewHolder>
     extends RecyclerView.Adapter<T> {
 
   private final ShortlistManager shortlistManager;

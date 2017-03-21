@@ -30,6 +30,8 @@ import com.google.android.flexbox.FlexboxLayoutManager;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.ui.shortlists.CheckableShortlistViewHolder;
+import com.keyboardr.bluejay.ui.shortlists.ShortlistAdapter;
 
 /**
  * Metadata editor for a track
@@ -185,7 +187,7 @@ public class MetadataFragment extends DialogFragment {
     LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(shortlistsChangedReceiver);
   }
 
-  private class MetadataShortlistViewHolder extends ShortlistViewHolder {
+  private class MetadataShortlistViewHolder extends CheckableShortlistViewHolder {
 
     public MetadataShortlistViewHolder(ViewGroup parent) {
       super(parent);

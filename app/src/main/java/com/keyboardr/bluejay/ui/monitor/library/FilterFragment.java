@@ -31,6 +31,8 @@ import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.Shortlist;
 import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.ui.shortlists.CheckableShortlistViewHolder;
+import com.keyboardr.bluejay.ui.shortlists.ShortlistAdapter;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.ArrayList;
@@ -183,7 +185,7 @@ public class FilterFragment extends DialogFragment {
         new ArrayList<>(deselectedShortlists));
   }
 
-  private class FilterShortlistViewHolder extends ShortlistViewHolder {
+  private class FilterShortlistViewHolder extends CheckableShortlistViewHolder {
 
     public FilterShortlistViewHolder(ViewGroup parent) {
       super(parent);
