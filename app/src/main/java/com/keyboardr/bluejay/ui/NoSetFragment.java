@@ -48,6 +48,8 @@ public class NoSetFragment extends Fragment {
       }
     });
 
+    boolean allowEditors = getResources().getBoolean(R.bool.allow_library_editor);
+
     View editMetadata = view.findViewById(R.id.edit_metadata);
     editMetadata.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -55,8 +57,7 @@ public class NoSetFragment extends Fragment {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).editMetadata();
       }
     });
-    editMetadata.setVisibility(getResources().getBoolean(R.bool.allow_library_editor)
-        ? View.VISIBLE : View.GONE);
+    editMetadata.setVisibility(allowEditors ? View.VISIBLE : View.GONE);
 
     View editShortlists = view.findViewById(R.id.edit_shortlists);
     editShortlists.setOnClickListener(new View.OnClickListener() {
@@ -65,5 +66,6 @@ public class NoSetFragment extends Fragment {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).editShortlists();
       }
     });
+    editShortlists.setVisibility(allowEditors ? View.VISIBLE : View.GONE);
   }
 }

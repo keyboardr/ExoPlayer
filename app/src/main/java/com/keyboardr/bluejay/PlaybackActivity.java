@@ -130,7 +130,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         .class), playlistServiceConn, null);
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-    if (getSupportFragmentManager().findFragmentById(R.id.playlist) == null) {
+    Fragment playlistFragment = getSupportFragmentManager().findFragmentById(R.id.playlist);
+    boolean isEditorFragment =
+        playlistFragment instanceof MonitorEditorFragment || playlistFragment instanceof
+            ShortlistEditorFragment;
+    if (playlistFragment == null
+        || (!getResources().getBoolean(R.bool.allow_library_editor) && isEditorFragment)) {
       getSupportFragmentManager().beginTransaction()
           .replace(R.id.playlist, NoSetFragment.newInstance()).commit();
     }

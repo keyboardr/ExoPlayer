@@ -23,7 +23,7 @@ public abstract class ShortlistViewHolder extends RecyclerView.ViewHolder implem
   public ShortlistViewHolder(ViewGroup parent, @LayoutRes int layout) {
     super(LayoutInflater.from(parent.getContext()).inflate(layout, parent, false));
     textView = (TextView) itemView.findViewById(android.R.id.text1);
-    textView.setOnClickListener(this);
+    itemView.setOnClickListener(this);
   }
 
   public void bindItem(@NonNull Shortlist shortlist) {
