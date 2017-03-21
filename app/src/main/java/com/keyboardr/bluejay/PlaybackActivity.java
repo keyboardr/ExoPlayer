@@ -22,6 +22,7 @@ import android.widget.ViewSwitcher;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
+import com.keyboardr.bluejay.ui.EditShortlistsActivity;
 import com.keyboardr.bluejay.ui.MonitorEditorFragment;
 import com.keyboardr.bluejay.ui.NoSetFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
@@ -234,8 +235,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   @Override
   public void editShortlists() {
-    getSupportFragmentManager().beginTransaction()
-        .replace(R.id.playlist, ShortlistEditorFragment.newInstance()).commitNow();
+    if (getResources().getBoolean(R.bool.allow_library_editor)) {
+      getSupportFragmentManager().beginTransaction()
+          .replace(R.id.playlist, ShortlistEditorFragment.newInstance()).commitNow();
+    } else {
+      startActivity(new Intent(this, EditShortlistsActivity.class));
+    }
   }
 
   @Nullable

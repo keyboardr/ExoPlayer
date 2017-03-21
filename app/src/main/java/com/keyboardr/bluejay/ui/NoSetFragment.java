@@ -66,6 +66,5 @@ public class NoSetFragment extends Fragment {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).editShortlists();
       }
     });
-    editShortlists.setVisibility(allowEditors ? View.VISIBLE : View.GONE);
   }
 }
