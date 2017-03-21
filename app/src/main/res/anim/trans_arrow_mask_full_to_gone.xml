@@ -3,7 +3,8 @@
     <objectAnimator
         android:duration="@android:integer/config_shortAnimTime"
         android:interpolator="@android:interpolator/fast_out_slow_in"
-        android:propertyName="trimPathEnd"
-        android:valueFrom="0"
-        android:valueTo="1"/>
+        android:propertyName="pathData"
+        android:valueFrom="@string/mask_arrow_full"
+        android:valueTo="@string/mask_arrow_gone"
+        android:valueType="pathType"/>
 </set>
