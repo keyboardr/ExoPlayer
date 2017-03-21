@@ -54,7 +54,20 @@ public class FilterFragment extends DialogFragment {
   private BroadcastReceiver shortlistsChangedReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      shortlistsView.getAdapter().notifyDataSetChanged();
+      switch (intent.getIntExtra(ShortlistManager.EXTRA_CHANGE_TYPE, ShortlistManager.Change
+          .UNKNOWN)) {
+        case ShortlistManager.Change.REMOVE:
+          Shortlist shortlist = intent.getParcelableExtra(ShortlistManager.EXTRA_SHORTLIST);
+          boolean modified;
+          modified = selectedShortlists.remove(shortlist);
+          modified |= deselectedShortlists.remove(shortlist);
+          if (modified) {
+            updateFilterInfo();
+          }
+          break;
+      }
+      shortlistsView.getAdapter().notifyDataSetChanged
+          ();
     }
   };
 

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Message;
+import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
@@ -38,6 +39,14 @@ public class ShortlistManager {
   public static final String ACTION_SHORTLISTS_CHANGED = "com.keyboardr.bluejay.ui.monitor"
       + "ShortlistManager.ACTION_SHORTLISTS_CHANGED";
 
+  public static final String EXTRA_CHANGE_TYPE = "changeType";
+
+  public static final String EXTRA_SHORTLIST = "shortlist";
+
+  public static final String EXTRA_INDEX = "index";
+
+  public static final String EXTRA_OLD_INDEX = "oldIndex";
+
   private static final String TAG = "ShortlistManager";
 
   private final Comparator<? super Shortlist> POSITION_COMPARATOR = new Comparator<Shortlist>
@@ -47,6 +56,15 @@ public class ShortlistManager {
       return positions.get(left.getId()) - positions.get(right.getId());
     }
   };
+
+  @IntDef({Change.UNKNOWN, Change.ADD, Change.REMOVE, Change.MOVE, Change.RENAME})
+  public @interface Change {
+    int UNKNOWN = 0;
+    int ADD = 1;
+    int REMOVE = 2;
+    int MOVE = 3;
+    int RENAME = 4;
+  }
 
   // Indexed by media id, contains shortlist IDs
   @Nullable
@@ -183,6 +201,7 @@ public class ShortlistManager {
       throw new IllegalStateException("Shortlists not yet initialized");
     }
     shortlists.remove(shortlist.getId());
+    int index = -1;
     for (int i = positionedShortlists.size() - 1; i >= 0; i--) {
       long listShortlistId = positionedShortlists.get(i).getId();
       if (listShortlistId == shortlist.getId()) {
@@ -190,6 +209,7 @@ public class ShortlistManager {
         positions.remove(shortlist.getId());
         dirtyRangeBottom = Math.min(dirtyRangeBottom, i);
         dirtyRangeTop = Math.max(dirtyRangeTop, positionedShortlists.size());
+        index = i;
         break;
       } else {
         positions.put(listShortlistId, i - 1);
@@ -201,11 +221,12 @@ public class ShortlistManager {
     queryHandler.startDelete(0, null, MediaShortlistContract.CONTENT_URI,
         MediaShortlistContract.SHORTLIST_ID + " = " + shortlist.getId(), null);
     queueUpdatePositions(500);
-    notifyShortlistsChanged();
+    notifyShortlistsChanged(Change.REMOVE, shortlist, -1, index);
   }
 
   public void moveShortlist(int oldIndex, int newIndex) {
-    positionedShortlists.add(newIndex, positionedShortlists.remove(oldIndex));
+    Shortlist shortlist = positionedShortlists.remove(oldIndex);
+    positionedShortlists.add(newIndex, shortlist);
 
     if (dirtyRangeTop == -1) {
       dirtyRangeTop = oldIndex;
@@ -219,7 +240,7 @@ public class ShortlistManager {
     dirtyRangeBottom = Math.min(dirtyRangeBottom, newIndex);
 
     queueUpdatePositions(5000);
-    notifyShortlistsChanged();
+    notifyShortlistsChanged(Change.MOVE, shortlist, oldIndex, newIndex);
   }
 
   private void queueUpdatePositions(long delay) {
@@ -230,20 +251,27 @@ public class ShortlistManager {
   public void renameShortlist(@NonNull Shortlist shortlist, @NonNull String name) {
     Shortlist newShortlist = new Shortlist(shortlist.getId(), name);
     shortlists.put(shortlist.getId(), newShortlist);
-    positionedShortlists.set(positions.get(shortlist.getId()), newShortlist);
+    int position = positions.get(shortlist.getId());
+    positionedShortlists.set(position, newShortlist);
     ContentValues values = new ContentValues();
     values.put(ShortlistsContract.NAME, name);
     queryHandler.startUpdate(0, null, ContentUris.withAppendedId(ShortlistsContract.CONTENT_URI,
         shortlist.getId()), values, null, null);
-    notifyShortlistsChanged();
+    notifyShortlistsChanged(Change.RENAME, newShortlist, position, position);
   }
 
   public boolean isReady() {
     return shortlists != null && shortlistMap != null;
   }
 
-  private void notifyShortlistsChanged() {
-    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
+  private void notifyShortlistsChanged(@Change int changeType, @Nullable Shortlist shortlist, int
+      index, int oldIndex) {
+    Intent intent = new Intent(ACTION_SHORTLISTS_CHANGED);
+    intent.putExtra(EXTRA_CHANGE_TYPE, changeType);
+    intent.putExtra(EXTRA_SHORTLIST, shortlist);
+    intent.putExtra(EXTRA_INDEX, index);
+    intent.putExtra(EXTRA_OLD_INDEX, oldIndex);
+    localBroadcastManager.sendBroadcast(intent);
   }
 
   private void setShortlists(@NonNull List<Shortlist> shortlists) {
@@ -374,7 +402,7 @@ public class ShortlistManager {
               if (shortlistManager.dirtyRangeTop >= 0) {
                 shortlistManager.dirtyRangeTop = Math.max(shortlistManager.dirtyRangeTop, position);
               }
-              shortlistManager.notifyShortlistsChanged();
+              shortlistManager.notifyShortlistsChanged(Change.ADD, shortlist, position, -1);
             }
             break;
         }

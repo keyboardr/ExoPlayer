@@ -66,12 +66,11 @@ public class Shortlist implements Parcelable, Comparable<Shortlist> {
             return false;
         }
         Shortlist shortlist = (Shortlist) o;
-        return id == shortlist.id &&
-            Objects.equals(name, shortlist.name);
+        return id == shortlist.id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name);
+        return Objects.hash(id);
     }
 }
