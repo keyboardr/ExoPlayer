@@ -6,15 +6,21 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.TextInputEditText;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.provider.ShortlistManager;
@@ -26,6 +32,8 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 
 public class ShortlistEditorFragment extends Fragment {
 
+
+  private TextInputEditText newShortlistText;
 
   public static ShortlistEditorFragment newInstance() {
     return new ShortlistEditorFragment();
@@ -126,6 +134,40 @@ public class ShortlistEditorFragment extends Fragment {
       }
     });
 
+    final View addShortlist = view.findViewById(R.id.add_shortlist);
+    newShortlistText = (TextInputEditText) view.findViewById(R.id
+        .new_shortlist);
+
+    addShortlist.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        createShortlist();
+      }
+    });
+    addShortlist.setEnabled(newShortlistText.length() != 0);
+
+    newShortlistText.addTextChangedListener(new TextWatcher() {
+
+      @Override
+      public void beforeTextChanged(CharSequence charSequence, int start, int count, int after) {
+      }
+
+      @Override
+      public void onTextChanged(CharSequence charSequence, int start, int before, int count) {
+        addShortlist.setEnabled(charSequence.length() != 0);
+      }
+
+      @Override
+      public void afterTextChanged(Editable editable) {
+      }
+    });
+    newShortlistText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+      @Override
+      public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+        return createShortlist();
+      }
+    });
+
     LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
         new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
   }
@@ -155,6 +197,15 @@ public class ShortlistEditorFragment extends Fragment {
       ShortlistRenameDialogFragment fragment = ShortlistRenameDialogFragment.newInstance(shortlist);
       fragment.show(getChildFragmentManager(), null);
     }
+  }
+
+  private boolean createShortlist() {
+    if (TextUtils.isEmpty(newShortlistText.getText())) {
+      return false;
+    }
+    shortlistManager.createShortlist(newShortlistText.getText().toString());
+    newShortlistText.setText("");
+    return true;
   }
 
 }
