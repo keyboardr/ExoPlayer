@@ -27,9 +27,11 @@ import com.keyboardr.bluejay.ui.NoSetFragment;
 import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.ui.playlist.SetFragment;
+import com.keyboardr.bluejay.ui.shortlists.ShortlistEditorFragment;
 
 public class PlaybackActivity extends AppCompatActivity implements LibraryFragment.Holder,
-    NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder, MonitorEditorFragment.Holder {
+    NoSetFragment.Holder, SetFragment.Holder, BottomNavHolder, MonitorEditorFragment.Holder,
+    ShortlistEditorFragment.Holder {
 
   @SuppressWarnings("PointlessBooleanExpression")
   private static final boolean DEBUG_BYPASS_QUEUE_DEDUPE = BuildConfig.DEBUG && false;
@@ -225,6 +227,12 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         .replace(R.id.playlist, MonitorEditorFragment.newInstance()).commitNow();
   }
 
+  @Override
+  public void editShortlists() {
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.playlist, ShortlistEditorFragment.newInstance()).commitNow();
+  }
+
   @Nullable
   @Override
   public MediaItem getCurrentMonitorTrack() {
@@ -262,5 +270,23 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   public void closeMetadataEditor() {
     getSupportFragmentManager().beginTransaction()
         .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+  }
+
+  @Override
+  public void closeShortlistEditor() {
+    getSupportFragmentManager().beginTransaction()
+        .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+  }
+
+  @Override
+  public void onBackPressed() {
+    Fragment editorFragment = getSupportFragmentManager().findFragmentById(R.id.playlist);
+    if (editorFragment instanceof MonitorEditorFragment) {
+      closeMetadataEditor();
+    } else if (editorFragment instanceof ShortlistEditorFragment) {
+      closeShortlistEditor();
+    } else {
+      super.onBackPressed();
+    }
   }
 }

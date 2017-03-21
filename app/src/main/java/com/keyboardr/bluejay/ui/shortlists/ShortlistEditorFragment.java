@@ -16,7 +16,15 @@ import com.keyboardr.bluejay.R;
 
 public class ShortlistEditorFragment extends Fragment {
 
-  RecyclerView recyclerView;
+  public static ShortlistEditorFragment newInstance() {
+    return new ShortlistEditorFragment();
+  }
+
+  public interface Holder {
+    void closeShortlistEditor();
+  }
+
+  private RecyclerView recyclerView;
 
   @Nullable
   @Override
@@ -30,5 +38,17 @@ public class ShortlistEditorFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
     recyclerView = (RecyclerView) view.findViewById(R.id.shortlist_recycler);
 
+  }
+
+
+  private class EditorShortlistViewHolder extends ShortlistViewHolder {
+    public EditorShortlistViewHolder(ViewGroup parent) {
+      super(parent, R.layout.item_shortlist_editor);
+    }
+
+    @Override
+    public void onClick(View view) {
+      // TODO: 3/20/2017
+    }
   }
 }

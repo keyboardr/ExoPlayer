@@ -17,6 +17,8 @@ public class NoSetFragment extends Fragment {
     void startNewSetlist();
 
     void editMetadata();
+
+    void editShortlists();
   }
 
   public static NoSetFragment newInstance() {
@@ -55,5 +57,13 @@ public class NoSetFragment extends Fragment {
     });
     editMetadata.setVisibility(getResources().getBoolean(R.bool.allow_library_editor)
         ? View.VISIBLE : View.GONE);
+
+    View editShortlists = view.findViewById(R.id.edit_shortlists);
+    editShortlists.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).editShortlists();
+      }
+    });
   }
 }

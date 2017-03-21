@@ -26,6 +26,7 @@
         again?</string>
     <string name="add_track">Add track</string>
     <string name="edit_metadata">Edit metadata</string>
+    <string name="edit_tags">Edit tags</string>
     <string name="close">Close</string>
     <string name="external_storage_rationale">BlueJay needs permission to load your music library</string>
     <string name="grant_permission">Grant permission</string>
