@@ -60,7 +60,7 @@
         android:paddingEnd="24dp"
         android:paddingStart="24dp"
         android:paddingTop="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/add_shortlist"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/header"
@@ -68,6 +68,7 @@
 
     <include
         layout="@layout/add_shortlist"
+        android:id="@+id/add_shortlist"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
