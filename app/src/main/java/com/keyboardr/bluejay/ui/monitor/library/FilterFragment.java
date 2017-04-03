@@ -66,8 +66,9 @@ public class FilterFragment extends DialogFragment {
           }
           break;
       }
-      shortlistsView.getAdapter().notifyDataSetChanged
-          ();
+      if (shortlistsView != null && shortlistsView.getAdapter() != null) {
+        shortlistsView.getAdapter().notifyDataSetChanged();
+      }
     }
   };
 
@@ -136,6 +137,11 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
+    IntentFilter filter = new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED);
+    filter.addAction(ShortlistManager.ACTION_SHORTLISTS_READY);
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
+        filter);
+
     shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
     shortlistsView.setLayoutManager(new LinearLayoutManager(getContext()));
     shortlistsView.setAdapter(new ShortlistAdapter<FilterShortlistViewHolder>(
@@ -179,9 +185,6 @@ public class FilterFragment extends DialogFragment {
             updateFilterInfo();
           }
         });
-
-    LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
-        new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
   }
 
   @Override

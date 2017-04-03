@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Message;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
@@ -32,9 +33,6 @@ public class ShortlistManager {
 
   public static final String ACTION_SHORTLISTS_READY = "com.keyboardr.bluejay.ui.monitor"
       + ".ShortlistManager.ACTION_SHORTLISTS_READY";
-
-  public static final String ACTION_SHORTLIST_PAIRS_READY = "com.keyboardr.bluejay.ui.monitor"
-      + ".ShortlistManager.ACTION_SHORTLIST_PAIRS_READY";
 
   public static final String ACTION_SHORTLISTS_CHANGED = "com.keyboardr.bluejay.ui.monitor"
       + "ShortlistManager.ACTION_SHORTLISTS_CHANGED";
@@ -101,6 +99,7 @@ public class ShortlistManager {
     localBroadcastManager = LocalBroadcastManager.getInstance(context.getApplicationContext());
     queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_SHORTLIST, null,
         ShortlistsContract.CONTENT_URI, null, null, null, ShortlistsContract._ID);
+    Log.d(TAG, "ShortlistManager: Init shortlist");
   }
 
   @Nullable
@@ -282,6 +281,7 @@ public class ShortlistManager {
     }
     Collections.sort(positionedShortlists, POSITION_COMPARATOR);
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_CHANGED));
+    Log.d(TAG, "setShortlists: init pairs");
     queryHandler.startQuery(ShortlistQueryHandler.TOKEN_INIT_PAIRS, null,
         MediaShortlistContract.CONTENT_URI, null, null, null,
         MediaShortlistContract.SHORTLIST_ID);
@@ -297,7 +297,6 @@ public class ShortlistManager {
       remove(remove.first, remove.second);
     }
 
-    localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLIST_PAIRS_READY));
     localBroadcastManager.sendBroadcast(new Intent(ACTION_SHORTLISTS_READY));
   }
 
@@ -342,16 +341,18 @@ public class ShortlistManager {
     }
 
     @Override
-    protected void onQueryComplete(int token, Object cookie, @Nullable Cursor cursor) {
+    protected void onQueryComplete(int token, Object cookie, @Nullable final Cursor cursor) {
       if (cursor == null) {
         Log.w(TAG, "onQueryComplete: null cursor");
         return;
       }
+      final ShortlistManager manager = getInstance(context);
+      boolean isAsync = false;
       try {
         switch (token) {
           case TOKEN_INIT_SHORTLIST:
+            Log.d(TAG, "onQueryComplete: Finished load shortlists");
             List<Shortlist> shortlists = new ArrayList<>();
-            ShortlistManager manager = getInstance(context);
             if (cursor.moveToFirst()) {
               int idColumn = cursor.getColumnIndexOrThrow(ShortlistsContract._ID);
               int nameColumn = cursor.getColumnIndexOrThrow(ShortlistsContract.NAME);
@@ -364,26 +365,45 @@ public class ShortlistManager {
               } while (cursor.moveToNext());
             }
             manager.setShortlists(shortlists);
+            Log.d(TAG, "onQueryComplete: Finished init shortlists");
             break;
           case TOKEN_INIT_PAIRS:
-            LongSparseArray<Set<Long>> shortlistMap = new LongSparseArray<>();
-            manager = getInstance(context);
+            Log.d(TAG, "onQueryComplete: Finished load pairs");
             if (cursor.moveToFirst()) {
-              int columnMediaId = cursor.getColumnIndexOrThrow(MediaShortlistContract
-                  .MEDIA_ID);
-              int columnShortlistId = cursor.getColumnIndexOrThrow(MediaShortlistContract
-                  .SHORTLIST_ID);
-              do {
-                long mediaId = cursor.getLong(columnMediaId);
-                Set<Long> shortlistIds = shortlistMap.get(mediaId);
-                if (shortlistIds == null) {
-                  shortlistIds = new ArraySet<>();
-                  shortlistMap.put(mediaId, shortlistIds);
+              isAsync = true;
+              new AsyncTask<Cursor, Void, LongSparseArray<Set<Long>>>() {
+
+                @Override
+                protected LongSparseArray<Set<Long>> doInBackground(Cursor... cursors) {
+                  try {
+                    LongSparseArray<Set<Long>> shortlistMap = new LongSparseArray<>();
+                    Cursor cursor = cursors[0];
+                    int columnMediaId = cursor.getColumnIndexOrThrow(MediaShortlistContract
+                        .MEDIA_ID);
+                    int columnShortlistId = cursor.getColumnIndexOrThrow(MediaShortlistContract
+                        .SHORTLIST_ID);
+                    do {
+                      long mediaId = cursor.getLong(columnMediaId);
+                      Set<Long> shortlistIds = shortlistMap.get(mediaId);
+                      if (shortlistIds == null) {
+                        shortlistIds = new ArraySet<>();
+                        shortlistMap.put(mediaId, shortlistIds);
+                      }
+                      shortlistIds.add(cursor.getLong(columnShortlistId));
+                    } while (cursor.moveToNext());
+                    return shortlistMap;
+                  } finally {
+                    cursor.close();
+                  }
                 }
-                shortlistIds.add(cursor.getLong(columnShortlistId));
-              } while (cursor.moveToNext());
+
+                @Override
+                protected void onPostExecute(LongSparseArray<Set<Long>> result) {
+                  manager.setShortlistPairs(result);
+                  Log.d(TAG, "onQueryComplete: Finished init pairs");
+                }
+              }.execute(cursor);
             }
-            manager.setShortlistPairs(shortlistMap);
             break;
           case TOKEN_SHORTLIST_ADDED:
             if (cursor.moveToFirst()) {
@@ -395,19 +415,20 @@ public class ShortlistManager {
               int position = cursor.getInt(cursor.getColumnIndexOrThrow(ShortlistsContract
                   .POSITION));
               Shortlist shortlist = new Shortlist(id, name);
-              ShortlistManager shortlistManager = getInstance(context);
-              shortlistManager.shortlists.put(shortlist.getId(), shortlist);
-              shortlistManager.positions.put(shortlist.getId(), position);
-              shortlistManager.positionedShortlists.add(position, shortlist);
-              if (shortlistManager.dirtyRangeTop >= 0) {
-                shortlistManager.dirtyRangeTop = Math.max(shortlistManager.dirtyRangeTop, position);
+              manager.shortlists.put(shortlist.getId(), shortlist);
+              manager.positions.put(shortlist.getId(), position);
+              manager.positionedShortlists.add(position, shortlist);
+              if (manager.dirtyRangeTop >= 0) {
+                manager.dirtyRangeTop = Math.max(manager.dirtyRangeTop, position);
               }
-              shortlistManager.notifyShortlistsChanged(Change.ADD, shortlist, position, -1);
+              manager.notifyShortlistsChanged(Change.ADD, shortlist, position, -1);
             }
             break;
         }
       } finally {
-        cursor.close();
+        if (!isAsync) {
+          cursor.close();
+        }
       }
     }
 
