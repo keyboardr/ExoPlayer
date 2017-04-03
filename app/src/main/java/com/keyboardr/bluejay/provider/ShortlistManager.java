@@ -116,6 +116,10 @@ public class ShortlistManager {
     List<Shortlist> result = new ArrayList<>();
 
     for (Long id : shortlistIds) {
+      if (id == null) {
+        Log.w(TAG, "getShortlists: null ID in shortlistIds");
+        continue;
+      }
       Shortlist shortlist = shortlists.get(id);
       if (shortlist == null) {
         shortlistIds.remove(id);
