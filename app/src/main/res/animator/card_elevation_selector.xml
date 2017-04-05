@@ -10,6 +10,13 @@
         android:state_pressed="false">
         <objectAnimator
             android:propertyName="translationZ"
+            android:valueTo="2dp"/>
+    </item>
+    <item
+        android:state_activated="true"
+        android:state_pressed="false">
+        <objectAnimator
+            android:propertyName="translationZ"
             android:valueTo="4dp"/>
     </item>
     <item
@@ -25,12 +32,5 @@
         <objectAnimator
             android:propertyName="translationZ"
             android:valueTo="10dp"/>
-    </item>
-    <item
-        android:state_activated="true"
-        android:state_pressed="false">
-        <objectAnimator
-            android:propertyName="translationZ"
-            android:valueTo="2dp"/>
     </item>
 </selector>
