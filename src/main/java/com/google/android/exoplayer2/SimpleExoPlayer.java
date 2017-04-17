@@ -149,6 +149,8 @@ public class SimpleExoPlayer implements ExoPlayer {
   private float audioVolume;
   private PlaybackParamsHolder playbackParamsHolder;
 
+  private AudioDeviceInfo preferredAudioOutputDevice;
+
   protected SimpleExoPlayer(Context context, TrackSelector trackSelector, LoadControl loadControl,
       DrmSessionManager<FrameworkMediaCrypto> drmSessionManager,
       @ExtensionRendererMode int extensionRendererMode, long allowedVideoJoiningTimeMs) {
@@ -470,17 +472,13 @@ public class SimpleExoPlayer implements ExoPlayer {
         ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
       }
     }
+    preferredAudioOutputDevice = audioDeviceInfo;
   }
 
   @Nullable
   @TargetApi(23)
   public AudioDeviceInfo getAudioOutput() {
-    for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        return ((MediaCodecAudioRenderer) renderer).getPreferredAudioOutput();
-      }
-    }
-    return null;
+    return preferredAudioOutputDevice;
   }
 
   // ExoPlayer implementation
