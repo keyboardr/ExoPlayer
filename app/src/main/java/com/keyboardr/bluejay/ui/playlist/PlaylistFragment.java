@@ -181,8 +181,10 @@ public class PlaylistFragment extends Fragment {
   public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
     if (event.oldIndex >= 0) {
       playlistAdapter.notifyItemChanged(event.oldIndex);
+      playlistAdapter.notifyItemChanged(event.newIndex);
+    } else {
+      playlistAdapter.notifyItemRangeChanged(0, event.newIndex + 1);
     }
-    playlistAdapter.notifyItemChanged(event.newIndex);
     scrollIfInactive(event.newIndex);
   }
 

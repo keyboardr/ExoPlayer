@@ -115,6 +115,7 @@ public class PlaylistServiceClient implements Player {
   public PlaylistServiceClient(@NonNull MediaControllerCompat mediaController) {
     this.mediaController = mediaController;
     mediaController.registerCallback(callback);
+    Buses.PLAYLIST.postSticky(new TrackIndexEvent(-1, getCurrentMediaIndex(), getCurrentMediaItem()));
   }
 
   @Override
