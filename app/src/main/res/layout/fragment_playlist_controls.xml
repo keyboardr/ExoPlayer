@@ -98,7 +98,7 @@
         android:layout_marginStart="8dp"
         android:enabled="false"
         android:indeterminate="false"
-        android:progressTint="@color/colorPrimary"
+        android:progressTint="@color/colorPrimaryLight"
         app:layout_constraintBottom_toBottomOf="@+id/controls_play_pause"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
