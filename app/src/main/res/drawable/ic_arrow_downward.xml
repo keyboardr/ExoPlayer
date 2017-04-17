@@ -9,6 +9,7 @@
         android:pivotX="12"
         android:pivotY="12">
         <path
+            android:name="shape"
             android:fillColor="@android:color/white"
             android:pathData="@string/path_arrow_down"/>
     </group>

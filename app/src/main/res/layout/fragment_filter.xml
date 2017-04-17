@@ -44,7 +44,7 @@
                 android:id="@+id/sort_direction"
                 android:layout_column="2"
                 android:layout_row="0"
-                android:button="@drawable/asl_down_up"
+                android:button="@drawable/asl_down_up_shuffle"
                 android:gravity="center_vertical|start"
                 android:textOn="@string/up"
                 android:textOff="@string/down"

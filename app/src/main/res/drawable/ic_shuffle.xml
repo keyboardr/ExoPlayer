@@ -12,6 +12,6 @@
         <path
             android:name="shape"
             android:fillColor="@android:color/white"
-            android:pathData="@string/path_arrow_down"/>
+            android:pathData="@string/path_shuffle"/>
     </group>
 </vector>
