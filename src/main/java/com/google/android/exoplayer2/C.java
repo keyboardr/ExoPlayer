@@ -519,6 +519,14 @@ public final class C {
   public static final int MSG_CUSTOM_BASE = 10000;
 
   /**
+   * A type of message that can be passed to an audio (@link Renderer} via
+   * {@link ExoPlayer#sendMessages} or {@link ExoPlayer#blockingSendMessages}. The message object
+   * should be a {@link android.media.AudioDeviceInfo}, or null, which will be used to configure the
+   * underlying {@link android.media.AudioTrack}.
+   */
+  public static final int MSG_SET_AUDIO_OUTPUT = MSG_CUSTOM_BASE + 1;
+
+  /**
    * The stereo mode for 360/3D/VR videos.
    */
   @Retention(RetentionPolicy.SOURCE)
