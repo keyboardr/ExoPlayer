@@ -94,7 +94,7 @@ public final class ExtractorMediaSource implements MediaSource, MediaSource.List
   private final EventListener eventListener;
   private final Timeline.Period period;
 
-  private Listener sourceListener;
+  private MediaSource.Listener sourceListener;
   private Timeline timeline;
   private boolean timelineHasDuration;
 

@@ -115,7 +115,7 @@ public final class CaptionStyleCompat {
    */
   @TargetApi(19)
   public static CaptionStyleCompat createFromCaptionStyle(
-      CaptionStyle captionStyle) {
+      CaptioningManager.CaptionStyle captionStyle) {
     if (Util.SDK_INT >= 21) {
       return createFromCaptionStyleV21(captionStyle);
     } else {
@@ -146,7 +146,7 @@ public final class CaptionStyleCompat {
   @TargetApi(19)
   @SuppressWarnings("ResourceType")
   private static CaptionStyleCompat createFromCaptionStyleV19(
-      CaptionStyle captionStyle) {
+      CaptioningManager.CaptionStyle captionStyle) {
     return new CaptionStyleCompat(
         captionStyle.foregroundColor, captionStyle.backgroundColor, Color.TRANSPARENT,
         captionStyle.edgeType, captionStyle.edgeColor, captionStyle.getTypeface());
@@ -155,7 +155,7 @@ public final class CaptionStyleCompat {
   @TargetApi(21)
   @SuppressWarnings("ResourceType")
   private static CaptionStyleCompat createFromCaptionStyleV21(
-      CaptionStyle captionStyle) {
+      CaptioningManager.CaptionStyle captionStyle) {
     return new CaptionStyleCompat(
         captionStyle.hasForegroundColor() ? captionStyle.foregroundColor : DEFAULT.foregroundColor,
         captionStyle.hasBackgroundColor() ? captionStyle.backgroundColor : DEFAULT.backgroundColor,

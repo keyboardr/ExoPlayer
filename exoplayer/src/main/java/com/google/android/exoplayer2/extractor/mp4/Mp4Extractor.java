@@ -271,7 +271,7 @@ public final class Mp4Extractor implements Extractor, SeekMap {
 
   private void processAtomEnded(long atomEndPosition) throws ParserException {
     while (!containerAtoms.isEmpty() && containerAtoms.peek().endPosition == atomEndPosition) {
-      ContainerAtom containerAtom = containerAtoms.pop();
+      Atom.ContainerAtom containerAtom = containerAtoms.pop();
       if (containerAtom.type == Atom.TYPE_moov) {
         // We've reached the end of the moov atom. Process it and prepare to read samples.
         processMoovAtom(containerAtom);
@@ -326,7 +326,7 @@ public final class Mp4Extractor implements Extractor, SeekMap {
     }
 
     for (int i = 0; i < moov.containerChildren.size(); i++) {
-      ContainerAtom atom = moov.containerChildren.get(i);
+      Atom.ContainerAtom atom = moov.containerChildren.get(i);
       if (atom.type != Atom.TYPE_trak) {
         continue;
       }
@@ -337,7 +337,7 @@ public final class Mp4Extractor implements Extractor, SeekMap {
         continue;
       }
 
-      ContainerAtom stblAtom = atom.getContainerAtomOfType(Atom.TYPE_mdia)
+      Atom.ContainerAtom stblAtom = atom.getContainerAtomOfType(Atom.TYPE_mdia)
           .getContainerAtomOfType(Atom.TYPE_minf).getContainerAtomOfType(Atom.TYPE_stbl);
       TrackSampleTable trackSampleTable = AtomParsers.parseStbl(track, stblAtom, gaplessInfoHolder);
       if (trackSampleTable.sampleCount == 0) {

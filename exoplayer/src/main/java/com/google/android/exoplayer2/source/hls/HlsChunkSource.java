@@ -242,7 +242,7 @@ import java.util.Locale;
     }
 
     // Handle encryption.
-    Segment segment = mediaPlaylist.segments.get(chunkIndex);
+    HlsMediaPlaylist.Segment segment = mediaPlaylist.segments.get(chunkIndex);
 
     // Check if encryption is specified.
     if (segment.isEncrypted) {

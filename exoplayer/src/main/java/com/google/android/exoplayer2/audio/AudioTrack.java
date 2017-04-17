@@ -17,24 +17,17 @@ package com.google.android.exoplayer2.audio;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
-import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
-import android.media.AudioRouting;
 import android.media.AudioTimestamp;
 import android.media.PlaybackParams;
-import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
-import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.util.Log;
-
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
-
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
@@ -70,15 +63,11 @@ public final class AudioTrack {
     /**
      * Called when the audio track underruns.
      *
-     * @param bufferSize             The size of the track's buffer, in bytes.
-     * @param bufferSizeMs           The size of the track's buffer, in milliseconds, if it
-     *                               is configured for
-     *                               PCM output. {@link C#TIME_UNSET} if it is configured for
-     *                               passthrough output, as the
-     *                               buffered media can have a variable bitrate so the
-     *                               duration may be unknown.
-     * @param elapsedSinceLastFeedMs The time since the track was last fed data, in
-     *                               milliseconds.
+     * @param bufferSize The size of the track's buffer, in bytes.
+     * @param bufferSizeMs The size of the track's buffer, in milliseconds, if it is configured for
+     *     PCM output. {@link C#TIME_UNSET} if it is configured for passthrough output, as the
+     *     buffered media can have a variable bitrate so the duration may be unknown.
+     * @param elapsedSinceLastFeedMs The time since the track was last fed data, in milliseconds.
      */
     void onUnderrun(int bufferSize, long bufferSizeMs, long elapsedSinceLastFeedMs);
 
@@ -96,12 +85,12 @@ public final class AudioTrack {
 
     /**
      * @param audioTrackState The state as reported by {@link android.media.AudioTrack#getState()}.
-     * @param sampleRate      The requested sample rate in Hz.
-     * @param channelConfig   The requested channel configuration.
-     * @param bufferSize      The requested buffer size in bytes.
+     * @param sampleRate The requested sample rate in Hz.
+     * @param channelConfig The requested channel configuration.
+     * @param bufferSize The requested buffer size in bytes.
      */
     public InitializationException(int audioTrackState, int sampleRate, int channelConfig,
-                                   int bufferSize) {
+        int bufferSize) {
       super("AudioTrack init failed: " + audioTrackState + ", Config(" + sampleRate + ", "
           + channelConfig + ", " + bufferSize + ")");
       this.audioTrackState = audioTrackState;
@@ -121,7 +110,7 @@ public final class AudioTrack {
 
     /**
      * @param errorCode An error value returned from
-     *                  {@link android.media.AudioTrack#write(byte[], int, int)}.
+     *     {@link android.media.AudioTrack#write(byte[], int, int)}.
      */
     public WriteException(int errorCode) {
       super("AudioTrack write failed: " + errorCode);
@@ -221,14 +210,14 @@ public final class AudioTrack {
   /**
    * AudioTrack timestamps are deemed spurious if they are offset from the system clock by more
    * than this amount.
-   * <p>
+   *
    * <p>This is a fail safe that should not be required on correctly functioning devices.
    */
   private static final long MAX_AUDIO_TIMESTAMP_OFFSET_US = 5 * C.MICROS_PER_SECOND;
 
   /**
    * AudioTrack latencies are deemed impossibly large if they are greater than this amount.
-   * <p>
+   *
    * <p>This is a fail safe that should not be required on correctly functioning devices.
    */
   private static final long MAX_LATENCY_US = 5 * C.MICROS_PER_SECOND;
@@ -311,11 +300,9 @@ public final class AudioTrack {
   private boolean hasData;
   private long lastFeedElapsedRealtimeMs;
 
-  private AudioDeviceInfoHolder preferredOutputDevice;
-
   /**
    * @param audioCapabilities The current audio capabilities.
-   * @param listener          Listener for audio track events.
+   * @param listener Listener for audio track events.
    */
   public AudioTrack(AudioCapabilities audioCapabilities, Listener listener) {
     this.audioCapabilities = audioCapabilities;
@@ -343,8 +330,7 @@ public final class AudioTrack {
   }
 
   /**
-   * Returns whether it's possible to play audio in the specified format using encoded
-   * passthrough.
+   * Returns whether it's possible to play audio in the specified format using encoded passthrough.
    *
    * @param mimeType The format mime type.
    * @return Whether it's possible to play audio in the format using encoded passthrough.
@@ -365,7 +351,7 @@ public final class AudioTrack {
   /**
    * Returns the playback position in the stream starting at zero, in microseconds, or
    * {@link #CURRENT_POSITION_NOT_SET} if it is not yet available.
-   * <p>
+   *
    * <p>If the device supports it, the method uses the playback timestamp from
    * {@link android.media.AudioTrack#getTimestamp}. Otherwise, it derives a smoothed position by
    * sampling the {@link android.media.AudioTrack}'s frame position.
@@ -389,7 +375,7 @@ public final class AudioTrack {
       long presentationDiff = systemClockUs - (audioTrackUtil.getTimestampNanoTime() / 1000);
       // Fixes such difference if the playback speed is not real time speed.
       long actualSpeedPresentationDiff = (long) (presentationDiff
-                                                     * audioTrackUtil.getPlaybackSpeed());
+          * audioTrackUtil.getPlaybackSpeed());
       long framesDiff = durationUsToFrames(actualSpeedPresentationDiff);
       // The position of the frame that's currently being presented.
       long currentFramePosition = audioTrackUtil.getTimestampFramePosition() + framesDiff;
@@ -400,8 +386,7 @@ public final class AudioTrack {
         currentPositionUs = audioTrackUtil.getPlaybackHeadPositionUs() + startMediaTimeUs;
       } else {
         // getPlayheadPositionUs() only has a granularity of ~20ms, so we base the position off the
-        // system clock (and a smoothed offset between it and the playhead position) so
-        // as to
+        // system clock (and a smoothed offset between it and the playhead position) so as to
         // prevent jitter in the reported positions.
         currentPositionUs = systemClockUs + smoothedPlayheadOffsetUs + startMediaTimeUs;
       }
@@ -416,18 +401,17 @@ public final class AudioTrack {
   /**
    * Configures (or reconfigures) the audio track.
    *
-   * @param mimeType            The mime type.
-   * @param channelCount        The number of channels.
-   * @param sampleRate          The sample rate in Hz.
-   * @param pcmEncoding         For PCM formats, the encoding used. One of
-   *                            {@link C#ENCODING_PCM_16BIT},
-   *                            {@link C#ENCODING_PCM_16BIT}, {@link C#ENCODING_PCM_24BIT} and
-   *                            {@link C#ENCODING_PCM_32BIT}.
+   * @param mimeType The mime type.
+   * @param channelCount The number of channels.
+   * @param sampleRate The sample rate in Hz.
+   * @param pcmEncoding For PCM formats, the encoding used. One of {@link C#ENCODING_PCM_16BIT},
+   *     {@link C#ENCODING_PCM_16BIT}, {@link C#ENCODING_PCM_24BIT} and
+   *     {@link C#ENCODING_PCM_32BIT}.
    * @param specifiedBufferSize A specific size for the playback buffer in bytes, or 0 to infer a
-   *                            suitable buffer size automatically.
+   *     suitable buffer size automatically.
    */
   public void configure(String mimeType, int channelCount, int sampleRate,
-                        @C.PcmEncoding int pcmEncoding, int specifiedBufferSize) {
+      @C.PcmEncoding int pcmEncoding, int specifiedBufferSize) {
     int channelConfig;
     switch (channelCount) {
       case 1:
@@ -506,7 +490,7 @@ public final class AudioTrack {
           durationUsToFrames(MAX_BUFFER_DURATION_US) * pcmFrameSize);
       bufferSize = multipliedBufferSize < minAppBufferSize ? minAppBufferSize
           : multipliedBufferSize > maxAppBufferSize ? maxAppBufferSize
-              : multipliedBufferSize;
+          : multipliedBufferSize;
     }
     bufferSizeUs = passthrough ? C.TIME_UNSET : framesToDurationUs(pcmBytesToFrames(bufferSize));
   }
@@ -515,7 +499,7 @@ public final class AudioTrack {
    * Initializes the audio track for writing new buffers using {@link #handleBuffer}.
    *
    * @param sessionId Audio track session identifier to re-use, or {@link #SESSION_ID_NOT_SET} to
-   *                  create a new one.
+   *     create a new one.
    * @return The new (or re-used) session identifier.
    */
   public int initialize(int sessionId) throws InitializationException {
@@ -535,7 +519,6 @@ public final class AudioTrack {
           targetEncoding, bufferSize, MODE_STREAM, sessionId);
     }
     checkAudioTrackInitialized();
-    applyPreferredOutputDevice();
 
     sessionId = audioTrack.getAudioSessionId();
     if (enablePreV21AudioSessionWorkaround) {
@@ -563,68 +546,6 @@ public final class AudioTrack {
     return sessionId;
   }
 
-  @TargetApi(23)
-  public
-  @Nullable
-  AudioDeviceInfo getPreferredOutputDevice() {
-    return preferredOutputDevice == null ? null : preferredOutputDevice.audioDeviceInfo;
-  }
-
-  @TargetApi(23)
-  public void setPreferredOutputDevice(@Nullable AudioDeviceInfo preferredOutputDevice) {
-    this.preferredOutputDevice = new AudioDeviceInfoHolder(preferredOutputDevice);
-    applyPreferredOutputDevice();
-  }
-
-  private void applyPreferredOutputDevice() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && audioTrack != null) {
-      AudioDeviceInfo preferredOutputDevice = getPreferredOutputDevice();
-      Log.d(TAG, "applyPreferredOutputDevice: "
-          + (preferredOutputDevice == null ? "null" : preferredOutputDevice.getId()));
-      if (!audioTrack.setPreferredDevice(preferredOutputDevice)) {
-        Log.w(TAG, "applyPreferredOutputDevice: setPreferredDevice failed");
-      }
-      addListener();
-    }
-  }
-
-  @TargetApi(Build.VERSION_CODES.N)
-  private static class RoutingListener implements AudioRouting.OnRoutingChangedListener, android
-      .media.AudioTrack.OnRoutingChangedListener {
-
-    @Override
-    public void onRoutingChanged(@Nullable android.media.AudioTrack audioTrack) {
-      Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
-    }
-
-    @Override
-    @TargetApi(Build.VERSION_CODES.N)
-    public void onRoutingChanged(AudioRouting router) {
-      if (router instanceof android.media.AudioTrack) {
-        onRoutingChanged((android.media.AudioTrack) router);
-      } else {
-        onRoutingChanged(null);
-      }
-    }
-  }
-
-  private final RoutingListener routingListener = new RoutingListener();
-
-  @RequiresApi(23)
-  private void addListener() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-      audioTrack.removeOnRoutingChangedListener(
-          (AudioRouting.OnRoutingChangedListener) routingListener);
-      audioTrack.addOnRoutingChangedListener(
-          ((AudioRouting.OnRoutingChangedListener) routingListener), null);
-    } else {
-      //noinspection deprecation
-      audioTrack.removeOnRoutingChangedListener(routingListener);
-      //noinspection deprecation
-      audioTrack.addOnRoutingChangedListener(routingListener, null);
-    }
-  }
-
   /**
    * Starts or resumes playing audio if the audio track has been initialized.
    */
@@ -646,13 +567,11 @@ public final class AudioTrack {
   }
 
   /**
-   * Attempts to write data from a {@link ByteBuffer} to the audio track, starting from its
-   * current
+   * Attempts to write data from a {@link ByteBuffer} to the audio track, starting from its current
    * position and ending at its limit (exclusive). The position of the {@link ByteBuffer} is
    * advanced by the number of bytes that were successfully written.
    * <p>
-   * Returns a bit field containing {@link #RESULT_BUFFER_CONSUMED} if the data was written in
-   * full,
+   * Returns a bit field containing {@link #RESULT_BUFFER_CONSUMED} if the data was written in full,
    * and {@link #RESULT_POSITION_DISCONTINUITY} if the buffer was discontinuous with previously
    * written data.
    * <p>
@@ -660,11 +579,11 @@ public final class AudioTrack {
    * subsequent calls until it has been fully consumed, except in the case of an interleaving call
    * to {@link #configure} or {@link #reset}.
    *
-   * @param buffer             The buffer containing audio data to play back.
+   * @param buffer The buffer containing audio data to play back.
    * @param presentationTimeUs Presentation timestamp of the next buffer in microseconds.
    * @return A bit field with {@link #RESULT_BUFFER_CONSUMED} if the buffer can be released, and
-   * {@link #RESULT_POSITION_DISCONTINUITY} if the buffer was not contiguous with previously
-   * written data.
+   *     {@link #RESULT_POSITION_DISCONTINUITY} if the buffer was not contiguous with previously
+   *     written data.
    * @throws WriteException If an error occurs writing the audio data.
    */
   public int handleBuffer(ByteBuffer buffer, long presentationTimeUs) throws WriteException {
@@ -794,8 +713,7 @@ public final class AudioTrack {
   }
 
   /**
-   * Ensures that the last data passed to {@link #handleBuffer(ByteBuffer, long)} is played in
-   * full.
+   * Ensures that the last data passed to {@link #handleBuffer(ByteBuffer, long)} is played in full.
    */
   public void handleEndOfStream() {
     if (isInitialized()) {
@@ -809,16 +727,16 @@ public final class AudioTrack {
   public boolean hasPendingData() {
     return isInitialized()
         && (getSubmittedFrames() > audioTrackUtil.getPlaybackHeadPosition()
-                || overrideHasPendingData());
+        || overrideHasPendingData());
   }
 
   /**
    * Sets the playback parameters. Only available for {@link Util#SDK_INT} &gt;= 23
    *
    * @param playbackParams The playback parameters to be used by the
-   *                       {@link android.media.AudioTrack}.
+   *     {@link android.media.AudioTrack}.
    * @throws UnsupportedOperationException if the Playback Parameters are not supported. That is,
-   *                                       {@link Util#SDK_INT} &lt; 23.
+   *     {@link Util#SDK_INT} &lt; 23.
    */
   public void setPlaybackParams(PlaybackParams playbackParams) {
     audioTrackUtil.setPlaybackParams(playbackParams);
@@ -1105,15 +1023,14 @@ public final class AudioTrack {
   /**
    * Converts the provided buffer into 16-bit PCM.
    *
-   * @param buffer         The buffer containing the data to convert.
+   * @param buffer The buffer containing the data to convert.
    * @param sourceEncoding The data encoding.
-   * @param out            A buffer into which the output should be written, if its capacity is
-   *                       sufficient.
+   * @param out A buffer into which the output should be written, if its capacity is sufficient.
    * @return The 16-bit PCM output. Different to the out parameter if null was passed, or if the
-   * capacity was insufficient for the output.
+   *     capacity was insufficient for the output.
    */
   private static ByteBuffer resampleTo16BitPcm(ByteBuffer buffer, @C.PcmEncoding int sourceEncoding,
-                                               ByteBuffer out) {
+      ByteBuffer out) {
     int offset = buffer.position();
     int limit = buffer.limit();
     int size = limit - offset;
@@ -1242,13 +1159,12 @@ public final class AudioTrack {
     /**
      * Reconfigures the audio track utility helper to use the specified {@code audioTrack}.
      *
-     * @param audioTrack                 The audio track to wrap.
-     * @param needsPassthroughWorkaround Whether to workaround issues with pausing AC-3
-     *                                   passthrough
-     *                                   audio tracks on platform API version 21/22.
+     * @param audioTrack The audio track to wrap.
+     * @param needsPassthroughWorkaround Whether to workaround issues with pausing AC-3 passthrough
+     *     audio tracks on platform API version 21/22.
      */
     public void reconfigure(android.media.AudioTrack audioTrack,
-                            boolean needsPassthroughWorkaround) {
+        boolean needsPassthroughWorkaround) {
       this.audioTrack = audioTrack;
       this.needsPassthroughWorkaround = needsPassthroughWorkaround;
       stopTimestampUs = C.TIME_UNSET;
@@ -1275,8 +1191,7 @@ public final class AudioTrack {
     }
 
     /**
-     * Pauses the audio track unless the end of the stream has been handled, in which case
-     * calling
+     * Pauses the audio track unless the end of the stream has been handled, in which case calling
      * this method does nothing.
      */
     public void pause() {
@@ -1294,7 +1209,7 @@ public final class AudioTrack {
      * {@link Long#MAX_VALUE} (which in practice will never happen).
      *
      * @return {@link android.media.AudioTrack#getPlaybackHeadPosition()} of {@link #audioTrack}
-     * expressed as a long.
+     *     expressed as a long.
      */
     public long getPlaybackHeadPosition() {
       if (stopTimestampUs != C.TIME_UNSET) {
@@ -1312,8 +1227,7 @@ public final class AudioTrack {
 
       long rawPlaybackHeadPosition = 0xFFFFFFFFL & audioTrack.getPlaybackHeadPosition();
       if (needsPassthroughWorkaround) {
-        // Work around an issue with passthrough/direct AudioTracks on platform API
-        // versions 21/22
+        // Work around an issue with passthrough/direct AudioTracks on platform API versions 21/22
         // where the playback head position jumps back to zero on paused passthrough/direct audio
         // tracks. See [Internal: b/19187573].
         if (state == PLAYSTATE_PAUSED && rawPlaybackHeadPosition == 0) {
@@ -1347,16 +1261,13 @@ public final class AudioTrack {
     }
 
     /**
-     * Returns the {@link AudioTimestamp#nanoTime} obtained during the most recent
+     * Returns the {@link android.media.AudioTimestamp#nanoTime} obtained during the most recent
      * call to {@link #updateTimestamp()} that returned true.
      *
-     * @return The nanoTime obtained during the most recent call to
-     * {@link #updateTimestamp()} that
-     * returned true.
-     * @throws UnsupportedOperationException If the implementation does not support audio
-     *                                       timestamp
-     *                                       queries. {@link #updateTimestamp()} will always
-     *                                       return false in this case.
+     * @return The nanoTime obtained during the most recent call to {@link #updateTimestamp()} that
+     *     returned true.
+     * @throws UnsupportedOperationException If the implementation does not support audio timestamp
+     *     queries. {@link #updateTimestamp()} will always return false in this case.
      */
     public long getTimestampNanoTime() {
       // Should never be called if updateTimestamp() returned false.
@@ -1364,19 +1275,15 @@ public final class AudioTrack {
     }
 
     /**
-     * Returns the {@link AudioTimestamp#framePosition} obtained during the most
-     * recent call to {@link #updateTimestamp()} that returned true. The value is adjusted so
-     * that
-     * wrap around only occurs if the value exceeds {@link Long#MAX_VALUE} (which in practice
-     * will
+     * Returns the {@link android.media.AudioTimestamp#framePosition} obtained during the most
+     * recent call to {@link #updateTimestamp()} that returned true. The value is adjusted so that
+     * wrap around only occurs if the value exceeds {@link Long#MAX_VALUE} (which in practice will
      * never happen).
      *
      * @return The framePosition obtained during the most recent call to {@link #updateTimestamp()}
-     * that returned true.
-     * @throws UnsupportedOperationException If the implementation does not support audio
-     *                                       timestamp
-     *                                       queries. {@link #updateTimestamp()} will always
-     *                                       return false in this case.
+     *     that returned true.
+     * @throws UnsupportedOperationException If the implementation does not support audio timestamp
+     *     queries. {@link #updateTimestamp()} will always return false in this case.
      */
     public long getTimestampFramePosition() {
       // Should never be called if updateTimestamp() returned false.
@@ -1387,9 +1294,9 @@ public final class AudioTrack {
      * Sets the Playback Parameters to be used by the underlying {@link android.media.AudioTrack}.
      *
      * @param playbackParams The playback parameters to be used by the
-     *                       {@link android.media.AudioTrack}.
+     *     {@link android.media.AudioTrack}.
      * @throws UnsupportedOperationException If Playback Parameters are not supported
-     *                                       (i.e. {@link Util#SDK_INT} &lt; 23).
+     *     (i.e. {@link Util#SDK_INT} &lt; 23).
      */
     public void setPlaybackParams(PlaybackParams playbackParams) {
       throw new UnsupportedOperationException();
@@ -1422,7 +1329,7 @@ public final class AudioTrack {
 
     @Override
     public void reconfigure(android.media.AudioTrack audioTrack,
-                            boolean needsPassthroughWorkaround) {
+        boolean needsPassthroughWorkaround) {
       super.reconfigure(audioTrack, needsPassthroughWorkaround);
       rawTimestampFramePositionWrapCount = 0;
       lastRawTimestampFramePosition = 0;
@@ -1468,7 +1375,7 @@ public final class AudioTrack {
 
     @Override
     public void reconfigure(android.media.AudioTrack audioTrack,
-                            boolean needsPassthroughWorkaround) {
+        boolean needsPassthroughWorkaround) {
       super.reconfigure(audioTrack, needsPassthroughWorkaround);
       maybeApplyPlaybackParams();
     }
@@ -1493,15 +1400,6 @@ public final class AudioTrack {
       }
     }
 
-  }
-
-  @TargetApi(23)
-  private class AudioDeviceInfoHolder {
-    public final AudioDeviceInfo audioDeviceInfo;
-
-    public AudioDeviceInfoHolder(@Nullable AudioDeviceInfo audioDeviceInfo) {
-      this.audioDeviceInfo = audioDeviceInfo;
-    }
   }
 
 }

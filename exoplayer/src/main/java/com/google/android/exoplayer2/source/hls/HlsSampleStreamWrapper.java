@@ -63,7 +63,7 @@ import java.util.LinkedList;
      * Called to schedule a {@link #continueLoading(long)} call when the playlist referred by the
      * given url changes.
      */
-    void onPlaylistRefreshRequired(HlsUrl playlistUrl);
+    void onPlaylistRefreshRequired(HlsMasterPlaylist.HlsUrl playlistUrl);
 
   }
 
@@ -342,7 +342,7 @@ import java.util.LinkedList;
         nextChunkHolder);
     boolean endOfStream = nextChunkHolder.endOfStream;
     Chunk loadable = nextChunkHolder.chunk;
-    HlsUrl playlistToLoad = nextChunkHolder.playlist;
+    HlsMasterPlaylist.HlsUrl playlistToLoad = nextChunkHolder.playlist;
     nextChunkHolder.clear();
 
     if (endOfStream) {

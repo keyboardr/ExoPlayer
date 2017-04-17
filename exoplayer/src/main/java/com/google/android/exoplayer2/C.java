@@ -475,7 +475,7 @@ public final class C {
   /**
    * A type of a message that can be passed to an audio {@link Renderer} via
    * {@link ExoPlayer#sendMessages} or {@link ExoPlayer#blockingSendMessages}. The message object
-   * should be one of the integer stream types in {@link StreamType}, and will specify the stream
+   * should be one of the integer stream types in {@link C.StreamType}, and will specify the stream
    * type of the underlying {@link android.media.AudioTrack}. See also
    * {@link android.media.AudioTrack#AudioTrack(int, int, int, int, int, int)}. If the stream type
    * is not set, audio renderers use {@link #STREAM_TYPE_DEFAULT}.
@@ -489,7 +489,7 @@ public final class C {
   /**
    * The type of a message that can be passed to a {@link MediaCodec}-based video {@link Renderer}
    * via {@link ExoPlayer#sendMessages} or {@link ExoPlayer#blockingSendMessages}. The message
-   * object should be one of the integer scaling modes in {@link VideoScalingMode}.
+   * object should be one of the integer scaling modes in {@link C.VideoScalingMode}.
    * <p>
    * Note that the scaling mode only applies if the {@link Surface} targeted by the renderer is
    * owned by a {@link android.view.SurfaceView}.

@@ -18,12 +18,10 @@ package com.google.android.exoplayer2;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.SurfaceTexture;
-import android.media.AudioDeviceInfo;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
 import android.os.Handler;
 import android.support.annotation.IntDef;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -75,15 +73,15 @@ public class SimpleExoPlayer implements ExoPlayer {
      *     rotation in degrees that the application should apply for the video for it to be rendered
      *     in the correct orientation. This value will always be zero on API levels 21 and above,
      *     since the renderer will apply all necessary rotations internally. On earlier API levels
-     *     this is not possible. Applications that use {@link TextureView} can apply
-     *     the rotation by calling {@link TextureView#setTransform}. Applications that
+     *     this is not possible. Applications that use {@link android.view.TextureView} can apply
+     *     the rotation by calling {@link android.view.TextureView#setTransform}. Applications that
      *     do not expect to encounter rotated videos can safely ignore this parameter.
      * @param pixelWidthHeightRatio The width to height ratio of each pixel. For the normal case
      *     of square pixels this will be equal to 1.0. Different values are indicative of anamorphic
      *     content.
      */
     void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees,
-                            float pixelWidthHeightRatio);
+        float pixelWidthHeightRatio);
 
     /**
      * Called when a frame is rendered for the first time since setting the surface, and when a
@@ -192,7 +190,7 @@ public class SimpleExoPlayer implements ExoPlayer {
    * Sets the video scaling mode.
    * <p>
    * Note that the scaling mode only applies if a {@link MediaCodec}-based video {@link Renderer} is
-   * enabled and if the output surface is owned by a {@link SurfaceView}.
+   * enabled and if the output surface is owned by a {@link android.view.SurfaceView}.
    *
    * @param videoScalingMode The video scaling mode.
    */
@@ -467,30 +465,6 @@ public class SimpleExoPlayer implements ExoPlayer {
    */
   public void setMetadataOutput(MetadataRenderer.Output output) {
     metadataOutput = output;
-  }
-
-  /**
-   * Sets the preferred audio output.
-   *
-   * @param audioDeviceInfo The preferred audio output or null to use the default output.
-   */
-  public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
-    for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
-      }
-    }
-  }
-
-  @Nullable
-  @TargetApi(23)
-  public AudioDeviceInfo getAudioOutput() {
-    for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        return ((MediaCodecAudioRenderer) renderer).getPreferredAudioOutput();
-      }
-    }
-    return null;
   }
 
   // ExoPlayer implementation
