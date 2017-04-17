@@ -44,5 +44,6 @@
         <item>Title</item>
         <item>Artist</item>
         <item>Duration</item>
+        <item>Shuffle</item>
     </string-array>
 </resources>

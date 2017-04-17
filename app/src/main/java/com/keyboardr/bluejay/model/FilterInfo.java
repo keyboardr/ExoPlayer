@@ -21,12 +21,14 @@ import java.util.Set;
 public class FilterInfo implements Parcelable {
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION})
+  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION,
+      SortMethod.SHUFFLE})
   public @interface SortMethod {
     int ID = 0;
     int TITLE = 1;
     int ARTIST = 2;
     int DURATION = 3;
+    int SHUFFLE = 4;
   }
 
   @SortMethod
@@ -53,6 +55,8 @@ public class FilterInfo implements Parcelable {
   public String getSortColumn() {
     StringBuilder builder;
     switch (sortMethod) {
+      case SortMethod.SHUFFLE:
+        return "RANDOM()"; // returns instead of breaks since it doesn't need asc or desc
       case SortMethod.ID:
         builder = new StringBuilder(MediaStore.Audio.Media._ID);
         break;
