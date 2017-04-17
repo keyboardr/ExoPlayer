@@ -35,7 +35,6 @@ android {
             applicationIdSuffix ".debug"
         }
     }
-    buildToolsVersion '25.0.2'
 }
 
 dependencies {
