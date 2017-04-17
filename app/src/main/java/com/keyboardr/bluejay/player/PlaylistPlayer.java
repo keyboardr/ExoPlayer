@@ -150,9 +150,10 @@ public class PlaylistPlayer extends AbsPlayer {
   public void pause() {
     continuePlayingOnDone = false;
     if (getVolume() == 0) {
+      ensurePlayer().stop();
       goToNextTrack();
-    }
-    if (playbackListener != null) {
+      // No need to notify listener since it was done in goToNextTrack()
+    } else if (playbackListener != null) {
       playbackListener.onPlayStateChanged(this);
     }
   }
