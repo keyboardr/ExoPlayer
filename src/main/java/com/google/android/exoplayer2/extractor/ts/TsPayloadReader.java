@@ -101,11 +101,11 @@ public interface TsPayloadReader {
    *
    * @param timestampAdjuster A timestamp adjuster for offsetting and scaling sample timestamps.
    * @param extractorOutput The {@link ExtractorOutput} that receives the extracted data.
-   * @param idGenerator A {@link TrackIdGenerator} that generates unique track ids for the
+   * @param idGenerator A {@link PesReader.TrackIdGenerator} that generates unique track ids for the
    *     {@link TrackOutput}s.
    */
   void init(TimestampAdjuster timestampAdjuster, ExtractorOutput extractorOutput,
-            TrackIdGenerator idGenerator);
+      TrackIdGenerator idGenerator);
 
   /**
    * Notifies the reader that a seek has occurred.

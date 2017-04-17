@@ -39,7 +39,7 @@ public class ChunkSampleStream<T extends ChunkSource> implements SampleStream, S
 
   private final int trackType;
   private final T chunkSource;
-  private final Callback<ChunkSampleStream<T>> callback;
+  private final SequenceableLoader.Callback<ChunkSampleStream<T>> callback;
   private final EventDispatcher eventDispatcher;
   private final int minLoadableRetryCount;
   private final LinkedList<BaseMediaChunk> mediaChunks;
@@ -66,7 +66,7 @@ public class ChunkSampleStream<T extends ChunkSource> implements SampleStream, S
    * @param eventDispatcher A dispatcher to notify of events.
    */
   public ChunkSampleStream(int trackType, T chunkSource,
-      Callback<ChunkSampleStream<T>> callback, Allocator allocator,
+      SequenceableLoader.Callback<ChunkSampleStream<T>> callback, Allocator allocator,
       long positionUs, int minLoadableRetryCount, EventDispatcher eventDispatcher) {
     this.trackType = trackType;
     this.chunkSource = chunkSource;

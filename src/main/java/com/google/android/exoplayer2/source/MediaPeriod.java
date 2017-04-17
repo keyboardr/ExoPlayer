@@ -97,7 +97,7 @@ public interface MediaPeriod extends SequenceableLoader {
    * @return The actual position at which the tracks were enabled, in microseconds.
    */
   long selectTracks(TrackSelection[] selections, boolean[] mayRetainStreamFlags,
-                    SampleStream[] streams, boolean[] streamResetFlags, long positionUs);
+      SampleStream[] streams, boolean[] streamResetFlags, long positionUs);
 
   /**
    * Attempts to read a discontinuity.

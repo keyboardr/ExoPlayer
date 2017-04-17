@@ -52,7 +52,7 @@ public interface MediaCodecSelector {
    * @throws DecoderQueryException Thrown if there was an error querying decoders.
    */
   MediaCodecInfo getDecoderInfo(String mimeType, boolean requiresSecureDecoder,
-                                boolean requiresTunneling) throws DecoderQueryException;
+      boolean requiresTunneling) throws DecoderQueryException;
 
   /**
    * Selects a decoder to instantiate for audio passthrough.

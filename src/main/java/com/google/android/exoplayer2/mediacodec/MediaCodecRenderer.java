@@ -942,7 +942,7 @@ public abstract class MediaCodecRenderer extends BaseRenderer {
    *
    * @param positionUs The current media time in microseconds, measured at the start of the
    *     current iteration of the rendering loop.
-   * @param elapsedRealtimeUs {@link SystemClock#elapsedRealtime()} in microseconds,
+   * @param elapsedRealtimeUs {@link android.os.SystemClock#elapsedRealtime()} in microseconds,
    *     measured at the start of the current iteration of the rendering loop.
    * @param codec The {@link MediaCodec} instance.
    * @param buffer The output buffer to process.

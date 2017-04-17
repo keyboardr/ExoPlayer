@@ -16,15 +16,12 @@
 package com.google.android.exoplayer2.audio;
 
 import android.annotation.TargetApi;
-import android.media.AudioDeviceInfo;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.media.PlaybackParams;
 import android.media.audiofx.Virtualizer;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -38,7 +35,6 @@ import com.google.android.exoplayer2.mediacodec.MediaCodecUtil.DecoderQueryExcep
 import com.google.android.exoplayer2.util.MediaClock;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
-
 import java.nio.ByteBuffer;
 
 /**
@@ -52,12 +48,11 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
   private final AudioTrack audioTrack;
 
   private boolean passthroughEnabled;
-  private MediaFormat passthroughMediaFormat;
+  private android.media.MediaFormat passthroughMediaFormat;
   private int pcmEncoding;
   private int audioSessionId;
   private long currentPositionUs;
   private boolean allowPositionDiscontinuity;
-  private AudioDeviceInfo preferredOutputDevice;
 
   /**
    * @param mediaCodecSelector A decoder selector.
@@ -137,17 +132,6 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     audioSessionId = AudioTrack.SESSION_ID_NOT_SET;
     audioTrack = new AudioTrack(audioCapabilities, this);
     eventDispatcher = new EventDispatcher(eventHandler, eventListener);
-  }
-
-  @TargetApi(23)
-  public void setPreferredAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
-    preferredOutputDevice = audioDeviceInfo;
-    audioTrack.setPreferredOutputDevice(audioDeviceInfo);
-  }
-
-  @TargetApi(23)
-  public @Nullable AudioDeviceInfo getPreferredAudioOutput() {
-    return audioTrack.getPreferredOutputDevice();
   }
 
   @Override

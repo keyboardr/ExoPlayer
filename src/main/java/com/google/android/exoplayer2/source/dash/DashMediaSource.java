@@ -71,7 +71,7 @@ public final class DashMediaSource implements MediaSource {
 
   /**
    * The interval in milliseconds between invocations of
-   * {@link Listener#onSourceInfoRefreshed(Timeline, Object)} when the source's
+   * {@link MediaSource.Listener#onSourceInfoRefreshed(Timeline, Object)} when the source's
    * {@link Timeline} is changing dynamically (for example, for incomplete live streams).
    */
   private static final int NOTIFY_MANIFEST_INTERVAL_MS = 5000;

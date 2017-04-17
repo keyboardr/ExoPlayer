@@ -314,7 +314,7 @@ public final class HlsMediaPeriod implements MediaPeriod, HlsSampleStreamWrapper
     pendingPrepareCount = sampleStreamWrappers.length;
 
     Assertions.checkArgument(!selectedVariants.isEmpty());
-    HlsUrl[] variants = new HlsUrl[selectedVariants.size()];
+    HlsUrl[] variants = new HlsMasterPlaylist.HlsUrl[selectedVariants.size()];
     selectedVariants.toArray(variants);
     HlsSampleStreamWrapper sampleStreamWrapper = buildSampleStreamWrapper(C.TRACK_TYPE_DEFAULT,
         variants, masterPlaylist.muxedAudioFormat, masterPlaylist.muxedCaptionFormat);

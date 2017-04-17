@@ -87,7 +87,7 @@ public class StreamingDrmSessionManager<T extends ExoMediaCrypto> implements Drm
 
   private int openCount;
   private boolean provisioningInProgress;
-  @State
+  @DrmSession.State
   private int state;
   private T mediaCrypto;
   private Exception lastException;
@@ -292,7 +292,7 @@ public class StreamingDrmSessionManager<T extends ExoMediaCrypto> implements Drm
   // DrmSession implementation.
 
   @Override
-  @State
+  @DrmSession.State
   public final int getState() {
     return state;
   }

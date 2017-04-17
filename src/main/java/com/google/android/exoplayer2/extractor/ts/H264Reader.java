@@ -173,7 +173,7 @@ import java.util.List;
           List<byte[]> initializationData = new ArrayList<>();
           initializationData.add(Arrays.copyOf(sps.nalData, sps.nalLength));
           initializationData.add(Arrays.copyOf(pps.nalData, pps.nalLength));
-          SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
+          NalUnitUtil.SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
           NalUnitUtil.PpsData ppsData = NalUnitUtil.parsePpsNalUnit(pps.nalData, 3, pps.nalLength);
           output.format(Format.createVideoSampleFormat(null, MimeTypes.VIDEO_H264, null,
               Format.NO_VALUE, Format.NO_VALUE, spsData.width, spsData.height, Format.NO_VALUE,
@@ -185,7 +185,7 @@ import java.util.List;
           pps.reset();
         }
       } else if (sps.isCompleted()) {
-        SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
+        NalUnitUtil.SpsData spsData = NalUnitUtil.parseSpsNalUnit(sps.nalData, 3, sps.nalLength);
         sampleReader.putSps(spsData);
         sps.reset();
       } else if (pps.isCompleted()) {
@@ -218,7 +218,7 @@ import java.util.List;
     private final TrackOutput output;
     private final boolean allowNonIdrKeyframes;
     private final boolean detectAccessUnits;
-    private final SparseArray<SpsData> sps;
+    private final SparseArray<NalUnitUtil.SpsData> sps;
     private final SparseArray<NalUnitUtil.PpsData> pps;
     private final ParsableNalUnitBitArray bitArray;
 
@@ -257,7 +257,7 @@ import java.util.List;
       return detectAccessUnits;
     }
 
-    public void putSps(SpsData spsData) {
+    public void putSps(NalUnitUtil.SpsData spsData) {
       sps.append(spsData.seqParameterSetId, spsData);
     }
 
@@ -341,7 +341,7 @@ import java.util.List;
         return;
       }
       NalUnitUtil.PpsData ppsData = pps.get(picParameterSetId);
-      SpsData spsData = sps.get(ppsData.seqParameterSetId);
+      NalUnitUtil.SpsData spsData = sps.get(ppsData.seqParameterSetId);
       if (spsData.separateColorPlaneFlag) {
         if (!bitArray.canReadBits(2)) {
           return;
