@@ -29,6 +29,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
+
 import com.google.android.exoplayer2.audio.AudioCapabilities;
 import com.google.android.exoplayer2.audio.AudioProcessor;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
@@ -47,6 +48,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Constructor;
@@ -467,12 +469,15 @@ public class SimpleExoPlayer implements ExoPlayer {
    * @param audioDeviceInfo The preferred audio output or null to use the default output.
    */
   public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    preferredAudioOutputDevice = audioDeviceInfo;
+    ExoPlayerMessage[] messages = new ExoPlayerMessage[audioRendererCount];
+    int count = 0;
     for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
+      if (renderer.getTrackType() == C.TRACK_TYPE_AUDIO) {
+        messages[count++] = new ExoPlayerMessage(renderer, C.MSG_SET_AUDIO_OUTPUT, audioDeviceInfo);
       }
     }
-    preferredAudioOutputDevice = audioDeviceInfo;
+    player.sendMessages(messages);
   }
 
   @Nullable

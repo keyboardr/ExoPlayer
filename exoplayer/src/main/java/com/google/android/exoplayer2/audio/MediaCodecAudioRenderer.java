@@ -23,7 +23,6 @@ import android.media.MediaFormat;
 import android.media.PlaybackParams;
 import android.media.audiofx.Virtualizer;
 import android.os.Handler;
-import android.support.annotation.Nullable;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
@@ -136,16 +135,6 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     super(C.TRACK_TYPE_AUDIO, mediaCodecSelector, drmSessionManager, playClearSamplesWithoutKeys);
     audioTrack = new AudioTrack(audioCapabilities, audioProcessors, new AudioTrackListener());
     eventDispatcher = new EventDispatcher(eventHandler, eventListener);
-  }
-
-  @TargetApi(23)
-  public void setPreferredAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
-    audioTrack.setPreferredOutputDevice(audioDeviceInfo);
-  }
-
-  @TargetApi(23)
-  public @Nullable AudioDeviceInfo getPreferredAudioOutput() {
-    return audioTrack.getPreferredOutputDevice();
   }
 
   @Override
@@ -407,6 +396,9 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
       case C.MSG_SET_STREAM_TYPE:
         @C.StreamType int streamType = (Integer) message;
         audioTrack.setStreamType(streamType);
+        break;
+      case C.MSG_SET_AUDIO_OUTPUT:
+        audioTrack.setPreferredOutputDevice((AudioDeviceInfo) message);
         break;
       default:
         super.handleMessage(messageType, message);
