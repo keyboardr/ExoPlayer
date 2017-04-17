@@ -68,12 +68,13 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
           lastProgress = progress;
         }
         if (progress < 95) {
-          cancelButton.setVisibility(View.GONE);
+          cancelButton.setClickable(false);
+          cancelButton.setActivated(true);
+          cancelButton.setPressed(true);
         }
         if (progress == 0) {
           seekBar.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK,
               HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
-          content.findViewById(R.id.skipIcon).setPressed(true);
           player.pause();
           popupWindow.dismiss();
         }
@@ -81,18 +82,19 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
 
       @Override
       public void onStartTrackingTouch(SeekBar seekBar) {
-
+        if (cancelButton.isActivated()) {
+          cancelButton.setPressed(true);
+        }
       }
 
       @Override
       public void onStopTrackingTouch(SeekBar seekBar) {
+        cancelButton.setPressed(false);
       }
     });
 
     popupWindow.setContentView(content);
-    popupWindow.setTouchable(true);
     popupWindow.setOverlapAnchor(true);
-    popupWindow.setOutsideTouchable(true);
     float density = content.getResources().getDisplayMetrics().density;
     popupWindow.setElevation(24f * density);
     popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {

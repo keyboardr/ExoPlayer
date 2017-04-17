@@ -6,11 +6,13 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
+import com.h6ah4i.android.widget.verticalseekbar.VerticalSeekBar;
+
 /**
  * A SeekBar that only allows sliding from thumb
  */
 
-public class Slider extends android.support.v7.widget.AppCompatSeekBar {
+public class Slider extends VerticalSeekBar {
   private Drawable thumb;
 
   public Slider(Context context) {
@@ -31,14 +33,18 @@ public class Slider extends android.support.v7.widget.AppCompatSeekBar {
   public boolean onTouchEvent(MotionEvent event) {
     if (event.getAction() == MotionEvent.ACTION_DOWN) {
       int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-      if (event.getX() >= thumb.getBounds().left - touchSlop
-          && event.getX() <= thumb.getBounds().right + touchSlop) {
+      if (event.getY() >= thumb.getBounds().top - touchSlop
+          && event.getY() <= thumb.getBounds().bottom + touchSlop) {
         super.onTouchEvent(event);
       } else {
         return false;
       }
     } else if (event.getAction() == MotionEvent.ACTION_UP) {
-      return isPressed();
+      //noinspection SimplifiableIfStatement
+      if (isPressed()) {
+        return super.onTouchEvent(event);
+      }
+      return false;
     } else {
       super.onTouchEvent(event);
     }

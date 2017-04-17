@@ -48,5 +48,6 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     compile 'com.google.android:flexbox:0.3.0-alpha2'
     compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'com.h6ah4i.android.widget.verticalseekbar:verticalseekbar:0.7.2'
     annotationProcessor 'org.greenrobot:eventbus-annotation-processor:3.0.1'
 }
