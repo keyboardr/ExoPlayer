@@ -83,6 +83,7 @@ public class PlaylistPlayer extends AbsPlayer {
 
   private void prepareNextTrack(SimpleExoPlayer player) {
     MediaItem mediaItem = mediaItems.get(currentIndex).mediaItem;
+    setVolume(1);
     player.prepare(getMediaSource(mediaItem));
     if (BuildConfig.DEBUG && DEBUG_SHORT_SONGS) {
       player.seekTo(mediaItem.getDuration() - 10000);

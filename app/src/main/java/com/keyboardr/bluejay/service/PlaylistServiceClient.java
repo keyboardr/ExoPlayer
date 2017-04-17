@@ -3,6 +3,7 @@ package com.keyboardr.bluejay.service;
 import android.media.AudioDeviceInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.media.MediaDescriptionCompat;
@@ -16,6 +17,7 @@ import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
+import com.keyboardr.bluejay.bus.event.VolumeEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.Player;
 
@@ -39,11 +41,11 @@ public class PlaylistServiceClient implements Player {
     }
     Uri mediaUri = description.getMediaUri();
     return MediaItem.build().setArtist(description.getSubtitle())
-        .setAlbumId(extras.getLong(PlaylistMediaService.EXTRA_ALBUM_ID))
+        .setAlbumId(extras.getLong(PlaylistMediaService.QUEUE_ALBUM_ID))
         .setTitle(description.getTitle())
         .setPath(mediaUri == null ? null : mediaUri.getPath())
-        .setDuration(description.getExtras().getLong(PlaylistMediaService.EXTRA_DURATION))
-        .make(extras.getLong(PlaylistMediaService.EXTRA_MEDIA_ID),
+        .setDuration(description.getExtras().getLong(PlaylistMediaService.QUEUE_DURATION))
+        .make(extras.getLong(PlaylistMediaService.QUEUE_MEDIA_ID),
             description.getIconUri());
   }
 
@@ -85,14 +87,25 @@ public class PlaylistServiceClient implements Player {
         lastKnownIndex = currentMediaIndex;
       }
       Bundle extras = state.getExtras();
-      if (extras != null) {
-        extras.setClassLoader(getClass().getClassLoader());
+      if (extras == null) {
+        return;
       }
-      if (extras != null && extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME, -1) > 0) {
-        Buses.PLAYLIST.postSticky(
-            new PlaybackFinishEvent(extras.getLong(PlaylistMediaService.EXTRA_FINISH_TIME)));
+      extras.setClassLoader(getClass().getClassLoader());
+
+      if (extras.getLong(PlaylistMediaService.PLAYSTATE_FINISH_TIME, -1) > 0) {
+        PlaybackFinishEvent existing = Buses.PLAYLIST.getStickyEvent(PlaybackFinishEvent.class);
+        long finishTime = extras.getLong(PlaylistMediaService.PLAYSTATE_FINISH_TIME);
+        if (existing == null || existing.finishTime != finishTime) {
+          Buses.PLAYLIST.postSticky(new PlaybackFinishEvent(finishTime));
+        }
       } else {
         Buses.PLAYLIST.removeStickyEvent(PlaybackFinishEvent.class);
+      }
+
+      VolumeEvent existing = Buses.PLAYLIST.getStickyEvent(VolumeEvent.class);
+      float volume = extras.getFloat(PlaylistMediaService.PLAYSTATE_VOLUME, 1);
+      if (existing == null || existing.volume != volume) {
+        Buses.PLAYLIST.postSticky(new VolumeEvent(volume));
       }
     }
 
@@ -115,7 +128,8 @@ public class PlaylistServiceClient implements Player {
   public PlaylistServiceClient(@NonNull MediaControllerCompat mediaController) {
     this.mediaController = mediaController;
     mediaController.registerCallback(callback);
-    Buses.PLAYLIST.postSticky(new TrackIndexEvent(-1, getCurrentMediaIndex(), getCurrentMediaItem()));
+    Buses.PLAYLIST.postSticky(
+        new TrackIndexEvent(-1, getCurrentMediaIndex(), getCurrentMediaItem()));
   }
 
   @Override
@@ -143,13 +157,26 @@ public class PlaylistServiceClient implements Player {
   }
 
   @Override
+  public void setVolume(@FloatRange(from = 0, to = 1) float volume) {
+    Bundle extras = new Bundle();
+    extras.putFloat(PlaylistMediaService.EXTRA_NEW_VOLUME, volume);
+    mediaController.sendCommand(PlaylistMediaService.COMMAND_SET_VOLUME, extras, null);
+  }
+
+  @Override
+  public float getVolume() {
+    VolumeEvent event = Buses.PLAYLIST.getStickyEvent(VolumeEvent.class);
+    return event == null ? 1 : event.volume;
+  }
+
+  @Override
   public MediaItem getCurrentMediaItem() {
     Bundle extras = mediaController.getPlaybackState().getExtras();
     if (extras == null) {
       return null;
     }
     extras.setClassLoader(getClass().getClassLoader());
-    return extras.getParcelable(PlaylistMediaService.EXTRA_MEDIA_ITEM);
+    return extras.getParcelable(PlaylistMediaService.PLAYSTATE_MEDIA_ITEM);
   }
 
   @Override
@@ -195,7 +222,7 @@ public class PlaylistServiceClient implements Player {
       return false;
     }
     extras.setClassLoader(getClass().getClassLoader());
-    return extras.getBoolean(PlaylistMediaService.EXTRA_CONTINUE_ON_DONE);
+    return extras.getBoolean(PlaylistMediaService.PLAYSTATE_CONTINUE_ON_DONE);
   }
 
   @Override
@@ -291,6 +318,6 @@ public class PlaylistServiceClient implements Player {
       return 0;
     }
     extras.setClassLoader(getClass().getClassLoader());
-    return extras.getInt(PlaylistMediaService.EXTRA_INDEX, 0);
+    return extras.getInt(PlaylistMediaService.PLAYSTATE_INDEX, 0);
   }
 }

@@ -52,15 +52,21 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   static final String COMMAND_SET_OUTPUT = "setOutput";
   static final String COMMAND_ADD_TO_QUEUE = "addToQueue";
   static final String COMMAND_MOVE = "move";
+  static final String COMMAND_SET_VOLUME = "setVolume";
+
   static final String EXTRA_MEDIA_ITEM = "PlaylistMediaService.mediaItem";
   static final String EXTRA_OUTPUT_TYPE = "outputId";
   static final String EXTRA_INDEX = "index";
   static final String EXTRA_NEW_INDEX = "newIndex";
-  static final String EXTRA_CONTINUE_ON_DONE = "continueOnDone";
-  static final String EXTRA_MEDIA_ID = "mediaId";
-  static final String EXTRA_ALBUM_ID = "albumId";
-  static final String EXTRA_DURATION = "duration";
-  static final String EXTRA_FINISH_TIME = "finishTime";
+  static final String EXTRA_NEW_VOLUME = "newVolume";
+  static final String PLAYSTATE_MEDIA_ITEM = "mediaItem";
+  static final String PLAYSTATE_INDEX = "index";
+  static final String PLAYSTATE_CONTINUE_ON_DONE = "continueOnDone";
+  static final String PLAYSTATE_FINISH_TIME = "finishTime";
+  static final String PLAYSTATE_VOLUME = "volume";
+  static final String QUEUE_ALBUM_ID = "albumId";
+  static final String QUEUE_DURATION = "duration";
+  static final String QUEUE_MEDIA_ID = "mediaId";
 
   private static final String TAG = "PlaylistMediaService";
 
@@ -130,6 +136,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
             queue.add(newIndex, queue.remove(oldIndex));
           }
           mediaSession.setQueue(queue);
+          break;
+        case COMMAND_SET_VOLUME:
+          player.setVolume(extras.getFloat(EXTRA_NEW_VOLUME, 1));
+          break;
       }
     }
 
@@ -295,10 +305,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     stateBuilder.setActiveQueueItemId(currentMediaItem == null ? 0 : currentMediaItem
         .getTransientId());
     Bundle extras = new Bundle();
-    extras.putParcelable(EXTRA_MEDIA_ITEM, currentMediaItem);
-    extras.putBoolean(EXTRA_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
-    extras.putInt(EXTRA_INDEX, player.getCurrentMediaIndex());
-    extras.putLong(EXTRA_FINISH_TIME, finishTime);
+    extras.putParcelable(PLAYSTATE_MEDIA_ITEM, currentMediaItem);
+    extras.putBoolean(PLAYSTATE_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
+    extras.putInt(PLAYSTATE_INDEX, player.getCurrentMediaIndex());
+    extras.putLong(PLAYSTATE_FINISH_TIME, finishTime);
     stateBuilder.setExtras(extras);
     PlaybackStateCompat playbackState = stateBuilder.build();
     if (!isNewPlaybackState(playbackState)) {
@@ -324,12 +334,20 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     if (lastPlaybackState.getActiveQueueItemId() != playbackState.getActiveQueueItemId()) {
       return true;
     }
-    if (lastPlaybackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)
-        != playbackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)) {
+    if (!Objects.equals(lastPlaybackState.getExtras().getParcelable(PLAYSTATE_MEDIA_ITEM),
+        playbackState.getExtras().getParcelable(PLAYSTATE_MEDIA_ITEM))) {
       return true;
     }
-    if (lastPlaybackState.getExtras().getInt(EXTRA_INDEX)
-        != playbackState.getExtras().getInt(EXTRA_INDEX)) {
+    if (lastPlaybackState.getExtras().getBoolean(PLAYSTATE_CONTINUE_ON_DONE)
+        != playbackState.getExtras().getBoolean(PLAYSTATE_CONTINUE_ON_DONE)) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getInt(PLAYSTATE_INDEX)
+        != playbackState.getExtras().getInt(PLAYSTATE_INDEX)) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getLong(PLAYSTATE_FINISH_TIME)
+        != playbackState.getExtras().getLong(PLAYSTATE_FINISH_TIME)) {
       return true;
     }
 
@@ -375,9 +393,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   private static MediaSessionCompat.QueueItem getQueueItem(PlaylistPlayer.PlaylistItem
                                                                playlistItem) {
     Bundle extras = new Bundle();
-    extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
-    extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
-    extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
+    extras.putLong(QUEUE_MEDIA_ID, playlistItem.mediaItem.getTransientId());
+    extras.putLong(QUEUE_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
+    extras.putLong(QUEUE_DURATION, playlistItem.mediaItem.getDuration());
     MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
         .setTitle(playlistItem.mediaItem.title)
         .setSubtitle(playlistItem.mediaItem.artist)
@@ -399,6 +417,11 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   public void onPlayStateChanged(Player player) {
     updatePlaybackState();
     updateMetadata();
+  }
+
+  @Override
+  public void onVolumeChanged(Player player) {
+    updatePlaybackState();
   }
 
   private void onQueueChanged() {

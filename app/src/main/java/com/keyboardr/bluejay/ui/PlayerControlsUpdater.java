@@ -285,6 +285,10 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
     updatePlayState();
   }
 
+  @Override
+  public void onVolumeChanged(Player player) {
+  }
+
   protected void attachPlayer() {
     player.setPlaybackListener(this);
 
