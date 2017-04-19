@@ -33,8 +33,8 @@ public class Slider extends VerticalSeekBar {
   public boolean onTouchEvent(MotionEvent event) {
     if (event.getAction() == MotionEvent.ACTION_DOWN) {
       int touchSlop = ViewConfiguration.get(getContext()).getScaledTouchSlop();
-      if (event.getY() >= thumb.getBounds().top - touchSlop
-          && event.getY() <= thumb.getBounds().bottom + touchSlop) {
+      if (event.getX() >= thumb.getBounds().left - touchSlop
+          && event.getX() <= thumb.getBounds().right + touchSlop) {
         super.onTouchEvent(event);
       } else {
         return false;
