@@ -38,6 +38,7 @@
     <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to
         delete.</string>
     <string name="edit_shortlist_title">Rename %s</string>
+    <string name="error_no_usb_audio">No USB output device found</string>
 
     <string-array name="sort_methods">
         <item>Default</item>
