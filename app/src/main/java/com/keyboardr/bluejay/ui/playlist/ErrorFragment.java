@@ -1,0 +1,61 @@
+package com.keyboardr.bluejay.ui.playlist;
+
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
+
+/**
+ * Displays {@link com.keyboardr.bluejay.bus.event.PlaylistErrorEvent.ErrorCode ErrorCodes} and
+ * provides method to fix if possible
+ */
+
+public class ErrorFragment extends Fragment {
+
+  private static final String ARG_ERROR_CODE = "errorCode";
+
+  private PlaylistErrorEvent.ErrorCode errorCode;
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    errorCode = (PlaylistErrorEvent.ErrorCode) getArguments().getSerializable(ARG_ERROR_CODE);
+  }
+
+  @Nullable
+  @Override
+  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
+    return inflater.inflate(R.layout.fragment_error, container, false);
+  }
+
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    ((TextView) view.findViewById(R.id.error_text)).setText(errorCode.message);
+    @StringRes int recoveryLabel = errorCode.getRecoveryActionLabel(getContext());
+    if (recoveryLabel > 0) {
+      Button recoveryButton = (Button) view.findViewById(R.id.error_button);
+      recoveryButton.setText(recoveryLabel);
+      recoveryButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          errorCode.performRecoveryAction(getContext());
+        }
+      });
+      recoveryButton.setVisibility(View.VISIBLE);
+    }
+  }
+
+  public PlaylistErrorEvent.ErrorCode getErrorCode() {
+    return errorCode;
+  }
+}
