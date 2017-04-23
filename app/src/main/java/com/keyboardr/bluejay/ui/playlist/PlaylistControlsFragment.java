@@ -12,7 +12,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.keyboardr.bluejay.R;
@@ -26,8 +25,8 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 import java.util.Collections;
 import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager
-    .DefaultDeviceSelector, PlayerControlsUpdater.OnAlbumArtListener {
+public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager.Callback,
+    PlayerControlsUpdater.OnAlbumArtListener {
 
   @Override
   public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
@@ -38,6 +37,11 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   public void onNoDeviceFound() {
     // TODO: 11/6/2016 replace with error bar
     Toast.makeText(getContext(), "No USB Audio found", Toast.LENGTH_LONG).show();
+  }
+
+  @Override
+  public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    player.setAudioOutput(audioDeviceInfo);
   }
 
   @Override
@@ -85,12 +89,8 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    if (!AudioSelectionManager.SPINNER_ENABLED) {
-      view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
-    }
     uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager(), this);
-    audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, this);
+    audioSelectionManager = new AudioSelectionManager(getContext(), this);
   }
 
   @Override

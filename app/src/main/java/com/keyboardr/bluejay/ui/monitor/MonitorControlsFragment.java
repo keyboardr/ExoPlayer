@@ -12,7 +12,6 @@ import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
@@ -24,7 +23,7 @@ import com.keyboardr.bluejay.util.CachedLoader;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 public class MonitorControlsFragment extends Fragment
-    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.DefaultDeviceSelector {
+    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.Callback {
 
   @SuppressWarnings("unused")
   public static MonitorControlsFragment newInstance() {
@@ -50,8 +49,7 @@ public class MonitorControlsFragment extends Fragment
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, this);
+    audioSelectionManager = new AudioSelectionManager(getContext(), this);
     uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager(), this);
   }
 
@@ -101,6 +99,12 @@ public class MonitorControlsFragment extends Fragment
 
   @Override
   public void onNoDeviceFound() {
+    player.setAudioOutput(null);
+  }
+
+  @Override
+  public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    player.setAudioOutput(audioDeviceInfo);
   }
 
   public static class AlbumArtLoader extends CachedLoader<Pair<Icon, Palette>> {
