@@ -1,6 +1,7 @@
 package com.keyboardr.bluejay.ui.playlist;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,14 @@ import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
  */
 
 public class ErrorFragment extends Fragment {
+
+  public static ErrorFragment newInstance(@NonNull PlaylistErrorEvent.ErrorCode errorCode) {
+    ErrorFragment errorFragment = new ErrorFragment();
+    Bundle args = new Bundle();
+    args.putSerializable(ARG_ERROR_CODE, errorCode);
+    errorFragment.setArguments(args);
+    return errorFragment;
+  }
 
   private static final String ARG_ERROR_CODE = "errorCode";
 
@@ -40,6 +49,7 @@ public class ErrorFragment extends Fragment {
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    view.getBackground().setLevel(errorCode.errorLevel);
     ((TextView) view.findViewById(R.id.error_text)).setText(errorCode.message);
     @StringRes int recoveryLabel = errorCode.getRecoveryActionLabel(getContext());
     if (recoveryLabel > 0) {

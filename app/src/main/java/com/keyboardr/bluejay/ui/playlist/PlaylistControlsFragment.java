@@ -12,7 +12,6 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
@@ -37,7 +36,6 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   @Override
   public void onNoDeviceFound() {
-    Toast.makeText(getContext(), "No USB Audio found", Toast.LENGTH_LONG).show();
     PlaylistErrorEvent.addError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
   }
 

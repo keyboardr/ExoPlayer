@@ -3,13 +3,16 @@
             xmlns:tools="http://schemas.android.com/tools">
     <item
         android:drawable="@color/bottom_bar"
+        android:maxLevel="0"
         android:minLevel="0"
         tools:minLevel="4"/>
     <item
         android:drawable="@color/warning"
+        android:maxLevel="1"
         android:minLevel="1"/>
     <item
         android:drawable="@color/error"
+        android:maxLevel="2"
         android:minLevel="2"
         tools:minLevel="0"/>
 </level-list>

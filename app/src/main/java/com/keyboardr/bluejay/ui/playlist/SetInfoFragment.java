@@ -18,6 +18,7 @@ import android.widget.TextView;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
+import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
@@ -53,12 +54,12 @@ public class SetInfoFragment extends Fragment {
     }
   };
 
-  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  @Subscribe(threadMode = ThreadMode.MAIN)
   public void onTrackIndexEvent(@NonNull final TrackIndexEvent event) {
     update();
   }
 
-  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  @Subscribe(threadMode = ThreadMode.MAIN)
   public void onQueueChangeEvent(@NonNull final QueueChangeEvent event) {
     update();
   }
@@ -140,5 +141,27 @@ public class SetInfoFragment extends Fragment {
     super.onStop();
     Buses.PLAYLIST.unregister(this);
     getContext().unregisterReceiver(updateReceiver);
+  }
+
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onPlaylistErrorEvent(@NonNull PlaylistErrorEvent errorEvent) {
+    PlaylistErrorEvent.ErrorCode errorCode = errorEvent.getTopError();
+    ErrorFragment errorFragment = (ErrorFragment) getChildFragmentManager().findFragmentById(
+        R.id.error_holder);
+    if (errorCode != null) {
+      if (errorFragment == null || errorFragment.getErrorCode() != errorCode) {
+        getChildFragmentManager().beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_from_bottom, R.anim.slide_out_to_bottom)
+            .replace(R.id.error_holder, ErrorFragment.newInstance(errorCode))
+            .commit();
+      }
+    } else {
+      if (errorFragment != null) {
+        getChildFragmentManager().beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_from_bottom, R.anim.slide_out_to_bottom)
+            .remove(errorFragment)
+            .commit();
+      }
+    }
   }
 }
