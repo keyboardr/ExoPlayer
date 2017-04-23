@@ -15,6 +15,8 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
@@ -35,12 +37,13 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   @Override
   public void onNoDeviceFound() {
-    // TODO: 11/6/2016 replace with error bar
     Toast.makeText(getContext(), "No USB Audio found", Toast.LENGTH_LONG).show();
+    PlaylistErrorEvent.addError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
   }
 
   @Override
   public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    PlaylistErrorEvent.removeError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
     player.setAudioOutput(audioDeviceInfo);
   }
 
@@ -100,6 +103,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     uiUpdater = null;
     audioSelectionManager.detach();
     audioSelectionManager = null;
+    PlaylistErrorEvent.removeError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {
