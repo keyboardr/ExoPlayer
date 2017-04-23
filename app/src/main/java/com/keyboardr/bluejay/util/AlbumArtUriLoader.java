@@ -59,6 +59,7 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
     private final int height;
     private final ContentResolver contentResolver;
     private final ModelLoader<Uri, InputStream> streamLoader;
+    private DataFetcher<InputStream> resourceFetcher;
 
     public AlbumArtUriFetcher(MediaItem mediaItem, int width, int height,
                               ContentResolver contentResolver,
@@ -90,9 +91,11 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
           if (artPath == null) {
             return null;
           }
-          return streamLoader.getResourceFetcher(new Uri.Builder().scheme(
-              ContentResolver.SCHEME_FILE).path(artPath)
-              .build(), width, height).loadData(priority);
+          resourceFetcher = streamLoader.getResourceFetcher(
+              new Uri.Builder().scheme(
+                  ContentResolver.SCHEME_FILE).path(artPath)
+                  .build(), width, height);
+          return resourceFetcher.loadData(priority);
         }
       }
       return null;
@@ -100,6 +103,9 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
 
     @Override
     public void cleanup() {
+      if (resourceFetcher != null) {
+        resourceFetcher.cleanup();
+      }
     }
 
     @Override
@@ -109,8 +115,9 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
 
     @Override
     public void cancel() {
+      if (resourceFetcher != null) {
+        resourceFetcher.cancel();
+      }
     }
-
-
   }
 }
