@@ -365,9 +365,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         MediaMetadataCompat metadata = metadataBuilder
             .putText(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.title)
             .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.artist)
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,
-                mediaItem.thumbnailUri != null ? mediaItem.thumbnailUri
-                    .toString() : null)
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaItem.toUri().toString())
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
                 String.valueOf(mediaItem.getTransientId()))
@@ -399,7 +396,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
         .setTitle(playlistItem.mediaItem.title)
         .setSubtitle(playlistItem.mediaItem.artist)
-        .setIconUri(playlistItem.mediaItem.thumbnailUri)
         .setMediaUri(playlistItem.mediaItem.toUri())
         .setMediaId(playlistItem.mediaItem.getTransientId() + "")
         .setExtras(extras).build();

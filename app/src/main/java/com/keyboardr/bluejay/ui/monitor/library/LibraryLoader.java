@@ -105,7 +105,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
               .setAlbumId(cursor.getLong(albumIdColumn))
               .setDuration(cursor.getLong(durationColumn))
               .setPath(cursor.getString(dataColumn))
-              .make(getContext(), cursor.getLong(mediaIdColumn));
+              .make(cursor.getLong(mediaIdColumn));
           if (filterInfo == null || filterInfo.isAllowed(item, shortlistManager)) {
             result.add(item);
           }

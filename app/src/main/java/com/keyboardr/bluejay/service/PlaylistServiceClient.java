@@ -45,8 +45,7 @@ public class PlaylistServiceClient implements Player {
         .setTitle(description.getTitle())
         .setPath(mediaUri == null ? null : mediaUri.getPath())
         .setDuration(description.getExtras().getLong(PlaylistMediaService.QUEUE_DURATION))
-        .make(extras.getLong(PlaylistMediaService.QUEUE_MEDIA_ID),
-            description.getIconUri());
+        .make(extras.getLong(PlaylistMediaService.QUEUE_MEDIA_ID));
   }
 
   @NonNull

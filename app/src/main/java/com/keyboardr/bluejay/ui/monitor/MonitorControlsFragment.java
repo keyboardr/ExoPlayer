@@ -122,7 +122,8 @@ public class MonitorControlsFragment extends Fragment
       if (mediaItem == null) {
         return null;
       }
-      return mediaItem.getAlbumArt(getContext());
+      return mediaItem.getAlbumArt(getContext(), getContext().getResources()
+          .getDimensionPixelSize(R.dimen.controls_album_art_size));
     }
   }
 }

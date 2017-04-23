@@ -129,8 +129,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         MathUtil.getSongDuration(mediaItem.getDuration()));
     subText.setText(subtext);
 
-    Glide.with(albumArt.getContext()).load(mediaItem.thumbnailUri).crossFade()
-        .fallback(R.drawable.album_art_empty).into(albumArt);
+    Glide.with(albumArt.getContext()).load(mediaItem).crossFade()
+        .fallback(R.drawable.album_art_empty).placeholder(R.drawable.album_art_empty)
+        .into(albumArt);
 
     if (dragStartListener == null) {
       if (mediaViewDecorator != null) {
