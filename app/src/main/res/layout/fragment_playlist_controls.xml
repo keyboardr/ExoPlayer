@@ -53,13 +53,12 @@
         android:layout_width="@dimen/controls_album_art_size"
         android:layout_height="@dimen/controls_album_art_size"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="24dp"
         android:background="@drawable/album_art_outline"
         android:outlineProvider="bounds"
         android:visibility="invisible"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_goneMarginTop="24dp"
         tools:visibility="visible">
 
         <ImageView
