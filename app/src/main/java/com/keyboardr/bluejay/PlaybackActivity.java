@@ -7,10 +7,12 @@ import android.content.Intent;
 import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
+import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.ViewSwitcher;
 
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.EditShortlistsActivity;
@@ -56,11 +59,23 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   private MediaBrowserCompat mediaBrowser;
 
+  private SetMetadata pendingMetadata;
+
   private MediaBrowserCompat.ConnectionCallback playlistServiceConn = new MediaBrowserCompat
       .ConnectionCallback() {
     @Override
     public void onConnected() {
       Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+      if (pendingMetadata != null) {
+        Bundle extras = new Bundle();
+        extras.putParcelable(PlaylistMediaService.EXTRA_SET_METADATA, pendingMetadata);
+        try {
+          new MediaControllerCompat(PlaybackActivity.this, mediaBrowser.getSessionToken())
+              .sendCommand(PlaylistMediaService.COMMAND_SET_METADATA, extras, null);
+        } catch (RemoteException e) {
+          throw new RuntimeException(e);
+        }
+      }
       if (!(frag instanceof SetFragment)) {
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.playlist, SetFragment.newInstance(mediaBrowser.getSessionToken()))
@@ -223,8 +238,9 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   }
 
   @Override
-  public void startNewSetlist() {
+  public void startNewSetlist(SetMetadata setMetadata) {
     mediaBrowser.connect();
+    pendingMetadata = setMetadata;
   }
 
   @Override

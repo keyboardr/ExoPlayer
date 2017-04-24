@@ -9,12 +9,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 public class NoSetFragment extends Fragment {
 
   public interface Holder {
-    void startNewSetlist();
+    void startNewSetlist(SetMetadata setMetadata);
 
     void editMetadata();
 
@@ -44,7 +45,9 @@ public class NoSetFragment extends Fragment {
     view.findViewById(R.id.new_setlist).setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class).startNewSetlist();
+        // TODO: 4/23/2017 add real metadata
+        FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class)
+            .startNewSetlist(new SetMetadata("", false));
       }
     });
 

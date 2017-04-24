@@ -31,6 +31,7 @@ import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
 
@@ -47,13 +48,16 @@ import java.util.Objects;
 public class PlaylistMediaService extends MediaBrowserServiceCompat
     implements Player.PlaybackListener {
 
-  public static final String ACTION_CHECK_IS_ALIVE = "checkIsAlive";
+  public static final String ACTION_CHECK_IS_ALIVE = "com.keyboardr.bluejay.service"
+      + ".PlaylistMediaService.checkIsAlive";
 
+  public static final String COMMAND_SET_METADATA = "setMetadata";
   static final String COMMAND_SET_OUTPUT = "setOutput";
   static final String COMMAND_ADD_TO_QUEUE = "addToQueue";
   static final String COMMAND_MOVE = "move";
   static final String COMMAND_SET_VOLUME = "setVolume";
 
+  public static final String EXTRA_SET_METADATA = "setMetadata";
   static final String EXTRA_MEDIA_ITEM = "PlaylistMediaService.mediaItem";
   static final String EXTRA_OUTPUT_TYPE = "outputId";
   static final String EXTRA_INDEX = "index";
@@ -95,6 +99,13 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     public void onCommand(String command, Bundle extras, ResultReceiver cb) {
       extras.setClassLoader(getClassLoader());
       switch (command) {
+        case COMMAND_SET_METADATA:
+          SetMetadata setMetadata = extras.getParcelable(EXTRA_SET_METADATA);
+          mediaSession.setQueueTitle(setMetadata != null ? setMetadata.name : "");
+          Bundle sessionExtras = getSessionExtras();
+          sessionExtras.putParcelable(EXTRA_SET_METADATA, setMetadata);
+          mediaSession.setExtras(sessionExtras);
+          break;
         case COMMAND_SET_OUTPUT:
           int outputType = extras.getInt(EXTRA_OUTPUT_TYPE);
           if (outputType == AudioDeviceInfo.TYPE_UNKNOWN) {
@@ -257,12 +268,18 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   }
 
   private void updateOutputType() {
+    Bundle extras = getSessionExtras();
+    extras.putInt(EXTRA_OUTPUT_TYPE, player.getAudioOutputType());
+    mediaSession.setExtras(extras);
+  }
+
+  @NonNull
+  private Bundle getSessionExtras() {
     Bundle extras = mediaSession.getController().getExtras();
     if (extras == null) {
       extras = new Bundle();
     }
-    extras.putInt(EXTRA_OUTPUT_TYPE, player.getAudioOutputType());
-    mediaSession.setExtras(extras);
+    return extras;
   }
 
   private void updatePlaybackState() {

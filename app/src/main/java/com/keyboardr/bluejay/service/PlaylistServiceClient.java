@@ -16,13 +16,16 @@ import android.util.Log;
 import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.SetMetadataEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.bus.event.VolumeEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.player.Player;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static android.content.ContentValues.TAG;
 
@@ -113,6 +116,16 @@ public class PlaylistServiceClient implements Player {
       if (playbackListener != null) {
         playbackListener.onPlayStateChanged(PlaylistServiceClient.this);
         playbackListener.onSeekComplete(PlaylistServiceClient.this);
+      }
+    }
+
+    @Override
+    public void onExtrasChanged(Bundle extras) {
+      super.onExtrasChanged(extras);
+      SetMetadata oldMetadata = SetMetadataEvent.getSetMetadata(Buses.PLAYLIST);
+      SetMetadata extrasMetadata = extras.getParcelable(PlaylistMediaService.EXTRA_SET_METADATA);
+      if (!Objects.equals(oldMetadata, extrasMetadata)) {
+        Buses.PLAYLIST.postSticky(new SetMetadataEvent(extrasMetadata));
       }
     }
 
