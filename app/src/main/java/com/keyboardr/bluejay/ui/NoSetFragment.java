@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -50,9 +51,18 @@ public class NoSetFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
     final View newSetlist = view.findViewById(R.id.new_setlist);
 
+    view.findViewById(R.id.new_setlist_container).setTransitionName(
+        getString(R.string.shared_element_setlist_container));
+
     final TextInputEditText newSetlistName = (TextInputEditText) view.findViewById(
         R.id.new_setlist_name);
-    newSetlistName.setText(DateFormat.getDateFormat(getContext()).format(new Date()));
+    if (savedInstanceState == null) {
+      TextInputLayout newSetlistNameLayout = (TextInputLayout) view.findViewById(
+          R.id.new_setlist_name_holder);
+      newSetlistNameLayout.setHintAnimationEnabled(false);
+      newSetlistName.setText(DateFormat.getDateFormat(getContext()).format(new Date()));
+      newSetlistNameLayout.setHintAnimationEnabled(true);
+    }
     newSetlistName.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence s, int start, int count, int after) {

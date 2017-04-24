@@ -14,7 +14,12 @@ import android.support.v4.app.Fragment;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.transition.ChangeBounds;
+import android.transition.Explode;
+import android.transition.Slide;
+import android.transition.TransitionInflater;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckedTextView;
@@ -65,7 +70,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
       .ConnectionCallback() {
     @Override
     public void onConnected() {
-      Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+      Fragment existingFrag = getSupportFragmentManager().findFragmentById(R.id.playlist);
       if (pendingMetadata != null) {
         Bundle extras = new Bundle();
         extras.putParcelable(PlaylistMediaService.EXTRA_SET_METADATA, pendingMetadata);
@@ -76,9 +81,18 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
           throw new RuntimeException(e);
         }
       }
-      if (!(frag instanceof SetFragment)) {
+      if (!(existingFrag instanceof SetFragment)) {
+        SetFragment newFragment = SetFragment.newInstance(mediaBrowser.getSessionToken());
+        ChangeBounds sharedTransition = new ChangeBounds();
+        sharedTransition.setStartDelay(100);
+        newFragment.setSharedElementEnterTransition(sharedTransition);
+        newFragment.setEnterTransition(new Explode());
+        existingFrag.setExitTransition(new Slide());
+
         getSupportFragmentManager().beginTransaction()
-            .replace(R.id.playlist, SetFragment.newInstance(mediaBrowser.getSessionToken()))
+            .replace(R.id.playlist, newFragment)
+            .addSharedElement(findViewById(R.id.new_setlist_container),
+                getString(R.string.shared_element_bottom_bar))
             .commit();
       }
       getLibraryFragment().notifyConnectionChanged();
@@ -86,10 +100,19 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
     @Override
     public void onConnectionSuspended() {
-      Fragment frag = getSupportFragmentManager().findFragmentById(R.id.playlist);
-      if (!(frag instanceof NoSetFragment)) {
+      Fragment existingFrag = getSupportFragmentManager().findFragmentById(R.id.playlist);
+      if (!(existingFrag instanceof NoSetFragment)) {
+        NoSetFragment newFragment = NoSetFragment.newInstance();
+        newFragment.setSharedElementEnterTransition(new ChangeBounds());
+        Slide enterSlide = new Slide();
+        enterSlide.setStartDelay(100);
+        newFragment.setEnterTransition(enterSlide);
+        existingFrag.setExitTransition(new Explode());
+
         getSupportFragmentManager().beginTransaction()
-            .replace(R.id.playlist, new NoSetFragment()).commit();
+            .addSharedElement(findViewById(R.id.set_info_fragment),
+                getString(R.string.shared_element_setlist_container))
+            .replace(R.id.playlist, newFragment).commit();
       }
       getLibraryFragment().notifyConnectionChanged();
     }
@@ -245,15 +268,27 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   @Override
   public void editMetadata() {
+    MonitorEditorFragment newFragment = MonitorEditorFragment.newInstance();
+    newFragment.setEnterTransition(new Slide(Gravity.BOTTOM));
+
+    getSupportFragmentManager().findFragmentById(R.id.playlist)
+        .setExitTransition(new Slide(Gravity.TOP));
     getSupportFragmentManager().beginTransaction()
-        .replace(R.id.playlist, MonitorEditorFragment.newInstance()).commitNow();
+        .replace(R.id.playlist, newFragment).commitNow();
   }
 
   @Override
   public void editShortlists() {
     if (getResources().getBoolean(R.bool.allow_library_editor)) {
+      ShortlistEditorFragment fragment = ShortlistEditorFragment.newInstance();
+      fragment.setEnterTransition(
+          TransitionInflater.from(this)
+              .inflateTransition(R.transition.edit_shortlist_fragment_enter));
+
+      getSupportFragmentManager().findFragmentById(R.id.playlist).setExitTransition(
+          new Slide(Gravity.TOP));
       getSupportFragmentManager().beginTransaction()
-          .replace(R.id.playlist, ShortlistEditorFragment.newInstance()).commitNow();
+          .replace(R.id.playlist, fragment).commitNow();
     } else {
       startActivity(new Intent(this, EditShortlistsActivity.class));
     }
@@ -293,14 +328,26 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   @Override
   public void closeMetadataEditor() {
+    NoSetFragment newFragment = NoSetFragment.newInstance();
+    newFragment.setEnterTransition(new Slide(Gravity.TOP));
+
+    getSupportFragmentManager().findFragmentById(R.id.playlist)
+        .setExitTransition(new Slide(Gravity.BOTTOM));
     getSupportFragmentManager().beginTransaction()
-        .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+        .replace(R.id.playlist, newFragment).commitNow();
   }
 
   @Override
   public void closeShortlistEditor() {
+    NoSetFragment newFragment = NoSetFragment.newInstance();
+    newFragment.setEnterTransition(new Slide(Gravity.TOP));
+
+    getSupportFragmentManager().findFragmentById(R.id.playlist).setExitTransition
+        (TransitionInflater.from(this)
+            .inflateTransition(R.transition.edit_shortlist_fragment_exit));
+
     getSupportFragmentManager().beginTransaction()
-        .replace(R.id.playlist, NoSetFragment.newInstance()).commitNow();
+        .replace(R.id.playlist, newFragment).commitNow();
   }
 
   @Override

@@ -69,6 +69,13 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     return inflater.inflate(R.layout.fragment_setlist, container, false);
   }
 
+  @Override
+  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    view.findViewById(R.id.set_info_fragment).setTransitionName(
+        getString(R.string.shared_element_bottom_bar));
+  }
+
   private PlaylistControlsFragment getPlaylistControlsFragment() {
     return (PlaylistControlsFragment) getChildFragmentManager().findFragmentById(
         R.id.playlist_control_fragment);

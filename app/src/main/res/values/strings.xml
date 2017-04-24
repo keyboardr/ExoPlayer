@@ -44,6 +44,9 @@
     <string name="edit_shortlist_title">Rename %s</string>
     <string name="error_no_usb_audio">No USB output device found</string>
 
+    <string name="shared_element_bottom_bar" translatable="false">bottomBar</string>
+    <string name="shared_element_setlist_container" translatable="false">setlistContainer</string>
+
     <string-array name="sort_methods">
         <item>Default</item>
         <item>Title</item>
