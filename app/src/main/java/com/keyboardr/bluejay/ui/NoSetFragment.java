@@ -100,7 +100,7 @@ public class NoSetFragment extends Fragment {
       @Override
       public void onClick(View v) {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class)
-            .startNewSetlist(new SetMetadata(getString(R.string.sound_check), false));
+            .startNewSetlist(new SetMetadata(getString(R.string.sound_check), true));
       }
     });
   }

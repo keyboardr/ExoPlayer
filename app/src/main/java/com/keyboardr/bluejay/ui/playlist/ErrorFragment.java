@@ -1,9 +1,9 @@
 package com.keyboardr.bluejay.ui.playlist;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,8 +11,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
+import com.keyboardr.bluejay.util.FragmentUtils;
 
 /**
  * Displays {@link com.keyboardr.bluejay.bus.event.PlaylistErrorEvent.ErrorCode ErrorCodes} and
@@ -34,6 +36,12 @@ public class ErrorFragment extends Fragment {
   private PlaylistErrorEvent.ErrorCode errorCode;
 
   @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    FragmentUtils.checkParent(this, PlaybackActivity.class);
+  }
+
+  @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     errorCode = (PlaylistErrorEvent.ErrorCode) getArguments().getSerializable(ARG_ERROR_CODE);
@@ -51,14 +59,13 @@ public class ErrorFragment extends Fragment {
     super.onViewCreated(view, savedInstanceState);
     view.getBackground().setLevel(errorCode.errorLevel);
     ((TextView) view.findViewById(R.id.error_text)).setText(errorCode.message);
-    @StringRes int recoveryLabel = errorCode.getRecoveryActionLabel(getContext());
-    if (recoveryLabel > 0) {
+    if (errorCode.recoveryLabel > 0) {
       Button recoveryButton = (Button) view.findViewById(R.id.error_button);
-      recoveryButton.setText(recoveryLabel);
+      recoveryButton.setText(errorCode.recoveryLabel);
       recoveryButton.setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-          errorCode.performRecoveryAction(getContext());
+          errorCode.performRecoveryAction((PlaybackActivity) getActivity());
         }
       });
       recoveryButton.setVisibility(View.VISIBLE);

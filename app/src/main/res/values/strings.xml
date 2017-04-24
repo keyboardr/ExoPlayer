@@ -27,6 +27,7 @@
     <string name="name">Name</string>
     <string name="start_new_setlist">Start new setlist</string>
     <string name="sound_check">Sound check</string>
+    <string name="end_sound_check">End sound check</string>
     <string name="new_setlist">New setlist</string>
     <string name="edit_metadata">Edit metadata</string>
     <string name="edit_tags">Edit tags</string>

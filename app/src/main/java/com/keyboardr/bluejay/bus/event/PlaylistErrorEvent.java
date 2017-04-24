@@ -1,17 +1,12 @@
 package com.keyboardr.bluejay.bus.event;
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.support.annotation.CheckResult;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 
+import com.keyboardr.bluejay.PlaybackActivity;
 import com.keyboardr.bluejay.R;
 
 import org.greenrobot.eventbus.EventBus;
@@ -32,35 +27,26 @@ public class PlaylistErrorEvent {
   }
 
   public enum ErrorCode {
-    NO_USB_OUTPUT(R.string.error_no_usb_audio, ErrorLevel.ERROR, null);
+    NO_USB_OUTPUT(R.string.error_no_usb_audio, ErrorLevel.ERROR, 0),
+    SOUND_CHECK(R.string.sound_check, ErrorLevel.NONE, R.string.end_sound_check) {
+      @Override
+      public void performRecoveryAction(PlaybackActivity activity) {
+        //noinspection ConstantConditions
+        activity.getSetlistFragment().endSetConfirmed();
+      }
+    };
 
     @StringRes public final int message;
     @ErrorLevel public final int errorLevel;
-    @Nullable private final Class<? extends BroadcastReceiver> recoveryReceiver;
+    @StringRes public final int recoveryLabel;
 
-    ErrorCode(@StringRes int message, @ErrorLevel int errorLevel, @Nullable Class<? extends
-        BroadcastReceiver> recoveryReceiver) {
+    ErrorCode(@StringRes int message, @ErrorLevel int errorLevel, @StringRes int recoveryLabel) {
       this.message = message;
       this.errorLevel = errorLevel;
-      this.recoveryReceiver = recoveryReceiver;
+      this.recoveryLabel = recoveryLabel;
     }
 
-    public void performRecoveryAction(@NonNull Context context) {
-      context.sendBroadcast(new Intent(context, recoveryReceiver));
-    }
-
-    public int getRecoveryActionLabel(@NonNull Context context) {
-      if (recoveryReceiver != null) {
-        try {
-          ActivityInfo receiverInfo = context.getPackageManager().getReceiverInfo(
-              new ComponentName(context, recoveryReceiver),
-              PackageManager.GET_META_DATA);
-          return receiverInfo.labelRes;
-        } catch (PackageManager.NameNotFoundException e) {
-          e.printStackTrace();
-        }
-      }
-      return 0;
+    public void performRecoveryAction(PlaybackActivity activity) {
     }
   }
 
@@ -74,6 +60,14 @@ public class PlaylistErrorEvent {
       existing = EMPTY;
     }
     return existing;
+  }
+
+  public static void setErrorEnabled(EventBus bus, ErrorCode errorCode, boolean enabled) {
+    if (enabled) {
+      addError(bus, errorCode);
+    } else {
+      removeError(bus, errorCode);
+    }
   }
 
   public static void addError(EventBus bus, ErrorCode errorCode) {

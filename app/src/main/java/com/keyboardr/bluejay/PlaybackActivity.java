@@ -273,7 +273,6 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
 
   @Override
   public void setMonitorAlbumArt(@Nullable Icon icon) {
-    // TODO: animate this change
     if (monitorTabBackground != null) {
       monitorTabBackground.setImageIcon(icon);
     }

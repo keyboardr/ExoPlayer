@@ -186,5 +186,9 @@ public class SetInfoFragment extends Fragment {
     if (setlistName != null) {
       updateSetMetadata(metadataEvent.setMetadata);
     }
+    if (metadataEvent.setMetadata != null) {
+      PlaylistErrorEvent.setErrorEnabled(Buses.PLAYLIST,
+          PlaylistErrorEvent.ErrorCode.SOUND_CHECK, metadataEvent.setMetadata.isSoundCheck);
+    }
   }
 }

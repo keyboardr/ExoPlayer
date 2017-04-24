@@ -15,6 +15,7 @@ public class SetMetadataEvent {
   @Nullable
   public final SetMetadata setMetadata;
 
+  @Nullable
   public static SetMetadata getSetMetadata(@NonNull EventBus bus) {
     SetMetadataEvent oldMetadataEvent = bus.getStickyEvent(SetMetadataEvent.class);
     return oldMetadataEvent != null ? oldMetadataEvent.setMetadata : null;

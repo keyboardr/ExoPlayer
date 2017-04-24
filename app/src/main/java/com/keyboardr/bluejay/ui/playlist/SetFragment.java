@@ -147,7 +147,7 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     return false;
   }
 
-  private void endSetConfirmed() {
+  public void endSetConfirmed() {
     mediaController.getTransportControls().stop();
     //noinspection ConstantConditions
     FragmentUtils.getParent(this, Holder.class).endSet();
