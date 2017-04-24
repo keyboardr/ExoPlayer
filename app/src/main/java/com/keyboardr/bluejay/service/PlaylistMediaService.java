@@ -279,6 +279,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     if (extras == null) {
       extras = new Bundle();
     }
+    extras.setClassLoader(getClassLoader());
     return extras;
   }
 
