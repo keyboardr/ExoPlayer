@@ -122,6 +122,7 @@ public class PlaylistServiceClient implements Player {
     @Override
     public void onExtrasChanged(Bundle extras) {
       super.onExtrasChanged(extras);
+      extras.setClassLoader(getClass().getClassLoader());
       SetMetadata oldMetadata = SetMetadataEvent.getSetMetadata(Buses.PLAYLIST);
       SetMetadata extrasMetadata = extras.getParcelable(PlaylistMediaService.EXTRA_SET_METADATA);
       if (!Objects.equals(oldMetadata, extrasMetadata)) {
