@@ -711,6 +711,16 @@ public final class AudioTrack {
     public void onRoutingChanged(@Nullable android.media.AudioTrack audioTrack) {
       Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
     }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.N)
+    public void onRoutingChanged(AudioRouting router) {
+      if (router instanceof android.media.AudioTrack) {
+        onRoutingChanged((android.media.AudioTrack) router);
+      } else {
+        onRoutingChanged(null);
+      }
+    }
   }
 
   private final RoutingListener routingListener = new RoutingListener();
