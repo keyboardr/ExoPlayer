@@ -184,8 +184,11 @@ public class ShortlistManager {
   }
 
   public boolean isInShortlist(@NonNull MediaItem mediaItem, @NonNull Shortlist shortlist) {
-    return shortlistMap != null
-        && shortlistMap.get(mediaItem.getTransientId()).contains(shortlist.getId());
+    if (shortlistMap == null) {
+      return false;
+    }
+    Set<Shortlist> shortlists = shortlistMap.get(mediaItem.getTransientId());
+    return shortlists != null && shortlists.contains(shortlist.getId());
   }
 
   public void createShortlist(@NonNull String name) {
