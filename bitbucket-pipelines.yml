@@ -1,7 +1,7 @@
-image: uber/android-build-environment:latest
+image: runmymind/docker-android-sdk:latest
 
 pipelines:
   default:
     - step:
         script:
-          - ./build.sh
+          - ./gradlew assembleDebug
