@@ -187,7 +187,7 @@ public class ShortlistManager {
     if (shortlistMap == null) {
       return false;
     }
-    Set<Shortlist> shortlists = shortlistMap.get(mediaItem.getTransientId());
+    Set<Long> shortlists = shortlistMap.get(mediaItem.getTransientId());
     return shortlists != null && shortlists.contains(shortlist.getId());
   }
 
