@@ -2,6 +2,7 @@ package com.keyboardr.bluejay.model;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -14,23 +15,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
 public class FilterInfo implements Parcelable {
 
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION})
+  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION,
+      SortMethod.SHUFFLE})
   public @interface SortMethod {
     int ID = 0;
     int TITLE = 1;
     int ARTIST = 2;
     int DURATION = 3;
+    int SHUFFLE = 4;
   }
 
   @SortMethod
   public final int sortMethod;
+  public final boolean sortAscending;
 
   @NonNull
   public final Set<Shortlist> requiredShortlists;
@@ -39,33 +42,52 @@ public class FilterInfo implements Parcelable {
   @Nullable
   public final String filterString;
 
-  public FilterInfo(@SortMethod int sortMethod, @NonNull Set<Shortlist> requiredShortlists,
+  public FilterInfo(@SortMethod int sortMethod, boolean sortAscending,
+                    @NonNull Set<Shortlist> requiredShortlists,
                     @NonNull Set<Shortlist> disallowedShortlists, @Nullable String filterString) {
     this.sortMethod = sortMethod;
+    this.sortAscending = sortAscending;
     this.requiredShortlists = requiredShortlists;
     this.disallowedShortlists = disallowedShortlists;
     this.filterString = filterString;
   }
 
-  @NonNull
-  private Comparator<MediaItem> getSorting() {
-    return new MediaItemComparator(sortMethod);
+  public String getSortColumn() {
+    StringBuilder builder;
+    switch (sortMethod) {
+      case SortMethod.SHUFFLE:
+        return "RANDOM()"; // returns instead of breaks since it doesn't need asc or desc
+      case SortMethod.ID:
+        builder = new StringBuilder(MediaStore.Audio.Media._ID);
+        break;
+      case SortMethod.TITLE:
+        builder = new StringBuilder(MediaStore.Audio.Media.TITLE);
+        break;
+      case SortMethod.ARTIST:
+        builder = new StringBuilder(MediaStore.Audio.Media.ARTIST);
+        break;
+      case SortMethod.DURATION:
+        builder = new StringBuilder(MediaStore.Audio.Media.DURATION);
+        break;
+      default:
+        throw new IllegalStateException("Unknown SortMethod: " + sortMethod);
+    }
+    if (sortMethod == SortMethod.TITLE || sortMethod == SortMethod.ARTIST) {
+      builder.append(" COLLATE NOCASE");
+    }
+    builder.append(" ");
+    builder.append(sortAscending ? "ASC" : "DESC");
+    return builder.toString();
   }
 
-  public void apply(@NonNull List<MediaItem> source, @NonNull ShortlistManager shortlistManager) {
-    for (int i = source.size() - 1; i >= 0; i--) {
-      MediaItem item = source.get(i);
-      List<Shortlist> shortlists = shortlistManager.getShortlists(item);
-      if (shortlists == null) {
-        shortlists = new ArrayList<>();
-      }
-
-      if (!containsFilterString(item) || containsDisallowed(shortlists)
-          || !containsAllRequired(shortlists)) {
-        source.remove(i);
-      }
+  public boolean isAllowed(@NonNull MediaItem mediaItem,
+                           @NonNull ShortlistManager shortlistManager) {
+    List<Shortlist> shortlists = shortlistManager.getShortlists(mediaItem);
+    if (shortlists == null) {
+      shortlists = Collections.emptyList();
     }
-    Collections.sort(source, getSorting());
+    return containsFilterString(mediaItem) && !containsDisallowed(shortlists)
+        && containsAllRequired(shortlists);
   }
 
   private boolean containsFilterString(@NonNull MediaItem mediaItem) {
@@ -93,30 +115,6 @@ public class FilterInfo implements Parcelable {
     return true;
   }
 
-  private static class MediaItemComparator implements Comparator<MediaItem> {
-    @SortMethod
-    private final int sortMethod;
-
-    public MediaItemComparator(@SortMethod int sortMethod) {
-      this.sortMethod = sortMethod;
-    }
-
-    @Override
-    public int compare(MediaItem left, MediaItem right) {
-      switch (sortMethod) {
-        case SortMethod.ID:
-          return Long.compare(left.getTransientId(), right.getTransientId());
-        case SortMethod.TITLE:
-          return left.title.toString().compareTo(right.title.toString());
-        case SortMethod.ARTIST:
-          return left.artist.toString().compareTo(right.artist.toString());
-        case SortMethod.DURATION:
-          return Long.compare(left.getDuration(), right.getDuration());
-      }
-      return 0;
-    }
-  }
-
   @Override
   public int describeContents() {
     return 0;
@@ -125,6 +123,7 @@ public class FilterInfo implements Parcelable {
   @Override
   public void writeToParcel(Parcel dest, int flags) {
     dest.writeInt(this.sortMethod);
+    dest.writeInt(this.sortAscending ? 1 : 0);
     dest.writeTypedList(new ArrayList<>(requiredShortlists));
     dest.writeTypedList(new ArrayList<>(disallowedShortlists));
     dest.writeString(filterString);
@@ -133,6 +132,7 @@ public class FilterInfo implements Parcelable {
   protected FilterInfo(Parcel in) {
     //noinspection WrongConstant
     this.sortMethod = in.readInt();
+    sortAscending = in.readInt() == 1;
     ArrayList<Shortlist> shortlists = in.readArrayList(null);
     requiredShortlists = new ArraySet<>();
     requiredShortlists.addAll(shortlists);

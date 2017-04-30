@@ -38,8 +38,8 @@ import com.google.android.exoplayer2.text.Cue;
   }
 
   public WebvttCue(long startTime, long endTime, CharSequence text, Alignment textAlignment,
-      float line, @LineType int lineType, @AnchorType int lineAnchor, float position,
-      @AnchorType int positionAnchor, float width) {
+      float line, @Cue.LineType int lineType, @Cue.AnchorType int lineAnchor, float position,
+      @Cue.AnchorType int positionAnchor, float width) {
     super(text, textAlignment, line, lineType, lineAnchor, position, positionAnchor, width);
     this.startTime = startTime;
     this.endTime = endTime;

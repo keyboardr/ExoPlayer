@@ -1,5 +1,7 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -7,11 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -21,14 +25,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Spinner;
+import android.widget.ToggleButton;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.Shortlist;
 import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.ui.shortlists.CheckableShortlistViewHolder;
+import com.keyboardr.bluejay.ui.shortlists.ShortlistAdapter;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.ArrayList;
@@ -40,6 +48,8 @@ public class FilterFragment extends DialogFragment {
   private static final String STATE_DESELECTED_SHORTLISTS = "deselected_shortlists";
 
   private Spinner sortSpinner;
+  private ToggleButton sortToggle;
+
   private RecyclerView shortlistsView;
 
   private Set<Shortlist> selectedShortlists = new ArraySet<>();
@@ -48,14 +58,26 @@ public class FilterFragment extends DialogFragment {
   private BroadcastReceiver shortlistsChangedReceiver = new BroadcastReceiver() {
     @Override
     public void onReceive(Context context, Intent intent) {
-      shortlistsView.getAdapter().notifyDataSetChanged();
+      switch (intent.getIntExtra(ShortlistManager.EXTRA_CHANGE_TYPE, ShortlistManager.Change
+          .UNKNOWN)) {
+        case ShortlistManager.Change.REMOVE:
+          Shortlist shortlist = intent.getParcelableExtra(ShortlistManager.EXTRA_SHORTLIST);
+          boolean modified;
+          modified = selectedShortlists.remove(shortlist);
+          modified |= deselectedShortlists.remove(shortlist);
+          if (modified) {
+            updateFilterInfo();
+          }
+          break;
+      }
+      if (shortlistsView != null && shortlistsView.getAdapter() != null) {
+        shortlistsView.getAdapter().notifyDataSetChanged();
+      }
     }
   };
 
   public interface Holder {
     void setLibraryFilter(FilterInfo filter);
-
-    ShortlistManager getShortlistManager();
   }
 
   @Override
@@ -110,6 +132,25 @@ public class FilterFragment extends DialogFragment {
     sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if (i == FilterInfo.SortMethod.SHUFFLE) {
+          int currentTextColor = sortToggle.getCurrentTextColor();
+          if (Color.alpha(currentTextColor) != 0) {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+                ColorUtils.setAlphaComponent(currentTextColor, 0));
+            objectAnimator.setEvaluator(new ArgbEvaluator());
+            objectAnimator.start();
+          }
+          sortToggle.setActivated(true);
+        } else {
+          int currentTextColor = sortToggle.getCurrentTextColor();
+          if (Color.alpha(currentTextColor) != 0xFF) {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+                ColorUtils.setAlphaComponent(currentTextColor, 0xFF));
+            objectAnimator.setEvaluator(new ArgbEvaluator());
+            objectAnimator.start();
+          }
+          sortToggle.setActivated(false);
+        }
         updateFilterInfo();
       }
 
@@ -119,10 +160,15 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
+    IntentFilter filter = new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED);
+    filter.addAction(ShortlistManager.ACTION_SHORTLISTS_READY);
+    LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
+        filter);
+
     shortlistsView = (RecyclerView) view.findViewById(R.id.shortlists);
     shortlistsView.setLayoutManager(new LinearLayoutManager(getContext()));
-    shortlistsView.setAdapter(new ShortlistAdapter<FilterShortlistViewHolder>(getParent()
-        .getShortlistManager()) {
+    shortlistsView.setAdapter(new ShortlistAdapter<FilterShortlistViewHolder>(
+        ShortlistManager.getInstance(getContext())) {
 
       @Override
       public FilterShortlistViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -130,7 +176,8 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
-    ((EditText) view.findViewById(R.id.filter_text)).addTextChangedListener(new TextWatcher() {
+    final EditText filterTextInput = (EditText) view.findViewById(R.id.filter_text);
+    filterTextInput.addTextChangedListener(new TextWatcher() {
       @Override
       public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
       }
@@ -146,8 +193,21 @@ public class FilterFragment extends DialogFragment {
       }
     });
 
-    LocalBroadcastManager.getInstance(getContext()).registerReceiver(shortlistsChangedReceiver,
-        new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_CHANGED));
+    view.findViewById(R.id.filter_clear).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        filterTextInput.setText("");
+      }
+    });
+
+    sortToggle = (ToggleButton) view.findViewById(R.id.sort_direction);
+    sortToggle.setOnCheckedChangeListener(
+        new CompoundButton.OnCheckedChangeListener() {
+          @Override
+          public void onCheckedChanged(CompoundButton compoundButton, boolean checked) {
+            updateFilterInfo();
+          }
+        });
   }
 
   @Override
@@ -164,7 +224,7 @@ public class FilterFragment extends DialogFragment {
         new ArrayList<>(deselectedShortlists));
   }
 
-  private class FilterShortlistViewHolder extends ShortlistViewHolder {
+  private class FilterShortlistViewHolder extends CheckableShortlistViewHolder {
 
     public FilterShortlistViewHolder(ViewGroup parent) {
       super(parent);
@@ -200,6 +260,7 @@ public class FilterFragment extends DialogFragment {
   private void updateFilterInfo() {
     //noinspection WrongConstant
     getParent().setLibraryFilter(new FilterInfo(sortSpinner.getSelectedItemPosition(),
+        sortToggle.isChecked(),
         selectedShortlists, deselectedShortlists, filterText));
   }
 

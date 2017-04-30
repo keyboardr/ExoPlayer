@@ -67,14 +67,25 @@ import javax.crypto.spec.SecretKeySpec;
   private boolean changed;
   private ReusableBufferedOutputStream bufferedOutputStream;
 
-  /** Creates a CachedContentIndex which works on the index file in the given cacheDir. */
+  /**
+   * Creates a CachedContentIndex which works on the index file in the given cacheDir.
+   *
+   * @param cacheDir Directory where the index file is kept.
+   */
   public CachedContentIndex(File cacheDir) {
     this(cacheDir, null);
   }
 
-  /** Creates a CachedContentIndex which works on the index file in the given cacheDir. */
+  /**
+   * Creates a CachedContentIndex which works on the index file in the given cacheDir.
+   *
+   * @param cacheDir Directory where the index file is kept.
+   * @param secretKey If not null, cache keys will be stored encrypted on filesystem using AES/CBC.
+   *     The key must be 16 bytes long.
+   */
   public CachedContentIndex(File cacheDir, byte[] secretKey) {
     if (secretKey != null) {
+      Assertions.checkArgument(secretKey.length == 16);
       try {
         cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
         secretKeySpec = new SecretKeySpec(secretKey, "AES");
@@ -204,7 +215,7 @@ import javax.crypto.spec.SecretKeySpec;
 
   /**
    * Returns the content length for the given key if one set, or {@link
-   * C#LENGTH_UNSET} otherwise.
+   * com.google.android.exoplayer2.C#LENGTH_UNSET} otherwise.
    */
   public long getContentLength(String key) {
     CachedContent cachedContent = get(key);
@@ -302,6 +313,9 @@ import javax.crypto.spec.SecretKeySpec;
       }
       output.writeInt(hashCode);
       atomicFile.endWrite(output);
+      // Avoid calling close twice. Duplicate CipherOutputStream.close calls did
+      // not used to be no-ops: https://android-review.googlesource.com/#/c/272799/
+      output = null;
     } catch (IOException e) {
       throw new CacheException(e);
     } finally {
@@ -329,7 +343,7 @@ import javax.crypto.spec.SecretKeySpec;
 
   /**
    * Returns an id which isn't used in the given array. If the maximum id in the array is smaller
-   * than {@link Integer#MAX_VALUE} it just returns the next bigger integer. Otherwise it
+   * than {@link java.lang.Integer#MAX_VALUE} it just returns the next bigger integer. Otherwise it
    * returns the smallest unused non-negative integer.
    */
   //@VisibleForTesting

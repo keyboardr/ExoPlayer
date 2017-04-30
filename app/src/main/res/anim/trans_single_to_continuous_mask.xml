@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:duration="@android:integer/config_shortAnimTime"
+        android:interpolator="@android:interpolator/fast_out_linear_in"
+        android:propertyName="pathData"
+        android:valueFrom="@string/mask_strike_thru"
+        android:valueTo="@string/mask_no_strike_thru"
+        android:valueType="pathType"/>
+</set>

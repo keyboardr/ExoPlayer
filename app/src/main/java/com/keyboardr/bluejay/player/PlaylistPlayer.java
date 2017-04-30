@@ -4,8 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -15,7 +13,11 @@ import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.keyboardr.bluejay.BuildConfig;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,19 +26,10 @@ public class PlaylistPlayer extends AbsPlayer {
 
   private static final boolean DEBUG_SHORT_SONGS = true;
 
-  public interface PlaylistChangedListener {
-    void onQueueChanged();
-
-    void onIndexChanged(int oldIndex, int newIndex);
-  }
-
   private List<PlaylistItem> mediaItems = new ArrayList<>();
   private int currentIndex;
   private int nextId;
   private boolean continuePlayingOnDone;
-
-  @Nullable
-  private PlaylistChangedListener playlistChangedListener;
 
   public PlaylistPlayer(@NonNull Context context) {
     super(context, C.STREAM_TYPE_ALARM);
@@ -48,23 +41,7 @@ public class PlaylistPlayer extends AbsPlayer {
       @Override
       public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         if (playbackState == ExoPlayer.STATE_ENDED && playWhenReady) {
-          currentIndex++;
-          SimpleExoPlayer player = ensurePlayer();
-          if (mediaItems.size() > currentIndex) {
-            // More tracks in the queue. Continue iff continuePlayingOnDone is set.
-            player.setPlayWhenReady(continuePlayingOnDone);
-            prepareNextTrack(player);
-          } else {
-            // End of queue. Get ready for more tracks to be added.
-            continuePlayingOnDone = false;
-            player.setPlayWhenReady(false);
-          }
-          if (playlistChangedListener != null) {
-            playlistChangedListener.onIndexChanged(currentIndex - 1, currentIndex);
-          }
-          if (playbackListener != null) {
-            playbackListener.onPlayStateChanged(PlaylistPlayer.this);
-          }
+          goToNextTrack();
         }
       }
 
@@ -88,44 +65,51 @@ public class PlaylistPlayer extends AbsPlayer {
     ensurePlayer().addListener(eventListener);
   }
 
+  private void goToNextTrack() {
+    currentIndex++;
+    SimpleExoPlayer player = ensurePlayer();
+    if (mediaItems.size() > currentIndex) {
+      // More tracks in the queue. Continue iff continuePlayingOnDone is set.
+      player.setPlayWhenReady(continuePlayingOnDone);
+      prepareNextTrack(player);
+    } else {
+      // End of queue. Get ready for more tracks to be added.
+      continuePlayingOnDone = false;
+      player.setPlayWhenReady(false);
+    }
+    if (playbackListener != null) {
+      playbackListener.onPlayStateChanged(PlaylistPlayer.this);
+    }
+    getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
+        getCurrentMediaItem()));
+  }
+
   private void prepareNextTrack(SimpleExoPlayer player) {
     MediaItem mediaItem = mediaItems.get(currentIndex).mediaItem;
+    setVolume(1);
     player.prepare(getMediaSource(mediaItem));
     if (BuildConfig.DEBUG && DEBUG_SHORT_SONGS) {
       player.seekTo(mediaItem.getDuration() - 10000);
     }
   }
 
-  public void addPlaylistChangedListener(@Nullable PlaylistChangedListener
-                                             playlistChangedListener) {
-    this.playlistChangedListener = playlistChangedListener;
-  }
-
-  public void addToQueue(@NonNull MediaItem mediaItem) {
-    mediaItems.add(new PlaylistItem(mediaItem, nextId++));
+  public PlaylistItem addToQueue(@NonNull MediaItem mediaItem) {
+    PlaylistItem item = new PlaylistItem(mediaItem, nextId++);
+    mediaItems.add(item);
     SimpleExoPlayer player = ensurePlayer();
     if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
       prepareNextTrack(player);
     }
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
-    }
+    return item;
   }
 
   public void removeItem(int removeIndex) {
     mediaItems.remove(removeIndex);
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
-    }
   }
 
   public void moveItem(int oldIndex, int newIndex) {
     mediaItems.add(newIndex, mediaItems.remove(oldIndex));
-    if (playlistChangedListener != null) {
-      playlistChangedListener.onQueueChanged();
-    }
-
   }
 
   @Override
@@ -165,9 +149,11 @@ public class PlaylistPlayer extends AbsPlayer {
   @Override
   public void pause() {
     continuePlayingOnDone = false;
-    Toast.makeText(context, "Playback will stop at the end of the current track",
-        Toast.LENGTH_LONG).show();
-    if (playbackListener != null) {
+    if (getVolume() == 0) {
+      ensurePlayer().stop();
+      goToNextTrack();
+      // No need to notify listener since it was done in goToNextTrack()
+    } else if (playbackListener != null) {
       playbackListener.onPlayStateChanged(this);
     }
   }
@@ -217,5 +203,10 @@ public class PlaylistPlayer extends AbsPlayer {
         return new PlaylistItem[size];
       }
     };
+  }
+
+  @Override
+  protected EventBus getBus() {
+    return Buses.PLAYLIST;
   }
 }

@@ -1,8 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorPrimary">#303f9f</color>
+    <color name="colorPrimaryDark">#001970</color>
+    <color name="colorPrimaryLight">#666ad1</color>
+    <color name="colorPrimaryAction">#3d5afe</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorAccentDark">#c60055</color>
+    <color name="colorAccentLight">#ff79b0</color>
+
     <color name="bottomNavScrim">#aa333333</color>
     <color name="media_item_color">#444444</color>
+    <color name="bottom_bar">#555555</color>
+    <color name="warning">#af8700</color>
+    <color name="error">#d50000</color>
+    <color name="shortlist_item_color">#666666</color>
+    <color name="touch_highlight_dark">#33ffffff</color>
+    <color name="touch_highlight_light">#1E000000</color>
 </resources>

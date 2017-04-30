@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.Manifest;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -9,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.PermissionChecker;
 import android.support.v4.os.OperationCanceledException;
 
 import com.keyboardr.bluejay.model.FilterInfo;
@@ -32,6 +34,8 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
   @Nullable
   private final FilterInfo filterInfo;
 
+  private volatile boolean canceled;
+
   public LibraryLoader(Context context, @Nullable FilterInfo filterInfo, @NonNull
       ShortlistManager shortlistManager) {
     super(context);
@@ -39,6 +43,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     this.shortlistManager = shortlistManager;
   }
 
+  @Nullable
   @Override
   public List<MediaItem> loadInBackground() {
     synchronized (this) {
@@ -47,9 +52,18 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
       }
       mCancellationSignal = new CancellationSignal();
     }
+    canceled = false;
+
+    if (PermissionChecker.checkSelfPermission(getContext(),
+        Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+      return null;
+    }
+
     try {
-      Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection,
-          null, null, mCancellationSignal);
+      String sortOrder =
+          filterInfo == null ? MediaStore.Audio.Media._ID + " ASC" : filterInfo.getSortColumn();
+      Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection, null,
+          sortOrder, mCancellationSignal);
       if (cursor != null) {
         try {
           // Ensure the cursor window is filled.
@@ -68,9 +82,10 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
   }
 
+  @Nullable
   @WorkerThread
   private List<MediaItem> processCursor(@Nullable Cursor cursor) {
-    if (mCursor != null) {
+    if (mCursor != null && mCursor != cursor) {
       mCursor.close();
     }
     mCursor = cursor;
@@ -84,20 +99,20 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
         int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
         int mediaIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
         do {
-          result.add(MediaItem.build()
+          MediaItem item = MediaItem.build()
               .setArtist(cursor.getString(artistColumn))
               .setTitle(cursor.getString(titleColumn))
               .setAlbumId(cursor.getLong(albumIdColumn))
               .setDuration(cursor.getLong(durationColumn))
               .setPath(cursor.getString(dataColumn))
-              .make(getContext(), cursor.getLong(mediaIdColumn)));
-        } while (cursor.moveToNext());
+              .make(cursor.getLong(mediaIdColumn));
+          if (filterInfo == null || filterInfo.isAllowed(item, shortlistManager)) {
+            result.add(item);
+          }
+        } while (cursor.moveToNext() && !canceled);
       }
     }
-    if (filterInfo != null) {
-      filterInfo.apply(result, shortlistManager);
-    }
-    return result;
+    return canceled ? null : result;
   }
 
   @Override
@@ -106,6 +121,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     synchronized (this) {
       if (mCancellationSignal != null) {
         mCancellationSignal.cancel();
+        canceled = true;
       }
     }
   }

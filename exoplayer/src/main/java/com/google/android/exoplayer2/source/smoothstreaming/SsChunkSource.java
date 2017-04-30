@@ -29,9 +29,8 @@ public interface SsChunkSource extends ChunkSource {
   interface Factory {
 
     SsChunkSource createChunkSource(LoaderErrorThrower manifestLoaderErrorThrower,
-                                    SsManifest manifest, int elementIndex, TrackSelection
-                                        trackSelection,
-                                    TrackEncryptionBox[] trackEncryptionBoxes);
+        SsManifest manifest, int elementIndex, TrackSelection trackSelection,
+        TrackEncryptionBox[] trackEncryptionBoxes);
 
   }
 

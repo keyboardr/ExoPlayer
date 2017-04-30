@@ -10,18 +10,18 @@
     <include
         layout="@layout/fragment_recycler"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="240dp"
+        android:layout_weight="2" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:panelColorBackground">
+        android:layout_height="320dp"
+        android:layout_weight="1">
 
         <fragment
             android:id="@+id/filter_fragment"
             class="com.keyboardr.bluejay.ui.monitor.library.FilterFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent" />
     </FrameLayout>
 </LinearLayout>

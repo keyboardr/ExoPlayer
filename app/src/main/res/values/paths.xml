@@ -1,8 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="path_play">M9,5 L9,5 L9,13 L4,13 L9,5 M9,5 L9,5 L14,13 L9,13 L9,5</string>
-    <string name="path_pause">M6,5 L8,5 L8,13 L6,13 L6,5 M10,5 L12,5 L12,13 L10,13 L10,5</string>
-    <string name="path_continuous">M 15.5 16 L 15.5 15 L 16.5 15 L 16.5 16 Z M 14 16 L 14 15 L 15 15 L 15 16 Z M 12.5 16 L 12.5 15 L 13.5 15 L 13.5 16 L 13.5 16 Z</string>
-    <string name="path_single">M 14.9 17 L 14 17 L 14 15.5 L 14.9 15.5 Z M 14.9 15.5 L 14 15.5 L 14 13.7 L 14.9 13.5 Z M 14.9 13.5 L 13 14 L 13 13.3 L 14.8 12.7 L 14.9 12.7 Z</string>
-    <string name="path_none">M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 L 9 9 Z</string>
+    <string name="path_play" translatable="false">M9,5 L9,5 L9,13 L4,13 L9,5 M9,5 L9,5 L14,13 L9,13 L9,5</string>
+    <string name="path_pause" translatable="false">M6,5 L8,5 L8,13 L6,13 L6,5 M10,5 L12,5 L12,13 L10,13 L10,5</string>
+    <string name="path_arrow_small" translatable="false">M21,18l-4,-4v3L5,17v2h12v3l4,-4z</string>
+    <string name="path_strike_thru" translatable="false">M8,15L14,21</string>
+    <string name="mask_strike_thru" translatable="false">M0,12L6,12L15,21L17,21L8,12L24,12L24,24L0,24</string>
+    <string name="mask_no_strike_thru" translatable="false">M0,12L6,12L6,12L8,12L8,12L24,12L24,24L0,24</string>
+    <string name="mask_arrow_full">M0,0L24,0L24,24L0,24</string>
+    <string name="mask_arrow_gone">M0,0L0,0L0,24L0,24</string>
+    <string name="path_continuous" translatable="false">M 15.5 16 L 15.5 15 L 16.5 15 L 16.5 16 Z M 14 16 L 14 15 L 15 15 L 15 16 Z M 12.5 16 L 12.5 15 L 13.5 15 L 13.5 16 L 13.5 16 Z</string>
+    <string name="path_single" translatable="false">M 14.9 17 L 14 17 L 14 15.5 L 14.9 15.5 Z M 14.9 15.5 L 14 15.5 L 14 13.7 L 14.9 13.5 Z M 14.9 13.5 L 13 14 L 13 13.3 L 14.8 12.7 L 14.9 12.7 Z</string>
+    <string name="path_none" translatable="false">M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 Z M 9 9 L 9 9 L 9 9 L 9 9 L 9 9 Z</string>
+    <string name="path_arrow_down" translatable="false">M 13 4 L 11 4 L 11 16.17 L 5.42 10.58 L 4 12 L 12 20 L 20 12 L 18.59 10.59 L 13 16.17 L 13 4 M 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 M 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709 L 16.706 16.709</string>
+    <string name="path_shuffle" translatable="false">M 20 5.41 L 18.59 4 L 6.04 16.54 L 4 14.5 L 4 14.5 L 4 20 L 9.5 20 L 9.5 20 L 7.46 17.96 L 20 5.41 M 13.41 14.83 L 18.59 20 L 20 18.59 L 14.83 13.42 L 13.41 14.83 M 9.17 10.59 L 10.58 9.18 L 7.45 6.05 L 9.5 4 L 4 4 L 4 9.51 L 6.04 7.47 L 9.17 10.59</string>
 </resources>

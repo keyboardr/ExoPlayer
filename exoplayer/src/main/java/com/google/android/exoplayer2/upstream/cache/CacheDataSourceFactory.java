@@ -22,13 +22,13 @@ import com.google.android.exoplayer2.upstream.FileDataSourceFactory;
 import com.google.android.exoplayer2.upstream.cache.CacheDataSource.EventListener;
 
 /**
- * A {@link Factory} that produces {@link CacheDataSource}.
+ * A {@link DataSource.Factory} that produces {@link CacheDataSource}.
  */
-public final class CacheDataSourceFactory implements Factory {
+public final class CacheDataSourceFactory implements DataSource.Factory {
 
   private final Cache cache;
-  private final Factory upstreamFactory;
-  private final Factory cacheReadDataSourceFactory;
+  private final DataSource.Factory upstreamFactory;
+  private final DataSource.Factory cacheReadDataSourceFactory;
   private final DataSink.Factory cacheWriteDataSinkFactory;
   private final int flags;
   private final EventListener eventListener;
@@ -36,14 +36,14 @@ public final class CacheDataSourceFactory implements Factory {
   /**
    * @see CacheDataSource#CacheDataSource(Cache, DataSource, int)
    */
-  public CacheDataSourceFactory(Cache cache, Factory upstreamFactory, int flags) {
+  public CacheDataSourceFactory(Cache cache, DataSource.Factory upstreamFactory, int flags) {
     this(cache, upstreamFactory, flags, CacheDataSource.DEFAULT_MAX_CACHE_FILE_SIZE);
   }
 
   /**
    * @see CacheDataSource#CacheDataSource(Cache, DataSource, int, long)
    */
-  public CacheDataSourceFactory(Cache cache, Factory upstreamFactory, int flags,
+  public CacheDataSourceFactory(Cache cache, DataSource.Factory upstreamFactory, int flags,
       long maxCacheFileSize) {
     this(cache, upstreamFactory, new FileDataSourceFactory(),
         new CacheDataSinkFactory(cache, maxCacheFileSize), flags, null);
@@ -65,10 +65,11 @@ public final class CacheDataSourceFactory implements Factory {
   }
 
   @Override
-  public DataSource createDataSource() {
+  public CacheDataSource createDataSource() {
     return new CacheDataSource(cache, upstreamFactory.createDataSource(),
         cacheReadDataSourceFactory.createDataSource(),
-        cacheWriteDataSinkFactory.createDataSink(), flags, eventListener);
+        cacheWriteDataSinkFactory != null ? cacheWriteDataSinkFactory.createDataSink() : null,
+        flags, eventListener);
   }
 
 }

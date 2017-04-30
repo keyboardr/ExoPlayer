@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -21,6 +22,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.content.PermissionChecker;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -41,6 +43,7 @@ import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.ui.BottomNavHolder;
+import com.keyboardr.bluejay.ui.MonitorContainer;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -49,8 +52,7 @@ import java.util.List;
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
-  public interface Holder {
-    void playMediaItemOnMonitor(@NonNull MediaItem mediaItem);
+  public interface Holder extends MonitorContainer {
 
     boolean canAddToQueue();
 
@@ -62,6 +64,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   private static final int SWITCHER_LOADING = 0;
   private static final int SWITCHER_EMPTY = 1;
   private static final int SWITCHER_LOADED = 2;
+  private static final int SWITCHER_NO_PERMISSION = 3;
   private static final String ARG_FILTER = "filter";
 
   private ViewAnimator switcher;
@@ -71,14 +74,22 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @Override
     public Loader<List<MediaItem>> onCreateLoader(int i, Bundle bundle) {
       return new LibraryLoader(getContext(), bundle == null ? null : ((FilterInfo) bundle
-          .getParcelable(ARG_FILTER)), getShortlistManager());
+          .getParcelable(ARG_FILTER)), shortlistManager);
     }
 
     @Override
     public void onLoadFinished(Loader<List<MediaItem>> loader, List<MediaItem> items) {
-      adapter.setMediaItems(items);
-      switcher.setDisplayedChild(items.size() != 0
-          ? LibraryFragment.SWITCHER_LOADED : LibraryFragment.SWITCHER_EMPTY);
+      if (items != null) {
+        adapter.setMediaItems(items);
+        switcher.setDisplayedChild(items.size() != 0
+            ? LibraryFragment.SWITCHER_LOADED : LibraryFragment.SWITCHER_EMPTY);
+      } else if (PermissionChecker.checkSelfPermission(getContext(), Manifest.permission
+          .READ_EXTERNAL_STORAGE) != PermissionChecker.PERMISSION_GRANTED) {
+        switcher.setDisplayedChild(SWITCHER_NO_PERMISSION);
+        if (!shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
+          requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+        }
+      }
     }
 
     @Override
@@ -139,7 +150,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   @Override
   public void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    shortlistManager = new ShortlistManager(getContext());
+    shortlistManager = ShortlistManager.getInstance(getContext());
     LocalBroadcastManager.getInstance(getContext().getApplicationContext()).registerReceiver
         (shortlistsReadyReceiver, new IntentFilter(ShortlistManager.ACTION_SHORTLISTS_READY));
   }
@@ -149,6 +160,13 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     super.onDestroy();
     LocalBroadcastManager.getInstance(getContext().getApplicationContext()).unregisterReceiver
         (shortlistsReadyReceiver);
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                         @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    getLoaderManager().restartLoader(0, null, mediaLoaderCallbacks);
   }
 
   @Override
@@ -169,6 +187,12 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     recyclerView.addItemDecoration(new DividerItemDecoration(getContext(),
         layoutManager.getOrientation()));
     recyclerView.setAdapter(adapter);
+    view.findViewById(R.id.grant_permission).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+      }
+    });
     return view;
   }
 
@@ -177,11 +201,6 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     super.onViewCreated(view, savedInstanceState);
     getActivity().invalidateOptionsMenu();
     getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
-  }
-
-  @Override
-  public ShortlistManager getShortlistManager() {
-    return shortlistManager;
   }
 
   @Override

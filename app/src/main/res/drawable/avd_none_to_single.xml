@@ -4,7 +4,7 @@
     android:drawable="@drawable/ic_play_arrow_single">
 
     <target
-        android:name="iconMod"
-        android:animation="@anim/trans_none_to_mod_group"/>
+        android:name="arrow_mask"
+        android:animation="@anim/trans_arrow_mask_gone_to_full"/>
 
 </animated-vector>

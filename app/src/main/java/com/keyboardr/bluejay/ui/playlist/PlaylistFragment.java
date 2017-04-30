@@ -1,6 +1,8 @@
 package com.keyboardr.bluejay.ui.playlist;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,24 +17,41 @@ import android.view.ViewGroup;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
+import com.keyboardr.bluejay.ui.MonitorContainer;
 import com.keyboardr.bluejay.ui.recycler.MediaItemAnimator;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.keyboardr.bluejay.bus.Buses.PlaylistUtils.getCurrentTrackIndex;
 
 public class PlaylistFragment extends Fragment {
 
+  private static final long AUTO_SCROLL_INTERVAL = TimeUnit.SECONDS.toMillis(15);
   private ItemTouchHelper itemTouchHelper;
+
+  private RecyclerView.OnScrollListener interactionListener = new RecyclerView.OnScrollListener() {
+    @Override
+    public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+      lastScroll = SystemClock.elapsedRealtime();
+    }
+  };
+  private RecyclerView recyclerView;
 
   public interface Holder {
 
     @NonNull
     List<MediaSessionCompat.QueueItem> getPlaylist();
-
-    int getCurrentTrackIndex();
 
     void removeTrack(int index);
 
@@ -44,6 +63,14 @@ public class PlaylistFragment extends Fragment {
 
   private ViewAnimator switcher;
 
+  private long lastScroll;
+
+  @Override
+  public void onAttach(Context context) {
+    super.onAttach(context);
+    FragmentUtils.checkParent(this, Holder.class);
+  }
+
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle
@@ -54,15 +81,17 @@ public class PlaylistFragment extends Fragment {
   @Override
   public void onViewCreated(View view, Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    lastScroll = SystemClock.elapsedRealtime();
     switcher = ((ViewAnimator) view.findViewById(R.id.playlist_switcher));
     playlistAdapter = new PlaylistAdapter();
-    RecyclerView recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
+    recyclerView = (RecyclerView) view.findViewById(R.id.playlist_recycler);
     LinearLayoutManager layoutManager = new LinearLayoutManager(getContext(),
         LinearLayoutManager.VERTICAL, false);
     recyclerView.setLayoutManager(layoutManager);
     recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), layoutManager
         .getOrientation()));
     recyclerView.setItemAnimator(new MediaItemAnimator());
+    recyclerView.addOnScrollListener(interactionListener);
 
     ItemTouchHelper.SimpleCallback touchCallback = new ItemTouchHelper.SimpleCallback
         (ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -97,7 +126,6 @@ public class PlaylistFragment extends Fragment {
             && super.canDropOver(recyclerView, current, target);
       }
 
-
       @Override
       public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
                             RecyclerView.ViewHolder target) {
@@ -114,29 +142,56 @@ public class PlaylistFragment extends Fragment {
         getParent().removeTrack(removeIndex);
         playlistAdapter.notifyItemRemoved(removeIndex);
       }
+
+      @Override
+      public void onSelectedChanged(RecyclerView.ViewHolder viewHolder, int actionState) {
+        super.onSelectedChanged(viewHolder, actionState);
+      }
     };
     itemTouchHelper = new ItemTouchHelper(touchCallback);
     itemTouchHelper.attachToRecyclerView(recyclerView);
 
     recyclerView.setAdapter(playlistAdapter);
     switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
+    Buses.PLAYLIST.register(this);
   }
 
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    Buses.PLAYLIST.unregister(this);
+  }
+
+  @NonNull
   private Holder getParent() {
-    //noinspection ConstantConditions
-    return FragmentUtils.getParent(this, Holder.class);
+    return FragmentUtils.getParentChecked(this, Holder.class);
   }
 
-  public void onQueueChanged() {
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onQueueChanged(@NonNull QueueChangeEvent event) {
     playlistAdapter.notifyDataSetChanged();
-    switcher.setDisplayedChild(playlistAdapter.getItemCount() == 0 ? 0 : 1);
+    int itemCount = playlistAdapter.getItemCount();
+    switcher.setDisplayedChild(itemCount == 0 ? 0 : 1);
+    if (itemCount > 0) {
+      scrollIfInactive(itemCount - 1);
+    }
   }
 
-  public void onIndexChanged(int oldIndex, int newIndex) {
-    if (oldIndex >= 0) {
-      playlistAdapter.notifyItemChanged(oldIndex);
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
+    if (event.oldIndex >= 0) {
+      playlistAdapter.notifyItemChanged(event.oldIndex);
+      playlistAdapter.notifyItemChanged(event.newIndex);
+    } else {
+      playlistAdapter.notifyItemRangeChanged(0, event.newIndex + 1);
     }
-    playlistAdapter.notifyItemChanged(newIndex);
+    scrollIfInactive(event.newIndex);
+  }
+
+  private void scrollIfInactive(int newIndex) {
+    if (SystemClock.elapsedRealtime() - lastScroll > AUTO_SCROLL_INTERVAL) {
+      recyclerView.scrollToPosition(newIndex);
+    }
   }
 
   private class PlaylistAdapter extends RecyclerView.Adapter<MediaViewHolder> {
@@ -156,6 +211,17 @@ public class PlaylistFragment extends Fragment {
         @Override
         public boolean canDrag(@NonNull MediaItem mediaItem, boolean selected, boolean enabled) {
           return !selected && enabled;
+        }
+
+        @Override
+        public boolean canClick(@NonNull MediaItem mediaItem) {
+          return FragmentUtils.getParent(PlaylistFragment.this, MonitorContainer.class) != null;
+        }
+
+        @Override
+        public void onMediaItemClicked(@NonNull MediaItem mediaItem) {
+          FragmentUtils.getParentChecked(PlaylistFragment.this, MonitorContainer.class)
+              .playMediaItemOnMonitor(mediaItem);
         }
       });
     }
@@ -189,7 +255,4 @@ public class PlaylistFragment extends Fragment {
     }
   }
 
-  private int getCurrentTrackIndex() {
-    return getParent().getCurrentTrackIndex();
-  }
 }

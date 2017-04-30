@@ -20,12 +20,28 @@
             android:pathData="@string/path_play"/>
     </group>
     <group
-        android:name="iconMod"
-        android:pivotX="9"
-        android:pivotY="9">
+        android:name="arrow"
+        android:pivotX="12"
+        android:pivotY="12"
+        android:scaleX=".5"
+        android:scaleY=".5">
+        <clip-path
+            android:name="arrow_mask"
+            android:pathData="@string/mask_arrow_full"/>
         <path
-            android:name="modPath"
-            android:fillColor="@android:color/white"
-            android:pathData="@string/path_single"/>
+            android:name="strike_thru"
+            android:pathData="@string/path_strike_thru"
+            android:strokeColor="@android:color/white"
+            android:strokeLineCap="square"
+            android:strokeWidth=".8"/>
+        <group>
+            <clip-path
+                android:name="mask"
+                android:pathData="@string/mask_strike_thru"/>
+            <path
+                android:name="arrow_path"
+                android:fillColor="@android:color/white"
+                android:pathData="@string/path_arrow_small"/>
+        </group>
     </group>
 </vector>

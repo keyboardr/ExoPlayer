@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:id="@+id/shortlist_item"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_margin="4dp"
+              android:background="@drawable/bg_shortlist_chip"
+              android:gravity="center_vertical"
+              android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/drag_handle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_drag_handle"
+        android:tint="?android:textColorPrimary"/>
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:lines="1"
+        android:minWidth="120dp"
+        android:gravity="center_vertical"
+        android:stateListAnimator="@animator/shortlist_elevation_selector"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:textSize="24sp"
+        tools:text="Shortlist">
+
+    </TextView>
+</LinearLayout>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/shuffle"
+        android:drawable="@drawable/ic_shuffle"
+        android:state_activated="true"/>
+    <item
+        android:id="@+id/up"
+        android:drawable="@drawable/ic_arrow_upward"
+        android:state_checked="true"/>
+    <item
+        android:id="@+id/down"
+        android:drawable="@drawable/ic_arrow_downward"/>
+    <transition
+        android:drawable="@drawable/avd_up_to_down"
+        android:fromId="@id/up"
+        android:toId="@id/down">
+    </transition>
+    <transition
+        android:drawable="@drawable/avd_down_to_up"
+        android:fromId="@id/down"
+        android:toId="@id/up">
+    </transition>
+    <transition
+        android:drawable="@drawable/avd_up_to_shuffle"
+        android:fromId="@id/up"
+        android:reversible="true"
+        android:toId="@id/shuffle"/>
+    <transition
+        android:drawable="@drawable/avd_down_to_shuffle"
+        android:fromId="@id/down"
+        android:reversible="true"
+        android:toId="@id/shuffle"/>
+</animated-selector>

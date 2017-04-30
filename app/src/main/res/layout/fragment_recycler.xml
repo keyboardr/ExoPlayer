@@ -1,14 +1,14 @@
 <ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/library_switcher"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+              android:id="@+id/library_switcher"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
 
     <ProgressBar
         android:id="@+id/loading"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -16,10 +16,33 @@
         android:layout_gravity="center_horizontal"
         android:layout_margin="24dp"
         android:text="@string/library_empty"
-        android:textAppearance="?android:textAppearanceLarge" />
+        android:textAppearance="?android:textAppearanceLarge"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/library_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="24dp"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="@string/external_storage_rationale"/>
+
+        <Button
+            android:id="@+id/grant_permission"
+            style="?android:buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/grant_permission"/>
+    </LinearLayout>
 </ViewAnimator>

@@ -2,6 +2,7 @@ package com.keyboardr.bluejay.ui.monitor;
 
 import android.content.Context;
 import android.graphics.drawable.Icon;
+import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,7 +12,6 @@ import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
@@ -22,8 +22,8 @@ import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.CachedLoader;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
-public class MonitorControlsFragment extends Fragment implements PlayerControlsUpdater
-    .OnAlbumArtListener {
+public class MonitorControlsFragment extends Fragment
+    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.Callback {
 
   @SuppressWarnings("unused")
   public static MonitorControlsFragment newInstance() {
@@ -49,8 +49,7 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, null);
+    audioSelectionManager = new AudioSelectionManager(getContext(), this);
     uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager(), this);
   }
 
@@ -93,6 +92,21 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
     return player.getCurrentMediaItem();
   }
 
+  @Override
+  public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
+    return deviceInfo.getType() != AudioDeviceInfo.TYPE_USB_DEVICE;
+  }
+
+  @Override
+  public void onNoDeviceFound() {
+    player.setAudioOutput(null);
+  }
+
+  @Override
+  public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    player.setAudioOutput(audioDeviceInfo);
+  }
+
   public static class AlbumArtLoader extends CachedLoader<Pair<Icon, Palette>> {
 
     private final MediaItem mediaItem;
@@ -108,7 +122,8 @@ public class MonitorControlsFragment extends Fragment implements PlayerControlsU
       if (mediaItem == null) {
         return null;
       }
-      return mediaItem.getAlbumArt(getContext());
+      return mediaItem.getAlbumArt(getContext(), getContext().getResources()
+          .getDimensionPixelSize(R.dimen.controls_album_art_size));
     }
   }
 }

@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.MonitorPlayer;
-import com.keyboardr.bluejay.provider.ShortlistManager;
 import com.keyboardr.bluejay.ui.monitor.library.MetadataFragment;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -27,8 +26,6 @@ public class MonitorEditorFragment extends Fragment implements MetadataFragment.
     void closeMetadataEditor();
     @Nullable
     MediaItem getCurrentMonitorTrack();
-
-    ShortlistManager getShortlistManager();
 
   }
   public static MonitorEditorFragment newInstance() {
@@ -91,10 +88,5 @@ public class MonitorEditorFragment extends Fragment implements MetadataFragment.
   public void onStop() {
     super.onStop();
     LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(monitorChangedReceiver);
-  }
-
-  @Override
-  public ShortlistManager getShortlistManager() {
-    return FragmentUtils.getParentChecked(this, Holder.class).getShortlistManager();
   }
 }

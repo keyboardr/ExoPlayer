@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+                 xmlns:tools="http://schemas.android.com/tools"
+                 android:id="@android:id/text1"
+                 android:layout_width="wrap_content"
+                 android:layout_height="wrap_content"
+                 android:layout_margin="4dp"
+                 android:background="@drawable/bg_shortlist_chip"
+                 android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+                 android:checkMarkTint="@android:color/white"
+                 android:gravity="center"
+                 android:lines="1"
+                 android:stateListAnimator="@animator/shortlist_elevation_selector"
+                 android:textAppearance="?android:attr/textAppearanceListItemSmall"
+                 tools:text="Shortlist">
+
+</CheckedTextView>

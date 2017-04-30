@@ -253,7 +253,11 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
     if (itemChanged) {
       loaderManager.restartLoader(0, loaderArgs, albumArtCalbacks);
+      onItemChanged(mediaItem);
     }
+  }
+
+  protected void onItemChanged(@Nullable MediaItem mediaItem) {
   }
 
   private void updateVisibility(boolean visible) {
@@ -283,6 +287,10 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   public void onPlayStateChanged(Player player) {
     onMetaData();
     updatePlayState();
+  }
+
+  @Override
+  public void onVolumeChanged(Player player) {
   }
 
   protected void attachPlayer() {

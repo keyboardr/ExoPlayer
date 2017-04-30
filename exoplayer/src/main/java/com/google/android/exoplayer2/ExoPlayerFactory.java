@@ -59,7 +59,8 @@ public final class ExoPlayerFactory {
    */
   public static SimpleExoPlayer newSimpleInstance(Context context, TrackSelector trackSelector,
       LoadControl loadControl, DrmSessionManager<FrameworkMediaCrypto> drmSessionManager) {
-    return newSimpleInstance(context, trackSelector, loadControl, drmSessionManager, SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF);
+    return newSimpleInstance(context, trackSelector, loadControl,
+        drmSessionManager, SimpleExoPlayer.EXTENSION_RENDERER_MODE_OFF);
   }
 
   /**

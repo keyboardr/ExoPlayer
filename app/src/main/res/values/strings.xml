@@ -9,7 +9,6 @@
     <string name="show_playlist">Show playlist</string>
     <string name="hide_playlist">Hide playlist</string>
     <string name="playlist_empty">Playlist empty</string>
-    <string name="start_new_setlist">Start new setlist</string>
     <string name="end_set">End set</string>
     <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
     <string name="title_sort">Sort:</string>
@@ -25,13 +24,34 @@
     <string name="confirm_add_message">Are you sure you want to add %s to the setlist
         again?</string>
     <string name="add_track">Add track</string>
+    <string name="name">Name</string>
+    <string name="start_new_setlist">Start new setlist</string>
+    <string name="sound_check">Sound check</string>
+    <string name="end_sound_check">End sound check</string>
+    <string name="new_setlist">New setlist</string>
     <string name="edit_metadata">Edit metadata</string>
+    <string name="edit_tags">Edit tags</string>
     <string name="close">Close</string>
+    <string name="external_storage_rationale">BlueJay needs permission to load your music library</string>
+    <string name="grant_permission">Grant permission</string>
+    <string name="up">Up</string>
+    <string name="down">Down</string>
+    <string name="info_track_count">Track: %1$d/%2$d</string>
+    <string name="info_end_time">End time: %s</string>
+    <string name="title_shortlists">Tags</string>
+    <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to
+        delete.</string>
+    <string name="edit_shortlist_title">Rename %s</string>
+    <string name="error_no_usb_audio">No USB output device found</string>
+
+    <string name="shared_element_bottom_bar" translatable="false">bottomBar</string>
+    <string name="shared_element_setlist_container" translatable="false">setlistContainer</string>
 
     <string-array name="sort_methods">
-        <item>ID</item>
+        <item>Default</item>
         <item>Title</item>
         <item>Artist</item>
         <item>Duration</item>
+        <item>Shuffle</item>
     </string-array>
 </resources>

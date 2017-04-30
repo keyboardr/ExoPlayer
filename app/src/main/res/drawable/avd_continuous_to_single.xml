@@ -4,7 +4,10 @@
     android:drawable="@drawable/ic_play_arrow_single">
 
     <target
-        android:name="modPath"
+        android:name="strike_thru"
         android:animation="@anim/trans_continuous_to_single_path"/>
+    <target
+        android:name="mask"
+        android:animation="@anim/trans_continuous_to_single_mask"/>
 
 </animated-vector>

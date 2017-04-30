@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<transitionSet xmlns:android="http://schemas.android.com/apk/res/android">
+    <explode>
+        <targets>
+            <target android:excludeId="@id/shortlist_recycler"/>
+            <target android:excludeId="@id/shortlist_item"/>
+        </targets>
+    </explode>
+    <transitionSet
+        android:startDelay="200"
+        android:transitionOrdering="sequential">
+        <targets>
+            <target android:targetId="@id/shortlist_item"/>
+        </targets>
+        <slide android:slideEdge="start"/>
+    </transitionSet>
+</transitionSet>
