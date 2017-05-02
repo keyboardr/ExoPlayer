@@ -136,7 +136,7 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
     return new CursorLoader(getContext(), SetlistContract.CONTENT_URI, null,
         SetlistContract._ID + " != ?",
         new String[]{String.valueOf(setlistId == null ? -1 : setlistId)},
-        SetlistContract.DATE + " ASC");
+        SetlistContract.DATE + " DESC");
   }
 
   @Override
