@@ -1,7 +1,6 @@
 package com.keyboardr.bluejay.ui.playlist;
 
 import android.content.Context;
-import android.graphics.drawable.Icon;
 import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -19,15 +18,13 @@ import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
-import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.Collections;
 import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager.Callback,
-    PlayerControlsUpdater.OnAlbumArtListener {
+public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager.Callback {
 
   @Override
   public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
@@ -43,22 +40,6 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
     PlaylistErrorEvent.removeError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
     player.setAudioOutput(audioDeviceInfo);
-  }
-
-  @Override
-  public void onAlbumArtReset() {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setPlaylistAlbumArt(null);
-    }
-  }
-
-  @Override
-  public void onAlbumArtReady(@Nullable Icon albumArt) {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setPlaylistAlbumArt(albumArt);
-    }
   }
 
   public interface Holder {
@@ -90,7 +71,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager(), this);
+    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
     audioSelectionManager = new AudioSelectionManager(getContext(), this);
   }
 

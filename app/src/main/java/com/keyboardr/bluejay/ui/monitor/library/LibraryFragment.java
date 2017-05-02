@@ -73,8 +73,12 @@ public class LibraryFragment extends android.support.v4.app.Fragment
       = new LoaderManager.LoaderCallbacks<List<MediaItem>>() {
     @Override
     public Loader<List<MediaItem>> onCreateLoader(int i, Bundle bundle) {
-      return new LibraryLoader(getContext(), bundle == null ? null : ((FilterInfo) bundle
-          .getParcelable(ARG_FILTER)), shortlistManager);
+      FilterInfo filterInfo = bundle == null ? null : ((FilterInfo) bundle
+          .getParcelable(ARG_FILTER));
+      if (filterInfo == null) {
+        filterInfo = FilterInfo.EMPTY;
+      }
+      return new LibraryLoader(getContext(), filterInfo, shortlistManager);
     }
 
     @Override
@@ -204,7 +208,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   }
 
   @Override
-  public void setLibraryFilter(FilterInfo filter) {
+  public void setLibraryFilter(@NonNull FilterInfo filter) {
     Bundle args = new Bundle();
     args.putParcelable(ARG_FILTER, filter);
     getLoaderManager().restartLoader(0, args, mediaLoaderCallbacks);

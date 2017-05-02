@@ -18,6 +18,7 @@
     <string name="no_media_playing">No tracks playing</string>
     <string name="monitor">Monitor</string>
     <string name="playlist">Playlist</string>
+    <string name="history">History</string>
     <string name="filter">Filter</string>
     <string name="done">Done</string>
     <string name="confirm_add_title">Track already in setlist</string>
@@ -41,11 +42,16 @@
     <string name="title_shortlists">Tags</string>
     <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to
         delete.</string>
-    <string name="edit_shortlist_title">Rename %s</string>
+    <string name="rename_title">Rename %s</string>
     <string name="error_no_usb_audio">No USB output device found</string>
+    <string name="setlist_label">Setlist:</string>
 
     <string name="shared_element_bottom_bar" translatable="false">bottomBar</string>
     <string name="shared_element_setlist_container" translatable="false">setlistContainer</string>
+    <string name="rename">Rename</string>
+    <string name="delete">Delete</string>
+    <string name="delete_setlist">Delete setlist</string>
+    <string name="confirm_delete_setlist">Are you sure you want to delete %s?</string>
 
     <string-array name="sort_methods">
         <item>Default</item>

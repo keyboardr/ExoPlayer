@@ -17,13 +17,10 @@ import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.MonitorPlayer;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
-import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.CachedLoader;
-import com.keyboardr.bluejay.util.FragmentUtils;
 
-public class MonitorControlsFragment extends Fragment
-    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.Callback {
+public class MonitorControlsFragment extends Fragment implements AudioSelectionManager.Callback {
 
   @SuppressWarnings("unused")
   public static MonitorControlsFragment newInstance() {
@@ -50,7 +47,7 @@ public class MonitorControlsFragment extends Fragment
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     audioSelectionManager = new AudioSelectionManager(getContext(), this);
-    uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager(), this);
+    uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager());
   }
 
   @Override
@@ -69,22 +66,6 @@ public class MonitorControlsFragment extends Fragment
   public void onDestroy() {
     super.onDestroy();
     player.release();
-  }
-
-  @Override
-  public void onAlbumArtReset() {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setMonitorAlbumArt(null);
-    }
-  }
-
-  @Override
-  public void onAlbumArtReady(@Nullable Icon albumArt) {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setMonitorAlbumArt(albumArt);
-    }
   }
 
   @Nullable

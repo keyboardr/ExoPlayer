@@ -43,12 +43,6 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   public static final AnticipateInterpolator ANTICIPATE_INTERPOLATOR = new AnticipateInterpolator();
   public static final OvershootInterpolator OVERSHOOT_INTERPOLATOR = new OvershootInterpolator();
 
-  public interface OnAlbumArtListener {
-    void onAlbumArtReset();
-
-    void onAlbumArtReady(@Nullable Icon albumArt);
-  }
-
   private static final String ARG_MEDIA_ITEM = "mediaItem";
 
   protected final ImageView playPause;
@@ -63,9 +57,6 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   private final TextView position;
   private final TextView duration;
   private final View backgroundOverlay;
-
-  @Nullable
-  private final OnAlbumArtListener albumArtListener;
 
   @NonNull
   private final LoaderManager loaderManager;
@@ -201,27 +192,19 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
           }
         }
       }
-      if (albumArtListener != null) {
-        albumArtListener.onAlbumArtReady(albumArtData);
-      }
     }
 
     @Override
     public void onLoaderReset(Loader<Pair<Icon, Palette>> loader) {
       albumArtData = null;
-      if (albumArtListener != null) {
-        albumArtListener.onAlbumArtReset();
-      }
     }
   };
 
   public PlayerControlsUpdater(@NonNull View view, @NonNull P player,
-                               @NonNull LoaderManager loaderManager,
-                               @Nullable OnAlbumArtListener albumArtListener) {
+                               @NonNull LoaderManager loaderManager) {
     this.view = view;
     this.player = player;
     this.loaderManager = loaderManager;
-    this.albumArtListener = albumArtListener;
 
     title = (TextView) view.findViewById(R.id.controls_title);
     artist = (TextView) view.findViewById(R.id.controls_artist);

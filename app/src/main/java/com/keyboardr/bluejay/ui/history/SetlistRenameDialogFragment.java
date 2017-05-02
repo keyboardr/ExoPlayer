@@ -1,8 +1,12 @@
-package com.keyboardr.bluejay.ui.shortlists;
+package com.keyboardr.bluejay.ui.history;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -14,21 +18,21 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
-import com.keyboardr.bluejay.model.Shortlist;
-import com.keyboardr.bluejay.provider.ShortlistManager;
+import com.keyboardr.bluejay.provider.SetlistContract;
 
 /**
- * Dialog for renaming a shortlist
+ * Dialog shown to rename a setlist in history
  */
 
-public class ShortlistRenameDialogFragment extends DialogFragment {
+public class SetlistRenameDialogFragment extends DialogFragment {
+  private static final String ARG_NAME = "name";
+  private static final String ARG_ID = "id";
 
-  private static final String ARG_SHORTLIST = "shortlist";
-
-  public static ShortlistRenameDialogFragment newInstance(@NonNull Shortlist shortlist) {
-    ShortlistRenameDialogFragment fragment = new ShortlistRenameDialogFragment();
+  public static SetlistRenameDialogFragment newInstance(@NonNull String name, long id) {
+    SetlistRenameDialogFragment fragment = new SetlistRenameDialogFragment();
     Bundle args = new Bundle();
-    args.putParcelable(ARG_SHORTLIST, shortlist);
+    args.putString(ARG_NAME, name);
+    args.putLong(ARG_ID, id);
     fragment.setArguments(args);
     return fragment;
   }
@@ -42,7 +46,7 @@ public class ShortlistRenameDialogFragment extends DialogFragment {
         .inflate(R.layout.fragment_rename, null);
     final EditText editText = (EditText) view.findViewById(R.id.rename_edit_text);
     if (savedInstanceState == null) {
-      editText.setText(getShortlist().getName());
+      editText.setText(getName());
       editText.setSelection(editText.getText().length());
     }
     editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -54,7 +58,7 @@ public class ShortlistRenameDialogFragment extends DialogFragment {
       }
     });
     builder.setView(view);
-    builder.setTitle(getString(R.string.rename_title, getShortlist().getName()));
+    builder.setTitle(getString(R.string.rename_title, getName()));
     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialogInterface, int i) {
@@ -71,13 +75,33 @@ public class ShortlistRenameDialogFragment extends DialogFragment {
     return builder.create();
   }
 
-  private void doRename(TextView text) {
-    ShortlistManager.getInstance(getContext()).renameShortlist(getShortlist(),
-        text.getText().toString());
+  @NonNull
+  private String getName() {
+    //noinspection ConstantConditions
+    return getArguments().getString(ARG_NAME);
   }
 
-  private Shortlist getShortlist() {
-    //noinspection ConstantConditions
-    return getArguments().getParcelable(ARG_SHORTLIST);
+  private void doRename(TextView text) {
+    new RenameTask(getContext().getContentResolver(), getArguments().getLong(ARG_ID))
+        .execute(text.getText().toString());
+  }
+
+  private static class RenameTask extends AsyncTask<String, Void, Void> {
+    private final ContentResolver contentResolver;
+    private final long id;
+
+    public RenameTask(@NonNull ContentResolver contentResolver, long id) {
+      this.contentResolver = contentResolver;
+      this.id = id;
+    }
+
+    @Override
+    protected Void doInBackground(String... params) {
+      ContentValues values = new ContentValues();
+      values.put(SetlistContract.NAME, params[0]);
+      contentResolver.update(ContentUris.withAppendedId(SetlistContract.CONTENT_URI, id),
+          values, null, null);
+      return null;
+    }
   }
 }

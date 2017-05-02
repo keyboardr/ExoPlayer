@@ -20,9 +20,8 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
   private PopupWindow popupWindow;
 
   public PlaylistControlsUpdater(@NonNull View view, @NonNull PlaylistServiceClient player,
-                                 @NonNull LoaderManager loaderManager,
-                                 @NonNull OnAlbumArtListener albumArtListener) {
-    super(view, player, loaderManager, albumArtListener);
+                                 @NonNull LoaderManager loaderManager) {
+    super(view, player, loaderManager);
   }
 
   @Override

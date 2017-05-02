@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Icon;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -23,8 +22,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckedTextView;
-import android.widget.ImageView;
-import android.widget.ViewSwitcher;
+import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.model.SetMetadata;
@@ -45,20 +43,19 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   @SuppressWarnings("PointlessBooleanExpression")
   private static final boolean DEBUG_BYPASS_QUEUE_DEDUPE = BuildConfig.DEBUG && false;
 
-  private static final String STATE_SHOW_PLAYLIST = "showPlaylist";
+  private static final String STATE_SWITCHER_INDEX = "switcherIndex";
   @Nullable
-  private ViewSwitcher monitorPlaylistSwitcher;
+  private ViewAnimator monitorPlaylistSwitcher;
   @Nullable
   private CheckedTextView monitorTab;
   @Nullable
   private CheckedTextView playlistTab;
   @Nullable
-  private ImageView monitorTabBackground;
-  @Nullable
-  private ImageView playlistTabBackground;
+  private CheckedTextView historyTab;
 
   private static final int INDEX_MONITOR = 0;
   private static final int INDEX_PLAYLIST = 1;
+  private static final int INDEX_HISTORY = 2;
 
   private static final String TAG = "PlaybackActivity";
 
@@ -134,7 +131,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
     // Init switcher and tabs for phones
-    monitorPlaylistSwitcher = (ViewSwitcher) findViewById(R.id.monitor_playlist_switcher);
+    monitorPlaylistSwitcher = (ViewAnimator) findViewById(R.id.monitor_playlist_switcher);
     monitorTab = (CheckedTextView) findViewById(R.id.bottom_tab_monitor);
     if (monitorTab != null) {
       monitorTab.setOnClickListener(new View.OnClickListener() {
@@ -144,7 +141,6 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         }
       });
     }
-    monitorTabBackground = (ImageView) findViewById(R.id.bottom_tab_monitor_bg);
     playlistTab = (CheckedTextView) findViewById(R.id.bottom_tab_playlist);
     if (playlistTab != null) {
       playlistTab.setOnClickListener(new View.OnClickListener() {
@@ -154,12 +150,19 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
         }
       });
     }
-    playlistTabBackground = (ImageView) findViewById(R.id.bottom_tab_playlist_bg);
+    historyTab = (CheckedTextView) findViewById(R.id.bottom_tab_history);
+    if (historyTab != null) {
+      historyTab.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          setDisplayedChild(INDEX_HISTORY);
+        }
+      });
+    }
 
     if (monitorPlaylistSwitcher != null) {
       if (savedInstanceState != null) {
-        setDisplayedChild(savedInstanceState.getBoolean(STATE_SHOW_PLAYLIST)
-            ? INDEX_PLAYLIST : INDEX_MONITOR);
+        setDisplayedChild(savedInstanceState.getInt(STATE_SWITCHER_INDEX, INDEX_MONITOR));
       } else {
         setDisplayedChild(monitorPlaylistSwitcher.getDisplayedChild());
       }
@@ -195,8 +198,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
     if (monitorPlaylistSwitcher != null) {
-      outState.putBoolean(STATE_SHOW_PLAYLIST,
-          monitorPlaylistSwitcher.getDisplayedChild() == INDEX_PLAYLIST);
+      outState.putInt(STATE_SWITCHER_INDEX, monitorPlaylistSwitcher.getDisplayedChild());
     }
   }
 
@@ -248,6 +250,9 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
     }
     if (playlistTab != null) {
       playlistTab.setChecked(child == INDEX_PLAYLIST);
+    }
+    if (historyTab != null) {
+      historyTab.setChecked(child == INDEX_HISTORY);
     }
   }
 
@@ -304,20 +309,6 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   public void endSet() {
     mediaBrowser.disconnect();
     playlistServiceConn.onConnectionSuspended();
-  }
-
-  @Override
-  public void setMonitorAlbumArt(@Nullable Icon icon) {
-    if (monitorTabBackground != null) {
-      monitorTabBackground.setImageIcon(icon);
-    }
-  }
-
-  @Override
-  public void setPlaylistAlbumArt(@Nullable Icon icon) {
-    if (playlistTabBackground != null) {
-      playlistTabBackground.setImageIcon(icon);
-    }
   }
 
   @Nullable

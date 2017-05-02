@@ -8,7 +8,7 @@
               android:orientation="vertical"
               tools:context="com.keyboardr.bluejay.PlaybackActivity">
 
-    <ViewSwitcher
+    <ViewAnimator
         android:id="@+id/monitor_playlist_switcher"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -19,7 +19,13 @@
         <include layout="@layout/monitor"/>
 
         <include layout="@layout/playlist"/>
-    </ViewSwitcher>
+
+        <fragment
+            android:id="@+id/history"
+            android:name="com.keyboardr.bluejay.ui.history.HistoryDisplayFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </ViewAnimator>
 
 
     <android.support.constraint.ConstraintLayout
@@ -28,18 +34,6 @@
         android:layout_height="wrap_content"
         android:background="?android:colorBackgroundFloating"
         android:elevation="16dp">
-
-        <ImageView
-            android:id="@+id/bottom_tab_monitor_bg"
-            style="@style/BottomNavBackground"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/bottom_tab_monitor"
-            app:layout_constraintLeft_toLeftOf="@+id/bottom_tab_monitor"
-            app:layout_constraintRight_toRightOf="@+id/bottom_tab_monitor"
-            app:layout_constraintTop_toTopOf="@+id/bottom_tab_monitor"
-            tools:src="@mipmap/ic_launcher"/>
-
 
         <CheckedTextView
             android:id="@+id/bottom_tab_monitor"
@@ -52,19 +46,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/bottom_tab_playlist"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:layout_editor_absoluteX="0dp"/>
-
-        <ImageView
-            android:id="@+id/bottom_tab_playlist_bg"
-            style="@style/BottomNavBackground"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            app:layout_constraintBottom_toBottomOf="@+id/bottom_tab_playlist"
-            app:layout_constraintLeft_toLeftOf="@+id/bottom_tab_playlist"
-            app:layout_constraintRight_toRightOf="@+id/bottom_tab_playlist"
-            app:layout_constraintTop_toTopOf="@+id/bottom_tab_playlist"
-            tools:src="@drawable/album_art_empty"/>
+            app:layout_constraintStart_toStartOf="parent"/>
 
         <CheckedTextView
             android:id="@+id/bottom_tab_playlist"
@@ -74,10 +56,21 @@
             android:drawableTop="@drawable/ic_queue_music"
             android:text="@string/playlist"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/bottom_tab_history"
+            app:layout_constraintHorizontal_weight="1"
+            app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"/>
+
+        <CheckedTextView
+            android:id="@+id/bottom_tab_history"
+            style="@style/BottomNavTab"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:drawableTop="@drawable/ic_history"
+            android:text="@string/history"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_weight="1"
-            app:layout_constraintStart_toEndOf="@+id/bottom_tab_monitor"
-            tools:layout_editor_absoluteX="300dp"/>
+            app:layout_constraintStart_toEndOf="@+id/bottom_tab_playlist"/>
     </android.support.constraint.ConstraintLayout>
 
 </LinearLayout>
