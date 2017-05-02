@@ -485,6 +485,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       ContentValues metadataValues = new ContentValues();
       metadataValues.put(SetlistContract.NAME, setMetadata.name);
       if (setMetadata.setlistId == null) {
+        metadataValues.put(SetlistContract.DATE, System.currentTimeMillis());
         setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_SETLIST, null,
             SetlistContract.CONTENT_URI,
             metadataValues);
