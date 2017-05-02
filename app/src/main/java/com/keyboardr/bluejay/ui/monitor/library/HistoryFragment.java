@@ -141,18 +141,12 @@ public class HistoryFragment extends Fragment implements LoaderManager.LoaderCal
 
   @Override
   public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-    long checkedItemId = -1;
-    if (setlists.getCheckedItemCount() > 0) {
-      checkedItemId = setlists.getCheckedItemIds()[0];
-    }
     setlistAdapter.changeCursor(data);
-    if (checkedItemId == -1) {
-      if (setlistAdapter.getCount() > 0) {
-        setlists.setItemChecked(0, true);
-      }
+    if (setlistAdapter.getCount() > 0) {
+      setlists.setItemChecked(0, true);
     }
 
-    checkedItemId = -1;
+    long checkedItemId = -1;
     if (setlists.getCheckedItemCount() > 0) {
       checkedItemId = setlists.getCheckedItemIds()[0];
     }
