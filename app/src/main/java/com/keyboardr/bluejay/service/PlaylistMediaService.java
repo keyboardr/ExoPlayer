@@ -98,6 +98,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
     @Override
     public void onStop() {
+      if (player.getCurrentMediaIndex() + 1 < MIN_RECORDED_SETLIST_SIZE) {
+        deleteSetlist();
+      }
       stopSelf();
       stopForeground(true);
     }
@@ -252,9 +255,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   public void onDestroy() {
     super.onDestroy();
 
-    if (player.getMediaList().size() < MIN_RECORDED_SETLIST_SIZE) {
-      deleteSetlist();
-    }
     setlistQueryHandler.close();
 
     mediaSession.setActive(false);
