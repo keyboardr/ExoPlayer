@@ -24,6 +24,8 @@ import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.ViewAnimator;
 
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.MediaConnectedEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.service.PlaylistMediaService;
@@ -92,7 +94,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                 getString(R.string.shared_element_bottom_bar))
             .commit();
       }
-      getLibraryFragment().notifyConnectionChanged();
+      Buses.PLAYLIST.postSticky(new MediaConnectedEvent(true));
     }
 
     @Override
@@ -111,7 +113,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                 getString(R.string.shared_element_setlist_container))
             .replace(R.id.playlist, newFragment).commit();
       }
-      getLibraryFragment().notifyConnectionChanged();
+      Buses.PLAYLIST.postSticky(new MediaConnectedEvent(false));
     }
 
     @Override
@@ -216,11 +218,6 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
   private MonitorControlsFragment getMonitorControlsFragment() {
     return (MonitorControlsFragment) getSupportFragmentManager()
         .findFragmentById(R.id.monitor_fragment);
-  }
-
-  @Override
-  public boolean canAddToQueue() {
-    return mediaBrowser.isConnected();
   }
 
   @Override

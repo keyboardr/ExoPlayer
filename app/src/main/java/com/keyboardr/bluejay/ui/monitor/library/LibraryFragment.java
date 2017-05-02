@@ -39,6 +39,8 @@ import android.widget.ImageView;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.MediaConnectedEvent;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
@@ -47,14 +49,15 @@ import com.keyboardr.bluejay.ui.MonitorContainer;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
   public interface Holder extends MonitorContainer {
-
-    boolean canAddToQueue();
 
     void addToQueue(@NonNull MediaItem mediaItem);
 
@@ -113,7 +116,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @Override
     @DrawableRes
     public int getIconForItem(@NonNull MediaItem mediaItem) {
-      return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
+      return MediaConnectedEvent.isConnected() ? R.drawable.ic_playlist_add : 0;
     }
 
     @Override
@@ -164,6 +167,18 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     super.onDestroy();
     LocalBroadcastManager.getInstance(getContext().getApplicationContext()).unregisterReceiver
         (shortlistsReadyReceiver);
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    Buses.PLAYLIST.register(this);
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Buses.PLAYLIST.unregister(this);
   }
 
   @Override
@@ -221,7 +236,8 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     return FragmentUtils.getParent(this, Holder.class);
   }
 
-  public void notifyConnectionChanged() {
+  @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+  public void onMediaConnectedEvent(MediaConnectedEvent event) {
     adapter.notifyDataSetChanged();
   }
 
