@@ -79,6 +79,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   static final String QUEUE_MEDIA_ID = "mediaId";
 
   private static final String TAG = "PlaylistMediaService";
+  private static final int MIN_RECORDED_SETLIST_SIZE = 3;
 
   private final MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
   private final PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
@@ -251,6 +252,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   public void onDestroy() {
     super.onDestroy();
 
+    if (player.getMediaList().size() < MIN_RECORDED_SETLIST_SIZE) {
+      deleteSetlist();
+    }
     setlistQueryHandler.close();
 
     mediaSession.setActive(false);
@@ -459,7 +463,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
   @Subscribe
   public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
-    if (setMetadata != null && setMetadata.setlistId != null && event.mediaItem != null) {
+    if (hasSetlistId() && event.mediaItem != null) {
       recordItem(event.newIndex, event.mediaItem);
     }
     updatePlaybackState();
@@ -467,7 +471,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   }
 
   private void updateSetMetadata(@NonNull SetMetadata setMetadata) {
-    if (this.setMetadata != null && this.setMetadata.setlistId != null) {
+    if (hasSetlistId()) {
+      //noinspection ConstantConditions
       setMetadata = SetMetadata.withSetlistId(setMetadata, this.setMetadata.setlistId);
     }
     mediaSession.setQueueTitle(setMetadata.name);
@@ -491,8 +496,27 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
   }
 
+  private void deleteSetlist() {
+    Log.d(TAG, "deleteSetlist() called");
+    if (hasSetlistId()) {
+      //noinspection ConstantConditions
+      long setlistId = setMetadata.setlistId;
+      setlistQueryHandler.startDelete(SetlistQueryHandler.TOKEN_SETLIST, null,
+          ContentUris.withAppendedId(SetlistContract.CONTENT_URI, setlistId),
+          null, null);
+      setlistQueryHandler.startDelete(SetlistQueryHandler.TOKEN_ITEM, null,
+          SetlistItemContract.CONTENT_URI,
+          SetlistItemContract.SETLIST_ID + " = ?",
+          new String[]{Long.toString(setlistId)});
+    }
+  }
+
+  private boolean hasSetlistId() {
+    return setMetadata != null && setMetadata.setlistId != null;
+  }
+
   private void recordCurrentPlayedQueue() {
-    if (setMetadata == null || setMetadata.setlistId == null) {
+    if (!hasSetlistId()) {
       throw new IllegalStateException("Cant record queue with no setlistId");
     }
 
@@ -505,6 +529,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   }
 
   private void recordItem(int position, MediaItem mediaItem) {
+    Log.d(TAG,
+        "recordItem() called with: position = [" + position + "], mediaItem = [" + mediaItem + "]");
     ContentValues values = new ContentValues();
     values.put(SetlistItemContract.POSITION, position);
     values.put(SetlistItemContract.ARTIST, mediaItem.artist.toString());

@@ -165,6 +165,18 @@ public class MediaItem implements Parcelable {
     return Objects.hash(title, artist, albumId, duration, path, transientMediaId);
   }
 
+  @Override
+  public String toString() {
+    return "MediaItem{" +
+        "title=" + title +
+        ", artist=" + artist +
+        ", albumId=" + albumId +
+        ", duration=" + duration +
+        ", path='" + path + '\'' +
+        ", transientMediaId=" + transientMediaId +
+        '}';
+  }
+
   public static final Parcelable.Creator<MediaItem> CREATOR = new Parcelable.Creator<MediaItem>() {
     @Override
     public MediaItem createFromParcel(Parcel source) {
