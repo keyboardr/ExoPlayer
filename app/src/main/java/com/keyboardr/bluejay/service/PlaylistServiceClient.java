@@ -150,6 +150,7 @@ public class PlaylistServiceClient implements Player {
   @Override
   public void release() {
     mediaController.unregisterCallback(callback);
+    Buses.PLAYLIST.postSticky(new SetMetadataEvent(null));
     Buses.PLAYLIST.removeAllStickyEvents();
   }
 

@@ -24,10 +24,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.SetMetadataEvent;
 import com.keyboardr.bluejay.model.FilterInfo;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.provider.SetlistContract;
 import com.keyboardr.bluejay.provider.SetlistItemContract;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
+
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 /**
  * Shows a history selector and a list of tracks for the selected setlist
@@ -90,8 +96,30 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
   }
 
   @Override
+  public void onStart() {
+    super.onStart();
+    Buses.PLAYLIST.register(this);
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Buses.PLAYLIST.unregister(this);
+  }
+
+  @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+  public void onSetMetadataEvent(SetMetadataEvent event) {
+    getLoaderManager().destroyLoader(0);
+    getLoaderManager().restartLoader(0, null, this);
+  }
+
+  @Override
   public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-    return new CursorLoader(getContext(), SetlistContract.CONTENT_URI, null, null, null,
+    SetMetadata setMetadata = SetMetadataEvent.getSetMetadata(Buses.PLAYLIST);
+    Long setlistId = setMetadata == null ? null : setMetadata.setlistId;
+    return new CursorLoader(getContext(), SetlistContract.CONTENT_URI, null,
+        SetlistContract._ID + " != ?",
+        new String[]{String.valueOf(setlistId == null ? -1 : setlistId)},
         SetlistContract.DATE + " DESC");
   }
 
