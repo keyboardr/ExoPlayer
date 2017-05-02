@@ -1,16 +1,9 @@
 package com.keyboardr.bluejay.ui.history;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.AsyncQueryHandler;
-import android.content.ContentUris;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
@@ -29,7 +22,6 @@ import com.keyboardr.bluejay.bus.event.SetMetadataEvent;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.provider.SetlistContract;
-import com.keyboardr.bluejay.provider.SetlistItemContract;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -52,9 +44,8 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                            @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.history, container, false);
-    final Context context = getContext();
-    setlistAdapter = new SimpleCursorAdapter(context, android.R.layout.simple_spinner_item, null,
-        new String[]{SetlistContract.NAME}, new int[]{android.R.id.text1}, 0);
+    setlistAdapter = new SimpleCursorAdapter(getContext(), android.R.layout.simple_spinner_item,
+        null, new String[]{SetlistContract.NAME}, new int[]{android.R.id.text1}, 0);
     setlistAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner = (Spinner) view.findViewById(R.id.setlist_selector);
     spinner.setAdapter(setlistAdapter);
@@ -120,7 +111,7 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     return new CursorLoader(getContext(), SetlistContract.CONTENT_URI, null,
         SetlistContract._ID + " != ?",
         new String[]{String.valueOf(setlistId == null ? -1 : setlistId)},
-        SetlistContract.DATE + " DESC");
+        SetlistContract.DATE + " ASC");
   }
 
   @Override
@@ -152,49 +143,6 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     renameButton.setEnabled(false);
     deleteButton.setEnabled(false);
     getChildFragmentManager().beginTransaction().hide(getLibraryFragment()).commit();
-  }
-
-  public static class DeleteSetlistDialogFragment extends DialogFragment {
-    private static final String ARG_NAME = "name";
-    private static final String ARG_ID = "id";
-
-    public static DeleteSetlistDialogFragment newInstance(@NonNull String name, long id) {
-      DeleteSetlistDialogFragment fragment = new DeleteSetlistDialogFragment();
-      Bundle args = new Bundle();
-      args.putString(ARG_NAME, name);
-      args.putLong(ARG_ID, id);
-      fragment.setArguments(args);
-      return fragment;
-    }
-
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-      return new AlertDialog.Builder(getContext()).setTitle(R.string.delete_setlist)
-          .setMessage(
-              getString(R.string.confirm_delete_setlist, getArguments().getString(ARG_NAME)))
-          .setPositiveButton(android.R.string.yes,
-              new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  AsyncQueryHandler asyncQueryHandler = new AsyncQueryHandler(
-                      getContext().getContentResolver()) {
-                  };
-                  long id = getArguments().getLong(ARG_ID);
-                  asyncQueryHandler.startDelete(0, null, ContentUris.withAppendedId
-                      (SetlistContract.CONTENT_URI, id), null, null);
-                  asyncQueryHandler.startDelete(0, null, SetlistItemContract.CONTENT_URI,
-                      SetlistItemContract.SETLIST_ID + "=?", new String[]{Long.toString(id)});
-                  dialogInterface.dismiss();
-                }
-              }).setNegativeButton(android.R.string.cancel,
-              new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  dialogInterface.cancel();
-                }
-              }).create();
-    }
   }
 
 }

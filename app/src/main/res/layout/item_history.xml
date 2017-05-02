@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.keyboardr.bluejay.util.CheckableLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                  xmlns:tools="http://schemas.android.com/tools"
+                                                  android:layout_width="match_parent"
+                                                  android:layout_height="wrap_content"
+                                                  android:background="@drawable/selectable_background">
+
+    <TextView
+        android:id="@android:id/text1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:minHeight="?android:attr/listPreferredItemHeightSmall"
+        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+        android:textAppearance="?android:attr/textAppearanceListItemSmall"
+        tools:text="List item"/>
+
+    <ImageView
+        android:id="@+id/setlist_more"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:background="?selectableItemBackgroundBorderless"
+        android:padding="8dp"
+        android:src="@drawable/ic_more_vert_black"
+        android:tint="?android:colorForeground"/>
+</com.keyboardr.bluejay.util.CheckableLinearLayout>

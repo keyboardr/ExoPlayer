@@ -7,6 +7,17 @@
     android:layout_height="match_parent"
     >
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/shortlists"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
+        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
+        android:paddingTop="8dp"
+        android:clipToPadding="false"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_shortlist"/>
+
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -44,11 +55,11 @@
                 android:id="@+id/sort_direction"
                 android:layout_column="2"
                 android:layout_row="0"
+                android:background="?android:selectableItemBackgroundBorderless"
                 android:button="@drawable/asl_down_up_shuffle"
                 android:gravity="center_vertical|start"
-                android:textOn="@string/up"
                 android:textOff="@string/down"
-                android:background="?android:selectableItemBackgroundBorderless"
+                android:textOn="@string/up"
                 />
 
             <TextView
@@ -107,15 +118,4 @@
             app:layout_scrollFlags="snap"
             tools:ignore="RtlSymmetry"/>
     </android.support.design.widget.AppBarLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/shortlists"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:paddingEnd="?android:attr/listPreferredItemPaddingEnd"
-        android:paddingStart="?android:attr/listPreferredItemPaddingStart"
-        android:paddingTop="8dp"
-        android:clipToPadding="false"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_shortlist"/>
 </android.support.design.widget.CoordinatorLayout>

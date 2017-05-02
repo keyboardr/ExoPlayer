@@ -20,7 +20,7 @@
 
         <fragment
             android:id="@+id/filter_fragment"
-            class="com.keyboardr.bluejay.ui.monitor.library.FilterFragment"
+            class="com.keyboardr.bluejay.ui.monitor.library.FilterHolder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             tools:layout="@layout/fragment_filter"/>

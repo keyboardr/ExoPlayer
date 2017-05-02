@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:baselineAligned="false"
-    android:orientation="vertical"
-    tools:context="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment">
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:baselineAligned="false"
+              android:orientation="vertical"
+              tools:context="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment">
 
     <include
         layout="@layout/fragment_recycler"
         android:layout_width="match_parent"
         android:layout_height="240dp"
-        android:layout_weight="2" />
+        android:layout_weight="2"/>
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -20,8 +20,9 @@
 
         <fragment
             android:id="@+id/filter_fragment"
-            class="com.keyboardr.bluejay.ui.monitor.library.FilterFragment"
+            class="com.keyboardr.bluejay.ui.monitor.library.FilterHolder"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            tools:layout="@layout/fragment_filter"/>
     </FrameLayout>
 </LinearLayout>
