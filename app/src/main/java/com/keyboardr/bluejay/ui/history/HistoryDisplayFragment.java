@@ -53,6 +53,8 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     spinner = (Spinner) view.findViewById(R.id.setlist_selector);
     spinner.setAdapter(setlistAdapter);
     spinner.setOnItemSelectedListener(this);
+    spinner.setEmptyView(view.findViewById(R.id.setlist_empty));
+
     renameButton = view.findViewById(R.id.rename);
     renameButton.setOnClickListener(new View.OnClickListener() {
       @Override

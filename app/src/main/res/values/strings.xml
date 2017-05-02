@@ -52,6 +52,7 @@
     <string name="delete">Delete</string>
     <string name="delete_setlist">Delete setlist</string>
     <string name="confirm_delete_setlist">Are you sure you want to delete %s?</string>
+    <string name="no_setlists_found">No setlists found</string>
 
     <string-array name="sort_methods">
         <item>Default</item>

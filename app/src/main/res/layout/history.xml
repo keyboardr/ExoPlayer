@@ -33,6 +33,16 @@
             android:layout_marginStart="24dp"
             tools:listitem="@android:layout/simple_spinner_item"/>
 
+        <TextView
+            android:id="@+id/setlist_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            android:text="@string/no_setlists_found"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            android:visibility="gone"/>
+
         <android.support.v4.widget.Space
             android:layout_width="match_parent"
             android:layout_height="0dp"
