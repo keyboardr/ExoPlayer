@@ -1,13 +1,15 @@
 package com.keyboardr.bluejay.model;
 
-import android.os.Parcel;
-import android.os.Parcelable;
+import android.os.Bundle;
 
 /**
  * Info about a set that does not change from the time it is started until it ends
  */
 
-public class SetMetadata implements Parcelable {
+public class SetMetadata {
+  private static final String ARG_NAME = "name";
+  private static final String ARG_IS_SOUND_CHECK = "isSoundCheck";
+
   public final String name;
   public final boolean isSoundCheck;
 
@@ -16,32 +18,15 @@ public class SetMetadata implements Parcelable {
     this.isSoundCheck = isSoundCheck;
   }
 
-  protected SetMetadata(Parcel in) {
-    this.name = in.readString();
-    this.isSoundCheck = in.readByte() != 0;
+  public SetMetadata(Bundle bundle) {
+    this.name = bundle.getString(ARG_NAME);
+    this.isSoundCheck = bundle.getBoolean(ARG_IS_SOUND_CHECK);
   }
 
-  @Override
-  public void writeToParcel(Parcel dest, int flags) {
-    dest.writeString(this.name);
-    dest.writeByte(this.isSoundCheck ? (byte) 1 : (byte) 0);
+  public Bundle toBundle() {
+    Bundle bundle = new Bundle();
+    bundle.putString(ARG_NAME, name);
+    bundle.putBoolean(ARG_IS_SOUND_CHECK, isSoundCheck);
+    return bundle;
   }
-
-  @Override
-  public int describeContents() {
-    return 0;
-  }
-
-  public static final Parcelable.Creator<SetMetadata> CREATOR = new Parcelable
-      .Creator<SetMetadata>() {
-    @Override
-    public SetMetadata createFromParcel(Parcel source) {
-      return new SetMetadata(source);
-    }
-
-    @Override
-    public SetMetadata[] newArray(int size) {
-      return new SetMetadata[size];
-    }
-  };
 }

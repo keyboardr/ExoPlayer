@@ -73,7 +73,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
       Fragment existingFrag = getSupportFragmentManager().findFragmentById(R.id.playlist);
       if (pendingMetadata != null) {
         Bundle extras = new Bundle();
-        extras.putParcelable(PlaylistMediaService.EXTRA_SET_METADATA, pendingMetadata);
+        extras.putParcelable(PlaylistMediaService.EXTRA_SET_METADATA, pendingMetadata.toBundle());
         try {
           new MediaControllerCompat(PlaybackActivity.this, mediaBrowser.getSessionToken())
               .sendCommand(PlaylistMediaService.COMMAND_SET_METADATA, extras, null);

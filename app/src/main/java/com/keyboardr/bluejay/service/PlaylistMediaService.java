@@ -100,10 +100,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       extras.setClassLoader(getClassLoader());
       switch (command) {
         case COMMAND_SET_METADATA:
-          SetMetadata setMetadata = extras.getParcelable(EXTRA_SET_METADATA);
+          Bundle metadataBundle = extras.getParcelable(EXTRA_SET_METADATA);
+          SetMetadata setMetadata = metadataBundle == null ? null : new SetMetadata(metadataBundle);
           mediaSession.setQueueTitle(setMetadata != null ? setMetadata.name : "");
           Bundle sessionExtras = getSessionExtras();
-          sessionExtras.putParcelable(EXTRA_SET_METADATA, setMetadata);
+          sessionExtras.putParcelable(EXTRA_SET_METADATA,
+              setMetadata != null ? setMetadata.toBundle() : null);
           mediaSession.setExtras(sessionExtras);
           break;
         case COMMAND_SET_OUTPUT:

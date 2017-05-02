@@ -124,7 +124,9 @@ public class PlaylistServiceClient implements Player {
       super.onExtrasChanged(extras);
       extras.setClassLoader(getClass().getClassLoader());
       SetMetadata oldMetadata = SetMetadataEvent.getSetMetadata(Buses.PLAYLIST);
-      SetMetadata extrasMetadata = extras.getParcelable(PlaylistMediaService.EXTRA_SET_METADATA);
+      Bundle extrasMetadataBundle = extras.getParcelable(PlaylistMediaService.EXTRA_SET_METADATA);
+      SetMetadata extrasMetadata = extrasMetadataBundle == null ? null :
+          new SetMetadata(extrasMetadataBundle);
       if (!Objects.equals(oldMetadata, extrasMetadata)) {
         Buses.PLAYLIST.postSticky(new SetMetadataEvent(extrasMetadata));
       }

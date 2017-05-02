@@ -81,7 +81,6 @@ public class NoSetFragment extends Fragment {
     newSetlist.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        // TODO: 4/23/2017 add real metadata
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class)
             .startNewSetlist(new SetMetadata(newSetlistName.getText().toString(), false));
       }
