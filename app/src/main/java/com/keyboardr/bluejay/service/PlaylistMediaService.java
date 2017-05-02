@@ -3,13 +3,17 @@ package com.keyboardr.bluejay.service;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
@@ -34,6 +38,8 @@ import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
+import com.keyboardr.bluejay.provider.SetlistContract;
+import com.keyboardr.bluejay.provider.SetlistItemContract;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -101,12 +107,11 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       switch (command) {
         case COMMAND_SET_METADATA:
           Bundle metadataBundle = extras.getParcelable(EXTRA_SET_METADATA);
-          SetMetadata setMetadata = metadataBundle == null ? null : new SetMetadata(metadataBundle);
-          mediaSession.setQueueTitle(setMetadata != null ? setMetadata.name : "");
-          Bundle sessionExtras = getSessionExtras();
-          sessionExtras.putParcelable(EXTRA_SET_METADATA,
-              setMetadata != null ? setMetadata.toBundle() : null);
-          mediaSession.setExtras(sessionExtras);
+          if (metadataBundle == null) {
+            throw new IllegalArgumentException("No SetMetadata in extras");
+          }
+          SetMetadata setMetadata = new SetMetadata(metadataBundle);
+          updateSetMetadata(setMetadata);
           break;
         case COMMAND_SET_OUTPUT:
           int outputType = extras.getInt(EXTRA_OUTPUT_TYPE);
@@ -168,6 +173,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
   };
 
+  private SetlistQueryHandler setlistQueryHandler;
+
+  private SetMetadata setMetadata;
   private PowerManager.WakeLock wakeLock;
   private List<MediaSessionCompat.QueueItem> queue;
   private long finishTime = -1;
@@ -184,6 +192,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     stateBuilder.addCustomAction(COMMAND_MOVE, COMMAND_MOVE, R.drawable.ic_drag_handle);
     stateBuilder.addCustomAction(COMMAND_SET_OUTPUT, COMMAND_SET_OUTPUT,
         R.drawable.ic_more_vert_black);
+
+    setlistQueryHandler = new SetlistQueryHandler(this);
 
     mediaSession = new MediaSessionCompat(this, TAG);
     mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
@@ -240,6 +250,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   @Override
   public void onDestroy() {
     super.onDestroy();
+
+    setlistQueryHandler.close();
+
     mediaSession.setActive(false);
     mediaSession.release();
     mediaSession = null;
@@ -446,7 +459,87 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
   @Subscribe
   public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
+    if (setMetadata != null && setMetadata.setlistId != null && event.mediaItem != null) {
+      recordItem(event.newIndex, event.mediaItem);
+    }
     updatePlaybackState();
     updateMetadata();
+  }
+
+  private void updateSetMetadata(@NonNull SetMetadata setMetadata) {
+    if (this.setMetadata != null && this.setMetadata.setlistId != null) {
+      setMetadata = SetMetadata.withSetlistId(setMetadata, this.setMetadata.setlistId);
+    }
+    mediaSession.setQueueTitle(setMetadata.name);
+    Bundle sessionExtras = getSessionExtras();
+    sessionExtras.putParcelable(EXTRA_SET_METADATA, setMetadata.toBundle());
+    mediaSession.setExtras(sessionExtras);
+    this.setMetadata = setMetadata;
+
+    if (!setMetadata.isSoundCheck) {
+      ContentValues metadataValues = new ContentValues();
+      metadataValues.put(SetlistContract.NAME, setMetadata.name);
+      if (setMetadata.setlistId == null) {
+        setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_SETLIST, null,
+            SetlistContract.CONTENT_URI,
+            metadataValues);
+      } else {
+        setlistQueryHandler.startUpdate(SetlistQueryHandler.TOKEN_SETLIST, null,
+            ContentUris.withAppendedId(SetlistContract.CONTENT_URI, setMetadata.setlistId),
+            metadataValues, null, null);
+      }
+    }
+  }
+
+  private void recordCurrentPlayedQueue() {
+    if (setMetadata == null || setMetadata.setlistId == null) {
+      throw new IllegalStateException("Cant record queue with no setlistId");
+    }
+
+    List<PlaylistPlayer.PlaylistItem> mediaItems = player.getMediaList();
+    int currentIndex = player.getCurrentMediaIndex();
+    for (int i = 0; i < mediaItems.size() && i <= currentIndex; i++) {
+      MediaItem mediaItem = mediaItems.get(i).mediaItem;
+      recordItem(i, mediaItem);
+    }
+  }
+
+  private void recordItem(int position, MediaItem mediaItem) {
+    ContentValues values = new ContentValues();
+    values.put(SetlistItemContract.POSITION, position);
+    values.put(SetlistItemContract.ARTIST, mediaItem.artist.toString());
+    values.put(SetlistItemContract.TITLE, mediaItem.title.toString());
+    values.put(SetlistItemContract.MEDIA_ID, mediaItem.getTransientId());
+    values.put(SetlistItemContract.SETLIST_ID, setMetadata.setlistId);
+    setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_ITEM, null, SetlistItemContract
+        .CONTENT_URI, values);
+  }
+
+  private static class SetlistQueryHandler extends AsyncQueryHandler {
+    public static final int TOKEN_SETLIST = 0;
+    public static final int TOKEN_ITEM = 1;
+
+    @Nullable
+    private PlaylistMediaService service;
+
+    public SetlistQueryHandler(@NonNull PlaylistMediaService service) {
+      super(service.getContentResolver());
+      this.service = service;
+    }
+
+    @Override
+    protected void onInsertComplete(int token, Object cookie, Uri uri) {
+      if (token == TOKEN_SETLIST) {
+        if (service != null) {
+          service.updateSetMetadata(SetMetadata.withSetlistId(service.setMetadata,
+              ContentUris.parseId(uri)));
+          service.recordCurrentPlayedQueue();
+        }
+      }
+    }
+
+    public void close() {
+      this.service = null;
+    }
   }
 }

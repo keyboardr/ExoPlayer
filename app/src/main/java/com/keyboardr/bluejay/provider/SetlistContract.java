@@ -6,8 +6,8 @@ import com.tjeannin.provigen.ProviGenBaseContract;
 import com.tjeannin.provigen.annotation.Column;
 import com.tjeannin.provigen.annotation.ContentUri;
 
-public interface ShortlistsContract extends ProviGenBaseContract {
-  String TABLE = "shortlists";
+public interface SetlistContract extends ProviGenBaseContract {
+  String TABLE = "setlists";
 
   @ContentUri
   Uri CONTENT_URI = BluejayProvider.generateContentUri(TABLE);
@@ -16,5 +16,5 @@ public interface ShortlistsContract extends ProviGenBaseContract {
   String NAME = "name";
 
   @Column(Column.Type.INTEGER)
-  String POSITION = "position";
+  String DATE = "date";
 }

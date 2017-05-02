@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.provider;
 
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,8 +20,13 @@ public class BluejayProvider extends ProviGenProvider {
 
   private static final String DB_NAME = "bluejaydb";
   private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
-      MetadataContract.class};
-  public static final int VERSION = 4;
+      MetadataContract.class, SetlistContract.class, SetlistItemContract.class};
+  public static final int VERSION = 5;
+
+  static Uri generateContentUri(@NonNull String table) {
+    return Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + BluejayProvider.AUTHORITY + "/"
+        + table);
+  }
 
   @Override
   public SQLiteOpenHelper openHelper(Context context) {

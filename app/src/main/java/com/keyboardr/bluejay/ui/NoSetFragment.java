@@ -82,7 +82,7 @@ public class NoSetFragment extends Fragment {
       @Override
       public void onClick(View view) {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class)
-            .startNewSetlist(new SetMetadata(newSetlistName.getText().toString(), false));
+            .startNewSetlist(new SetMetadata(newSetlistName.getText().toString(), null, false));
       }
     });
 
@@ -109,7 +109,7 @@ public class NoSetFragment extends Fragment {
       @Override
       public void onClick(View v) {
         FragmentUtils.getParentChecked(NoSetFragment.this, Holder.class)
-            .startNewSetlist(new SetMetadata(getString(R.string.sound_check), true));
+            .startNewSetlist(new SetMetadata(getString(R.string.sound_check), null, true));
       }
     });
   }

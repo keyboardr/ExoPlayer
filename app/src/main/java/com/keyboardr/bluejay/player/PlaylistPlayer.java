@@ -100,6 +100,9 @@ public class PlaylistPlayer extends AbsPlayer {
     if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
       prepareNextTrack(player);
+      if (currentIndex == mediaItems.size() - 1) {
+        getBus().postSticky(new TrackIndexEvent(currentIndex, currentIndex, mediaItem));
+      }
     }
     return item;
   }
