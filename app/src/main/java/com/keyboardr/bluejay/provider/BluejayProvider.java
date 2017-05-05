@@ -21,7 +21,7 @@ public class BluejayProvider extends ProviGenProvider {
   private static final String DB_NAME = "bluejaydb";
   private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
       MetadataContract.class, SetlistContract.class, SetlistItemContract.class};
-  public static final int VERSION = 5;
+  public static final int VERSION = 6;
 
   public static final String PARAM_GROUP_BY = "groupBy";
 
