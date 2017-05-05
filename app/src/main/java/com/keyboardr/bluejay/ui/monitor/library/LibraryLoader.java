@@ -136,12 +136,16 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
         int artistColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.ARTIST);
         int titleColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.TITLE);
         int mediaIdColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.MEDIA_ID);
+        int durationColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.DURATION);
         do {
           long mediaId = cursor.getLong(mediaIdColumn);
           MediaItem mediaItem = getMediaItemFromId(mediaId);
           if (mediaItem == null) {
-            mediaItem = MediaItem.build().setArtist(cursor.getString(artistColumn)).setTitle(cursor
-                .getString(titleColumn)).make(mediaId);
+            mediaItem = MediaItem.build()
+                .setArtist(cursor.getString(artistColumn))
+                .setTitle(cursor.getString(titleColumn))
+                .setDuration(cursor.getLong(durationColumn))
+                .make(mediaId);
           }
           result.add(mediaItem);
         } while (cursor.moveToNext() && !canceled);

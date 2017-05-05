@@ -537,6 +537,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     values.put(SetlistItemContract.ARTIST, mediaItem.artist.toString());
     values.put(SetlistItemContract.TITLE, mediaItem.title.toString());
     values.put(SetlistItemContract.MEDIA_ID, mediaItem.getTransientId());
+    values.put(SetlistItemContract.DURATION, mediaItem.getDuration());
     values.put(SetlistItemContract.SETLIST_ID, setMetadata.setlistId);
     setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_ITEM, null, SetlistItemContract
         .CONTENT_URI, values);

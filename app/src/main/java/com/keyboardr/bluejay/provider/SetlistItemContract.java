@@ -27,4 +27,6 @@ public interface SetlistItemContract extends ProviGenBaseContract {
   @Column(Column.Type.TEXT)
   String ARTIST = "artist";
 
+  @Column(Column.Type.INTEGER)
+  String DURATION = "duration";
 }
