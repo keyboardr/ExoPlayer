@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -125,7 +124,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     this.mediaItem = mediaItem;
 
     title.setText(mediaItem.title);
-    CharSequence subtext = TextUtils.concat(mediaItem.artist, " - ",
+    CharSequence subtext = subText.getContext().getString(R.string.summary_format,
+        mediaItem.artist,
         MathUtil.getSongDuration(mediaItem.getDuration()));
     subText.setText(subtext);
 
