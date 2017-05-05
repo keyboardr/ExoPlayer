@@ -36,7 +36,6 @@ public class MediaItem implements Parcelable {
     return new Builder();
   }
 
-  @WorkerThread
   private MediaItem(CharSequence title, CharSequence artist, long albumId,
                     long duration, String path, long transientMediaId) {
     this.title = title;
@@ -45,6 +44,10 @@ public class MediaItem implements Parcelable {
     this.duration = duration;
     this.path = path;
     this.transientMediaId = transientMediaId;
+  }
+
+  public boolean hasPath() {
+    return !TextUtils.isEmpty(path);
   }
 
   @NonNull
@@ -81,7 +84,6 @@ public class MediaItem implements Parcelable {
     return albumId;
   }
 
-  @SuppressWarnings("WeakerAccess")
   public static class Builder {
     private CharSequence title;
     private CharSequence artist;
