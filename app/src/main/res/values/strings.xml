@@ -53,6 +53,7 @@
     <string name="delete_setlist">Delete setlist</string>
     <string name="confirm_delete_setlist">Are you sure you want to delete %s?</string>
     <string name="no_setlists_found">No setlists found</string>
+    <string name="summary_format">%1$s \u2022 %2$s</string>
 
     <string-array name="sort_methods">
         <item>Default</item>
@@ -61,4 +62,9 @@
         <item>Duration</item>
         <item>Shuffle</item>
     </string-array>
+
+    <plurals name="tracks">
+        <item quantity="one">%d Track</item>
+        <item quantity="other">%d Tracks</item>
+    </plurals>
 </resources>

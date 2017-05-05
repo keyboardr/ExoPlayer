@@ -1,5 +1,7 @@
 package com.keyboardr.bluejay.ui.history;
 
+import android.animation.LayoutTransition;
+import android.content.AsyncQueryHandler;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -21,8 +23,11 @@ import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.SetMetadataEvent;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.SetMetadata;
+import com.keyboardr.bluejay.provider.BluejayProvider;
 import com.keyboardr.bluejay.provider.SetlistContract;
+import com.keyboardr.bluejay.provider.SetlistItemContract;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
+import com.keyboardr.bluejay.util.MathUtil;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -36,21 +41,26 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
 
   private SimpleCursorAdapter setlistAdapter;
   private Spinner spinner;
+  private TextView setlistSummary;
   private View renameButton;
   private View deleteButton;
+
+  private AsyncQueryHandler setlistDataHandler;
 
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                            @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.history, container, false);
-    setlistAdapter = new SimpleCursorAdapter(getContext(), android.R.layout.simple_spinner_item,
+    setlistAdapter = new SimpleCursorAdapter(getContext(), R.layout.item_history_spinner,
         null, new String[]{SetlistContract.NAME}, new int[]{android.R.id.text1}, 0);
     setlistAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
     spinner = (Spinner) view.findViewById(R.id.setlist_selector);
     spinner.setAdapter(setlistAdapter);
     spinner.setOnItemSelectedListener(this);
     spinner.setEmptyView(view.findViewById(R.id.setlist_empty));
+
+    setlistSummary = (TextView) view.findViewById(R.id.setlist_summary);
 
     renameButton = view.findViewById(R.id.rename);
     renameButton.setOnClickListener(new View.OnClickListener() {
@@ -73,6 +83,13 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     return view;
   }
 
+  @Override
+  public void onDestroyView() {
+    super.onDestroyView();
+    setlistDataHandler.removeCallbacksAndMessages(null);
+    setlistDataHandler = null;
+  }
+
   @NonNull
   private String getSelectedSetlistName() {
     return ((TextView) spinner.getSelectedView().findViewById(android.R.id.text1))
@@ -82,6 +99,41 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    setlistDataHandler = new AsyncQueryHandler(getContext().getContentResolver()) {
+      @Override
+      protected void onQueryComplete(int token, Object cookie, Cursor cursor) {
+        int numTracks = -1;
+        long duration = -1;
+        if (cursor != null) {
+          try {
+            if (cursor.moveToFirst()) {
+              numTracks = cursor.getInt(0);
+              duration = cursor.getLong(1);
+            }
+          } finally {
+            cursor.close();
+          }
+        }
+
+        if (numTracks == -1 || duration == -1) {
+          setlistSummary.setVisibility(View.INVISIBLE);
+        } else {
+          setlistSummary.setVisibility(View.VISIBLE);
+          String tracksString = getContext().getResources().getQuantityString(R.plurals.tracks,
+              numTracks, numTracks);
+          setlistSummary.setText(getString(R.string.summary_format,
+              tracksString,
+              MathUtil.getSongDuration(duration)
+          ));
+        }
+
+        ViewGroup summaryParent = (ViewGroup) setlistSummary.getParent();
+        if (summaryParent.getLayoutTransition() == null) {
+          summaryParent.setLayoutTransition(new LayoutTransition());
+        }
+      }
+    };
+
     onNothingSelected(spinner);
     getLoaderManager().initLoader(0, null, this);
   }
@@ -131,6 +183,18 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
 
   @Override
   public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+    setlistDataHandler.removeCallbacksAndMessages(null);
+    setlistDataHandler.startQuery(0, null,
+        SetlistItemContract.CONTENT_URI.buildUpon()
+            .appendQueryParameter(BluejayProvider.PARAM_GROUP_BY, SetlistItemContract.SETLIST_ID)
+            .build(),
+        new String[]{
+            "count(" + SetlistItemContract.SETLIST_ID + ")",
+            "sum(" + SetlistItemContract.DURATION + ")"
+        },
+        SetlistItemContract.SETLIST_ID + "=?",
+        new String[]{Long.toString(id)},
+        null);
     getLibraryFragment().setLibraryFilter(new FilterInfo(id));
     renameButton.setEnabled(true);
     deleteButton.setEnabled(true);
@@ -142,6 +206,8 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     getLibraryFragment().setLibraryFilter(new FilterInfo(-1));
     renameButton.setEnabled(false);
     deleteButton.setEnabled(false);
+    setlistDataHandler.removeCallbacksAndMessages(null);
+    setlistSummary.setVisibility(View.INVISIBLE);
     getChildFragmentManager().beginTransaction().hide(getLibraryFragment()).commit();
   }
 
