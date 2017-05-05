@@ -23,6 +23,8 @@ public class BluejayProvider extends ProviGenProvider {
       MetadataContract.class, SetlistContract.class, SetlistItemContract.class};
   public static final int VERSION = 5;
 
+  public static final String PARAM_GROUP_BY = "groupBy";
+
   static Uri generateContentUri(@NonNull String table) {
     return Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + BluejayProvider.AUTHORITY + "/"
         + table);
@@ -58,7 +60,9 @@ public class BluejayProvider extends ProviGenProvider {
     table = swapQueryTableIfNecessary(table);
     switch (uriMatcher.match(uri)) {
       case ITEM:
-        cursor = database.query(table, projection, selection, selectionArgs, "", "", sortOrder);
+        String groupBy = uri.getQueryParameter(PARAM_GROUP_BY);
+        cursor = database.query(table, projection, selection, selectionArgs,
+            groupBy == null ? "" : groupBy, "", sortOrder);
         break;
       case ITEM_ID:
         String itemId = String.valueOf(ContentUris.parseId(uri));
@@ -92,7 +96,7 @@ public class BluejayProvider extends ProviGenProvider {
       case MediaShortlistContract.TABLE:
         return MediaShortlistContract.TABLE + " LEFT JOIN "
             + ShortlistsContract.TABLE + " ON "
-            + MediaShortlistContract.MEDIA_ID + " = " +
+            + MediaShortlistContract.SHORTLIST_ID + " = " +
             ShortlistsContract.TABLE + "." + ShortlistsContract._ID;
       default:
         return table;
