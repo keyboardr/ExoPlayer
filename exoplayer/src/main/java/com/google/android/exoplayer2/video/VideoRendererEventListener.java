@@ -46,7 +46,7 @@ public interface VideoRendererEventListener {
    * @param initializationDurationMs The time taken to initialize the decoder in milliseconds.
    */
   void onVideoDecoderInitialized(String decoderName, long initializedTimestampMs,
-                                 long initializationDurationMs);
+      long initializationDurationMs);
 
   /**
    * Called when the format of the media being consumed by the renderer changes.
@@ -86,7 +86,7 @@ public interface VideoRendererEventListener {
    *     content.
    */
   void onVideoSizeChanged(int width, int height, int unappliedRotationDegrees,
-                          float pixelWidthHeightRatio);
+      float pixelWidthHeightRatio);
 
   /**
    * Called when a frame is rendered for the first time since setting the surface, and when a frame

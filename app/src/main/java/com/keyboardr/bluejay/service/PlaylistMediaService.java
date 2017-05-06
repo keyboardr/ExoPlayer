@@ -3,13 +3,17 @@ package com.keyboardr.bluejay.service;
 import android.app.Activity;
 import android.app.Notification;
 import android.app.PendingIntent;
+import android.content.AsyncQueryHandler;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
@@ -31,8 +35,11 @@ import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.player.Player;
 import com.keyboardr.bluejay.player.PlaylistPlayer;
+import com.keyboardr.bluejay.provider.SetlistContract;
+import com.keyboardr.bluejay.provider.SetlistItemContract;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -47,22 +54,32 @@ import java.util.Objects;
 public class PlaylistMediaService extends MediaBrowserServiceCompat
     implements Player.PlaybackListener {
 
-  public static final String ACTION_CHECK_IS_ALIVE = "checkIsAlive";
+  public static final String ACTION_CHECK_IS_ALIVE = "com.keyboardr.bluejay.service"
+      + ".PlaylistMediaService.checkIsAlive";
 
+  public static final String COMMAND_SET_METADATA = "setMetadata";
   static final String COMMAND_SET_OUTPUT = "setOutput";
   static final String COMMAND_ADD_TO_QUEUE = "addToQueue";
   static final String COMMAND_MOVE = "move";
+  static final String COMMAND_SET_VOLUME = "setVolume";
+
+  public static final String EXTRA_SET_METADATA = "setMetadata";
   static final String EXTRA_MEDIA_ITEM = "PlaylistMediaService.mediaItem";
   static final String EXTRA_OUTPUT_TYPE = "outputId";
   static final String EXTRA_INDEX = "index";
   static final String EXTRA_NEW_INDEX = "newIndex";
-  static final String EXTRA_CONTINUE_ON_DONE = "continueOnDone";
-  static final String EXTRA_MEDIA_ID = "mediaId";
-  static final String EXTRA_ALBUM_ID = "albumId";
-  static final String EXTRA_DURATION = "duration";
-  static final String EXTRA_FINISH_TIME = "finishTime";
+  static final String EXTRA_NEW_VOLUME = "newVolume";
+  static final String PLAYSTATE_MEDIA_ITEM = "mediaItem";
+  static final String PLAYSTATE_INDEX = "index";
+  static final String PLAYSTATE_CONTINUE_ON_DONE = "continueOnDone";
+  static final String PLAYSTATE_FINISH_TIME = "finishTime";
+  static final String PLAYSTATE_VOLUME = "volume";
+  static final String QUEUE_ALBUM_ID = "albumId";
+  static final String QUEUE_DURATION = "duration";
+  static final String QUEUE_MEDIA_ID = "mediaId";
 
   private static final String TAG = "PlaylistMediaService";
+  private static final int MIN_RECORDED_SETLIST_SIZE = 3;
 
   private final MediaMetadataCompat.Builder metadataBuilder = new MediaMetadataCompat.Builder();
   private final PlaybackStateCompat.Builder stateBuilder = new PlaybackStateCompat.Builder();
@@ -81,6 +98,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
 
     @Override
     public void onStop() {
+      if (player.getCurrentMediaIndex() + 1 < MIN_RECORDED_SETLIST_SIZE) {
+        deleteSetlist();
+      }
       stopSelf();
       stopForeground(true);
     }
@@ -89,6 +109,14 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     public void onCommand(String command, Bundle extras, ResultReceiver cb) {
       extras.setClassLoader(getClassLoader());
       switch (command) {
+        case COMMAND_SET_METADATA:
+          Bundle metadataBundle = extras.getParcelable(EXTRA_SET_METADATA);
+          if (metadataBundle == null) {
+            throw new IllegalArgumentException("No SetMetadata in extras");
+          }
+          SetMetadata setMetadata = new SetMetadata(metadataBundle);
+          updateSetMetadata(setMetadata);
+          break;
         case COMMAND_SET_OUTPUT:
           int outputType = extras.getInt(EXTRA_OUTPUT_TYPE);
           if (outputType == AudioDeviceInfo.TYPE_UNKNOWN) {
@@ -130,6 +158,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
             queue.add(newIndex, queue.remove(oldIndex));
           }
           mediaSession.setQueue(queue);
+          break;
+        case COMMAND_SET_VOLUME:
+          player.setVolume(extras.getFloat(EXTRA_NEW_VOLUME, 1));
+          break;
       }
     }
 
@@ -145,6 +177,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     }
   };
 
+  private SetlistQueryHandler setlistQueryHandler;
+
+  private SetMetadata setMetadata;
   private PowerManager.WakeLock wakeLock;
   private List<MediaSessionCompat.QueueItem> queue;
   private long finishTime = -1;
@@ -161,6 +196,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     stateBuilder.addCustomAction(COMMAND_MOVE, COMMAND_MOVE, R.drawable.ic_drag_handle);
     stateBuilder.addCustomAction(COMMAND_SET_OUTPUT, COMMAND_SET_OUTPUT,
         R.drawable.ic_more_vert_black);
+
+    setlistQueryHandler = new SetlistQueryHandler(this);
 
     mediaSession = new MediaSessionCompat(this, TAG);
     mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS);
@@ -217,6 +254,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   @Override
   public void onDestroy() {
     super.onDestroy();
+
+    setlistQueryHandler.close();
+
     mediaSession.setActive(false);
     mediaSession.release();
     mediaSession = null;
@@ -247,12 +287,19 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   }
 
   private void updateOutputType() {
+    Bundle extras = getSessionExtras();
+    extras.putInt(EXTRA_OUTPUT_TYPE, player.getAudioOutputType());
+    mediaSession.setExtras(extras);
+  }
+
+  @NonNull
+  private Bundle getSessionExtras() {
     Bundle extras = mediaSession.getController().getExtras();
     if (extras == null) {
       extras = new Bundle();
     }
-    extras.putInt(EXTRA_OUTPUT_TYPE, player.getAudioOutputType());
-    mediaSession.setExtras(extras);
+    extras.setClassLoader(getClassLoader());
+    return extras;
   }
 
   private void updatePlaybackState() {
@@ -295,10 +342,10 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     stateBuilder.setActiveQueueItemId(currentMediaItem == null ? 0 : currentMediaItem
         .getTransientId());
     Bundle extras = new Bundle();
-    extras.putParcelable(EXTRA_MEDIA_ITEM, currentMediaItem);
-    extras.putBoolean(EXTRA_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
-    extras.putInt(EXTRA_INDEX, player.getCurrentMediaIndex());
-    extras.putLong(EXTRA_FINISH_TIME, finishTime);
+    extras.putParcelable(PLAYSTATE_MEDIA_ITEM, currentMediaItem);
+    extras.putBoolean(PLAYSTATE_CONTINUE_ON_DONE, player.willContinuePlayingOnDone());
+    extras.putInt(PLAYSTATE_INDEX, player.getCurrentMediaIndex());
+    extras.putLong(PLAYSTATE_FINISH_TIME, finishTime);
     stateBuilder.setExtras(extras);
     PlaybackStateCompat playbackState = stateBuilder.build();
     if (!isNewPlaybackState(playbackState)) {
@@ -324,12 +371,20 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     if (lastPlaybackState.getActiveQueueItemId() != playbackState.getActiveQueueItemId()) {
       return true;
     }
-    if (lastPlaybackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)
-        != playbackState.getExtras().getBoolean(EXTRA_CONTINUE_ON_DONE)) {
+    if (!Objects.equals(lastPlaybackState.getExtras().getParcelable(PLAYSTATE_MEDIA_ITEM),
+        playbackState.getExtras().getParcelable(PLAYSTATE_MEDIA_ITEM))) {
       return true;
     }
-    if (lastPlaybackState.getExtras().getInt(EXTRA_INDEX)
-        != playbackState.getExtras().getInt(EXTRA_INDEX)) {
+    if (lastPlaybackState.getExtras().getBoolean(PLAYSTATE_CONTINUE_ON_DONE)
+        != playbackState.getExtras().getBoolean(PLAYSTATE_CONTINUE_ON_DONE)) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getInt(PLAYSTATE_INDEX)
+        != playbackState.getExtras().getInt(PLAYSTATE_INDEX)) {
+      return true;
+    }
+    if (lastPlaybackState.getExtras().getLong(PLAYSTATE_FINISH_TIME)
+        != playbackState.getExtras().getLong(PLAYSTATE_FINISH_TIME)) {
       return true;
     }
 
@@ -347,9 +402,6 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         MediaMetadataCompat metadata = metadataBuilder
             .putText(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.title)
             .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.artist)
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM_ART_URI,
-                mediaItem.thumbnailUri != null ? mediaItem.thumbnailUri
-                    .toString() : null)
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaItem.toUri().toString())
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID,
                 String.valueOf(mediaItem.getTransientId()))
@@ -375,13 +427,12 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
   private static MediaSessionCompat.QueueItem getQueueItem(PlaylistPlayer.PlaylistItem
                                                                playlistItem) {
     Bundle extras = new Bundle();
-    extras.putLong(EXTRA_MEDIA_ID, playlistItem.mediaItem.getTransientId());
-    extras.putLong(EXTRA_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
-    extras.putLong(EXTRA_DURATION, playlistItem.mediaItem.getDuration());
+    extras.putLong(QUEUE_MEDIA_ID, playlistItem.mediaItem.getTransientId());
+    extras.putLong(QUEUE_ALBUM_ID, playlistItem.mediaItem.getAlbumId());
+    extras.putLong(QUEUE_DURATION, playlistItem.mediaItem.getDuration());
     MediaDescriptionCompat description = new MediaDescriptionCompat.Builder()
         .setTitle(playlistItem.mediaItem.title)
         .setSubtitle(playlistItem.mediaItem.artist)
-        .setIconUri(playlistItem.mediaItem.thumbnailUri)
         .setMediaUri(playlistItem.mediaItem.toUri())
         .setMediaId(playlistItem.mediaItem.getTransientId() + "")
         .setExtras(extras).build();
@@ -401,13 +452,122 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     updateMetadata();
   }
 
+  @Override
+  public void onVolumeChanged(Player player) {
+    updatePlaybackState();
+  }
+
   private void onQueueChanged() {
     mediaSession.setQueue(buildQueue());
   }
 
   @Subscribe
   public void onTrackIndexEvent(@NonNull TrackIndexEvent event) {
+    if (hasSetlistId() && event.mediaItem != null) {
+      recordItem(event.newIndex, event.mediaItem);
+    }
     updatePlaybackState();
     updateMetadata();
+  }
+
+  private void updateSetMetadata(@NonNull SetMetadata setMetadata) {
+    if (hasSetlistId()) {
+      //noinspection ConstantConditions
+      setMetadata = SetMetadata.withSetlistId(setMetadata, this.setMetadata.setlistId);
+    }
+    mediaSession.setQueueTitle(setMetadata.name);
+    Bundle sessionExtras = getSessionExtras();
+    sessionExtras.putParcelable(EXTRA_SET_METADATA, setMetadata.toBundle());
+    mediaSession.setExtras(sessionExtras);
+    this.setMetadata = setMetadata;
+
+    if (!setMetadata.isSoundCheck) {
+      ContentValues metadataValues = new ContentValues();
+      metadataValues.put(SetlistContract.NAME, setMetadata.name);
+      if (setMetadata.setlistId == null) {
+        metadataValues.put(SetlistContract.DATE, System.currentTimeMillis());
+        setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_SETLIST, null,
+            SetlistContract.CONTENT_URI,
+            metadataValues);
+      } else {
+        setlistQueryHandler.startUpdate(SetlistQueryHandler.TOKEN_SETLIST, null,
+            ContentUris.withAppendedId(SetlistContract.CONTENT_URI, setMetadata.setlistId),
+            metadataValues, null, null);
+      }
+    }
+  }
+
+  private void deleteSetlist() {
+    Log.d(TAG, "deleteSetlist() called");
+    if (hasSetlistId()) {
+      //noinspection ConstantConditions
+      long setlistId = setMetadata.setlistId;
+      setlistQueryHandler.startDelete(SetlistQueryHandler.TOKEN_SETLIST, null,
+          ContentUris.withAppendedId(SetlistContract.CONTENT_URI, setlistId),
+          null, null);
+      setlistQueryHandler.startDelete(SetlistQueryHandler.TOKEN_ITEM, null,
+          SetlistItemContract.CONTENT_URI,
+          SetlistItemContract.SETLIST_ID + " = ?",
+          new String[]{Long.toString(setlistId)});
+    }
+  }
+
+  private boolean hasSetlistId() {
+    return setMetadata != null && setMetadata.setlistId != null;
+  }
+
+  private void recordCurrentPlayedQueue() {
+    if (!hasSetlistId()) {
+      throw new IllegalStateException("Cant record queue with no setlistId");
+    }
+
+    List<PlaylistPlayer.PlaylistItem> mediaItems = player.getMediaList();
+    int currentIndex = player.getCurrentMediaIndex();
+    for (int i = 0; i < mediaItems.size() && i <= currentIndex; i++) {
+      MediaItem mediaItem = mediaItems.get(i).mediaItem;
+      recordItem(i, mediaItem);
+    }
+  }
+
+  private void recordItem(int position, MediaItem mediaItem) {
+    Log.d(TAG,
+        "recordItem() called with: position = [" + position + "], mediaItem = [" + mediaItem + "]");
+    ContentValues values = new ContentValues();
+    values.put(SetlistItemContract.POSITION, position);
+    values.put(SetlistItemContract.ARTIST, mediaItem.artist.toString());
+    values.put(SetlistItemContract.TITLE, mediaItem.title.toString());
+    values.put(SetlistItemContract.MEDIA_ID, mediaItem.getTransientId());
+    values.put(SetlistItemContract.DURATION, mediaItem.getDuration());
+    values.put(SetlistItemContract.SETLIST_ID, setMetadata.setlistId);
+    setlistQueryHandler.startInsert(SetlistQueryHandler.TOKEN_ITEM, null, SetlistItemContract
+        .CONTENT_URI, values);
+  }
+
+  private static class SetlistQueryHandler extends AsyncQueryHandler {
+    public static final int TOKEN_SETLIST = 0;
+    public static final int TOKEN_ITEM = 1;
+
+    @Nullable
+    private PlaylistMediaService service;
+
+    public SetlistQueryHandler(@NonNull PlaylistMediaService service) {
+      super(service.getContentResolver());
+      this.service = service;
+    }
+
+    @Override
+    protected void onInsertComplete(int token, Object cookie, Uri uri) {
+      if (token == TOKEN_SETLIST) {
+        if (service != null) {
+          service.updateSetMetadata(SetMetadata.withSetlistId(service.setMetadata,
+              ContentUris.parseId(uri)));
+          service.recordCurrentPlayedQueue();
+        }
+      }
+    }
+
+    public void close() {
+      this.service = null;
+    }
   }
 }

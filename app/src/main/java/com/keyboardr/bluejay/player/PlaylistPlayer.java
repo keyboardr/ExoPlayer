@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
-import android.widget.Toast;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -42,22 +41,7 @@ public class PlaylistPlayer extends AbsPlayer {
       @Override
       public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         if (playbackState == ExoPlayer.STATE_ENDED && playWhenReady) {
-          currentIndex++;
-          SimpleExoPlayer player = ensurePlayer();
-          if (mediaItems.size() > currentIndex) {
-            // More tracks in the queue. Continue iff continuePlayingOnDone is set.
-            player.setPlayWhenReady(continuePlayingOnDone);
-            prepareNextTrack(player);
-          } else {
-            // End of queue. Get ready for more tracks to be added.
-            continuePlayingOnDone = false;
-            player.setPlayWhenReady(false);
-          }
-          if (playbackListener != null) {
-            playbackListener.onPlayStateChanged(PlaylistPlayer.this);
-          }
-          getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
-              getCurrentMediaItem()));
+          goToNextTrack();
         }
       }
 
@@ -81,8 +65,28 @@ public class PlaylistPlayer extends AbsPlayer {
     ensurePlayer().addListener(eventListener);
   }
 
+  private void goToNextTrack() {
+    currentIndex++;
+    SimpleExoPlayer player = ensurePlayer();
+    if (mediaItems.size() > currentIndex) {
+      // More tracks in the queue. Continue iff continuePlayingOnDone is set.
+      player.setPlayWhenReady(continuePlayingOnDone);
+      prepareNextTrack(player);
+    } else {
+      // End of queue. Get ready for more tracks to be added.
+      continuePlayingOnDone = false;
+      player.setPlayWhenReady(false);
+    }
+    if (playbackListener != null) {
+      playbackListener.onPlayStateChanged(PlaylistPlayer.this);
+    }
+    getBus().postSticky(new TrackIndexEvent(currentIndex - 1, currentIndex,
+        getCurrentMediaItem()));
+  }
+
   private void prepareNextTrack(SimpleExoPlayer player) {
     MediaItem mediaItem = mediaItems.get(currentIndex).mediaItem;
+    setVolume(1);
     player.prepare(getMediaSource(mediaItem));
     if (BuildConfig.DEBUG && DEBUG_SHORT_SONGS) {
       player.seekTo(mediaItem.getDuration() - 10000);
@@ -96,6 +100,9 @@ public class PlaylistPlayer extends AbsPlayer {
     if (player.getPlaybackState() == ExoPlayer.STATE_IDLE
         || player.getPlaybackState() == ExoPlayer.STATE_ENDED) {
       prepareNextTrack(player);
+      if (currentIndex == mediaItems.size() - 1) {
+        getBus().postSticky(new TrackIndexEvent(currentIndex, currentIndex, mediaItem));
+      }
     }
     return item;
   }
@@ -145,9 +152,11 @@ public class PlaylistPlayer extends AbsPlayer {
   @Override
   public void pause() {
     continuePlayingOnDone = false;
-    Toast.makeText(context, "Playback will stop at the end of the current track",
-        Toast.LENGTH_LONG).show();
-    if (playbackListener != null) {
+    if (getVolume() == 0) {
+      ensurePlayer().stop();
+      goToNextTrack();
+      // No need to notify listener since it was done in goToNextTrack()
+    } else if (playbackListener != null) {
       playbackListener.onPlayStateChanged(this);
     }
   }

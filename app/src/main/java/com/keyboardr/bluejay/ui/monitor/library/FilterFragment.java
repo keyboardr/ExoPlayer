@@ -1,5 +1,7 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
@@ -7,11 +9,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.graphics.ColorUtils;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -128,6 +132,25 @@ public class FilterFragment extends DialogFragment {
     sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
       public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+        if (i == FilterInfo.SortMethod.SHUFFLE) {
+          int currentTextColor = sortToggle.getCurrentTextColor();
+          if (Color.alpha(currentTextColor) != 0) {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+                ColorUtils.setAlphaComponent(currentTextColor, 0));
+            objectAnimator.setEvaluator(new ArgbEvaluator());
+            objectAnimator.start();
+          }
+          sortToggle.setActivated(true);
+        } else {
+          int currentTextColor = sortToggle.getCurrentTextColor();
+          if (Color.alpha(currentTextColor) != 0xFF) {
+            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+                ColorUtils.setAlphaComponent(currentTextColor, 0xFF));
+            objectAnimator.setEvaluator(new ArgbEvaluator());
+            objectAnimator.start();
+          }
+          sortToggle.setActivated(false);
+        }
         updateFilterInfo();
       }
 

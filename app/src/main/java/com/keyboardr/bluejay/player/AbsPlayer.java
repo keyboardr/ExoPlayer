@@ -3,6 +3,7 @@ package com.keyboardr.bluejay.player;
 import android.content.Context;
 import android.media.AudioDeviceInfo;
 import android.os.Handler;
+import android.support.annotation.FloatRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -126,12 +127,31 @@ public abstract class AbsPlayer implements Player {
         new DefaultLoadControl());
     player.setAudioStreamType(audioStreamType);
     player.addListener(playerListener);
+    if (playbackListener != null) {
+      playbackListener.onVolumeChanged(this);
+    }
     return player;
   }
 
   @Override
   public void setPlaybackListener(@Nullable PlaybackListener playbackListener) {
     this.playbackListener = playbackListener;
+  }
+
+  @Override
+  public void setVolume(@FloatRange(from = 0, to = 1) float volume) {
+    ensurePlayer().setVolume(volume);
+    if (playbackListener != null) {
+      playbackListener.onVolumeChanged(this);
+    }
+  }
+
+  @Override
+  public float getVolume() {
+    if (player == null) {
+      return 0;
+    }
+    return player.getVolume();
   }
 
   @Override

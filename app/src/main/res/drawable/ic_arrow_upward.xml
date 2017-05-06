@@ -10,6 +10,7 @@
         android:pivotY="12"
         android:rotation="180">
         <path
+            android:name="shape"
             android:fillColor="@android:color/white"
             android:pathData="@string/path_arrow_down"/>
     </group>

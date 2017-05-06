@@ -18,8 +18,11 @@ import android.widget.TextView;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.bus.Buses;
 import com.keyboardr.bluejay.bus.event.PlaybackFinishEvent;
+import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
 import com.keyboardr.bluejay.bus.event.QueueChangeEvent;
+import com.keyboardr.bluejay.bus.event.SetMetadataEvent;
 import com.keyboardr.bluejay.bus.event.TrackIndexEvent;
+import com.keyboardr.bluejay.model.SetMetadata;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
@@ -43,6 +46,7 @@ public class SetInfoFragment extends Fragment {
 
   }
 
+  private TextView setlistName;
   private TextView trackCount;
   private TextView runTime;
 
@@ -53,12 +57,12 @@ public class SetInfoFragment extends Fragment {
     }
   };
 
-  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  @Subscribe(threadMode = ThreadMode.MAIN)
   public void onTrackIndexEvent(@NonNull final TrackIndexEvent event) {
     update();
   }
 
-  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  @Subscribe(threadMode = ThreadMode.MAIN)
   public void onQueueChangeEvent(@NonNull final QueueChangeEvent event) {
     update();
   }
@@ -117,6 +121,7 @@ public class SetInfoFragment extends Fragment {
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                            @Nullable Bundle savedInstanceState) {
     View view = inflater.inflate(R.layout.fragment_set_info, container, false);
+    setlistName = (TextView) view.findViewById(R.id.info_setlist_name);
     trackCount = (TextView) view.findViewById(R.id.info_track_count);
     runTime = (TextView) view.findViewById(R.id.info_run_time);
     return view;
@@ -126,6 +131,18 @@ public class SetInfoFragment extends Fragment {
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     update();
+
+    SetMetadata setMetadata = SetMetadataEvent.getSetMetadata(Buses.PLAYLIST);
+    updateSetMetadata(setMetadata);
+  }
+
+  private void updateSetMetadata(@Nullable SetMetadata setMetadata) {
+    if (setMetadata != null) {
+      setlistName.setText(setMetadata.name);
+      setlistName.setVisibility(View.VISIBLE);
+    } else {
+      setlistName.setVisibility(View.GONE);
+    }
   }
 
   @Override
@@ -140,5 +157,38 @@ public class SetInfoFragment extends Fragment {
     super.onStop();
     Buses.PLAYLIST.unregister(this);
     getContext().unregisterReceiver(updateReceiver);
+  }
+
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onPlaylistErrorEvent(@NonNull PlaylistErrorEvent errorEvent) {
+    PlaylistErrorEvent.ErrorCode errorCode = errorEvent.getTopError();
+    ErrorFragment errorFragment = (ErrorFragment) getChildFragmentManager().findFragmentById(
+        R.id.error_holder);
+    if (errorCode != null) {
+      if (errorFragment == null || errorFragment.getErrorCode() != errorCode) {
+        getChildFragmentManager().beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_from_bottom, R.anim.slide_out_to_bottom)
+            .replace(R.id.error_holder, ErrorFragment.newInstance(errorCode))
+            .commit();
+      }
+    } else {
+      if (errorFragment != null) {
+        getChildFragmentManager().beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_from_bottom, R.anim.slide_out_to_bottom)
+            .remove(errorFragment)
+            .commit();
+      }
+    }
+  }
+
+  @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+  public void onSetMetadataEvent(@NonNull SetMetadataEvent metadataEvent) {
+    if (setlistName != null) {
+      updateSetMetadata(metadataEvent.setMetadata);
+    }
+    if (metadataEvent.setMetadata != null) {
+      PlaylistErrorEvent.setErrorEnabled(Buses.PLAYLIST,
+          PlaylistErrorEvent.ErrorCode.SOUND_CHECK, metadataEvent.setMetadata.isSoundCheck);
+    }
   }
 }

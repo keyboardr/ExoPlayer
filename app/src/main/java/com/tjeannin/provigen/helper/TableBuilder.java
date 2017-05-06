@@ -1,6 +1,7 @@
 package com.tjeannin.provigen.helper;
 
 import android.database.sqlite.SQLiteDatabase;
+
 import com.tjeannin.provigen.model.Constraint;
 import com.tjeannin.provigen.model.Contract;
 import com.tjeannin.provigen.model.ContractField;
@@ -17,11 +18,11 @@ public class TableBuilder {
     private List<Constraint> constraints;
 
     /**
-     * @param contractClass The contract class for which a table will be created.
+     * @param contract The contract for which a table will be created.
      */
-    public TableBuilder(Class contractClass) {
-        contract = new Contract(contractClass);
-        constraints = new ArrayList<Constraint>();
+    public TableBuilder(Contract contract) {
+        this.contract = contract;
+        constraints = new ArrayList<>();
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.keyboardr.bluejay.ui.monitor.library;
 
 import android.Manifest;
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
@@ -15,6 +16,7 @@ import android.support.v4.os.OperationCanceledException;
 
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
+import com.keyboardr.bluejay.provider.SetlistItemContract;
 import com.keyboardr.bluejay.provider.ShortlistManager;
 
 import java.util.ArrayList;
@@ -22,8 +24,8 @@ import java.util.List;
 
 class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
   final ForceLoadContentObserver mObserver = new ForceLoadContentObserver();
-  static final Uri mUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-  static final String mSelection = MediaStore.Audio.Media.IS_MUSIC + "=1";
+  static final Uri mLibraryUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+  static final String mLibrarySelection = MediaStore.Audio.Media.IS_MUSIC + "=1";
 
   @NonNull
   private final ShortlistManager shortlistManager;
@@ -31,12 +33,12 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
   List<MediaItem> mediaItems;
   CancellationSignal mCancellationSignal;
   private Cursor mCursor;
-  @Nullable
+  @NonNull
   private final FilterInfo filterInfo;
 
   private volatile boolean canceled;
 
-  public LibraryLoader(Context context, @Nullable FilterInfo filterInfo, @NonNull
+  public LibraryLoader(Context context, @NonNull FilterInfo filterInfo, @NonNull
       ShortlistManager shortlistManager) {
     super(context);
     this.filterInfo = filterInfo;
@@ -60,21 +62,28 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
 
     try {
-      String sortOrder =
-          filterInfo == null ? MediaStore.Audio.Media._ID + " ASC" : filterInfo.getSortColumn();
-      Cursor cursor = getContext().getContentResolver().query(mUri, null, mSelection, null,
-          sortOrder, mCancellationSignal);
-      if (cursor != null) {
-        try {
-          // Ensure the cursor window is filled.
-          cursor.getCount();
-          cursor.registerContentObserver(mObserver);
-        } catch (RuntimeException ex) {
-          cursor.close();
-          throw ex;
+      if (filterInfo.setlistId == null) {
+        String sortOrder = filterInfo.getSortColumn();
+        Cursor cursor = getContext().getContentResolver().query(mLibraryUri, null,
+            mLibrarySelection, null, sortOrder, mCancellationSignal);
+        if (cursor != null) {
+          try {
+            // Ensure the cursor window is filled.
+            cursor.getCount();
+            cursor.registerContentObserver(mObserver);
+          } catch (RuntimeException ex) {
+            cursor.close();
+            throw ex;
+          }
+        }
+        return processLibraryCursor(cursor);
+      } else {
+        try (Cursor cursor = getContext().getContentResolver().query(SetlistItemContract
+            .CONTENT_URI, null, SetlistItemContract.SETLIST_ID + "=?", new String[]{Long.toString
+            (filterInfo.setlistId)}, SetlistItemContract.POSITION, mCancellationSignal)) {
+          return processSetlistCursor(cursor);
         }
       }
-      return processCursor(cursor);
     } finally {
       synchronized (this) {
         mCancellationSignal = null;
@@ -84,7 +93,7 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
 
   @Nullable
   @WorkerThread
-  private List<MediaItem> processCursor(@Nullable Cursor cursor) {
+  private List<MediaItem> processLibraryCursor(@Nullable Cursor cursor) {
     if (mCursor != null && mCursor != cursor) {
       mCursor.close();
     }
@@ -105,8 +114,8 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
               .setAlbumId(cursor.getLong(albumIdColumn))
               .setDuration(cursor.getLong(durationColumn))
               .setPath(cursor.getString(dataColumn))
-              .make(getContext(), cursor.getLong(mediaIdColumn));
-          if (filterInfo == null || filterInfo.isAllowed(item, shortlistManager)) {
+              .make(cursor.getLong(mediaIdColumn));
+          if (filterInfo.isAllowed(item, shortlistManager)) {
             result.add(item);
           }
         } while (cursor.moveToNext() && !canceled);
@@ -114,6 +123,62 @@ class LibraryLoader extends AsyncTaskLoader<List<MediaItem>> {
     }
     return canceled ? null : result;
   }
+
+  @Nullable
+  @WorkerThread
+  private List<MediaItem> processSetlistCursor(@Nullable Cursor cursor) {
+    if (mCursor != null && mCursor != cursor) {
+      mCursor.close();
+    }
+    List<MediaItem> result = new ArrayList<>();
+    if (cursor != null) {
+      if (cursor.moveToFirst()) {
+        int artistColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.ARTIST);
+        int titleColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.TITLE);
+        int mediaIdColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.MEDIA_ID);
+        int durationColumn = cursor.getColumnIndexOrThrow(SetlistItemContract.DURATION);
+        do {
+          long mediaId = cursor.getLong(mediaIdColumn);
+          MediaItem mediaItem = getMediaItemFromId(mediaId);
+          if (mediaItem == null) {
+            mediaItem = MediaItem.build()
+                .setArtist(cursor.getString(artistColumn))
+                .setTitle(cursor.getString(titleColumn))
+                .setDuration(cursor.getLong(durationColumn))
+                .make(mediaId);
+          }
+          result.add(mediaItem);
+        } while (cursor.moveToNext() && !canceled);
+      }
+    }
+    return canceled ? null : result;
+  }
+
+  @WorkerThread
+  @Nullable
+  private MediaItem getMediaItemFromId(long id) {
+    try (Cursor cursor = getContext().getContentResolver().query(
+        ContentUris.withAppendedId(mLibraryUri, id), null, mLibrarySelection, null, null,
+        mCancellationSignal)) {
+      if (cursor != null && cursor.moveToFirst()) {
+        int artistColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST);
+        int titleColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE);
+        int albumIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID);
+        int durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION);
+        int dataColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
+        int mediaIdColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID);
+        return MediaItem.build()
+            .setArtist(cursor.getString(artistColumn))
+            .setTitle(cursor.getString(titleColumn))
+            .setAlbumId(cursor.getLong(albumIdColumn))
+            .setDuration(cursor.getLong(durationColumn))
+            .setPath(cursor.getString(dataColumn))
+            .make(cursor.getLong(mediaIdColumn));
+      }
+    }
+    return null;
+  }
+
 
   @Override
   public void cancelLoadInBackground() {

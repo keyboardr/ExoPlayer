@@ -20,13 +20,18 @@ import java.util.Set;
 
 public class FilterInfo implements Parcelable {
 
+  public static final FilterInfo EMPTY = new FilterInfo(SortMethod.ID, true,
+      Collections.<Shortlist>emptySet(), Collections.<Shortlist>emptySet(), null);
+
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION})
+  @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION,
+      SortMethod.SHUFFLE})
   public @interface SortMethod {
     int ID = 0;
     int TITLE = 1;
     int ARTIST = 2;
     int DURATION = 3;
+    int SHUFFLE = 4;
   }
 
   @SortMethod
@@ -39,6 +44,8 @@ public class FilterInfo implements Parcelable {
   public final Set<Shortlist> disallowedShortlists;
   @Nullable
   public final String filterString;
+  @Nullable
+  public final Long setlistId;
 
   public FilterInfo(@SortMethod int sortMethod, boolean sortAscending,
                     @NonNull Set<Shortlist> requiredShortlists,
@@ -48,11 +55,23 @@ public class FilterInfo implements Parcelable {
     this.requiredShortlists = requiredShortlists;
     this.disallowedShortlists = disallowedShortlists;
     this.filterString = filterString;
+    setlistId = null;
+  }
+
+  public FilterInfo(long setlistId) {
+    this.setlistId = setlistId;
+    sortMethod = SortMethod.ID;
+    sortAscending = true;
+    requiredShortlists = Collections.emptySet();
+    disallowedShortlists = Collections.emptySet();
+    filterString = null;
   }
 
   public String getSortColumn() {
     StringBuilder builder;
     switch (sortMethod) {
+      case SortMethod.SHUFFLE:
+        return "RANDOM()"; // returns instead of breaks since it doesn't need asc or desc
       case SortMethod.ID:
         builder = new StringBuilder(MediaStore.Audio.Media._ID);
         break;
@@ -123,6 +142,12 @@ public class FilterInfo implements Parcelable {
     dest.writeTypedList(new ArrayList<>(requiredShortlists));
     dest.writeTypedList(new ArrayList<>(disallowedShortlists));
     dest.writeString(filterString);
+    if (setlistId != null) {
+      dest.writeInt(1);
+      dest.writeLong(setlistId);
+    } else {
+      dest.writeInt(0);
+    }
   }
 
   protected FilterInfo(Parcel in) {
@@ -136,6 +161,11 @@ public class FilterInfo implements Parcelable {
     disallowedShortlists = new ArraySet<>();
     disallowedShortlists.addAll(shortlists);
     filterString = in.readString();
+    if (in.readInt() == 1) {
+      setlistId = in.readLong();
+    } else {
+      setlistId = null;
+    }
   }
 
   public static final Parcelable.Creator<FilterInfo> CREATOR = new Parcelable.Creator<FilterInfo>

@@ -1,6 +1,7 @@
 package com.keyboardr.bluejay.player;
 
 import android.media.AudioDeviceInfo;
+import android.support.annotation.FloatRange;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -30,6 +31,7 @@ public interface Player {
 
         void onPlayStateChanged(Player player);
 
+        void onVolumeChanged(Player player);
     }
 
     void setPlaybackListener(@Nullable PlaybackListener playbackListener);
@@ -66,4 +68,9 @@ public interface Player {
     long getCurrentPosition();
 
     long getDuration();
+
+    void setVolume(@FloatRange(from = 0, to = 1) float volume);
+
+    @FloatRange(from = 0, to = 1)
+    float getVolume();
 }

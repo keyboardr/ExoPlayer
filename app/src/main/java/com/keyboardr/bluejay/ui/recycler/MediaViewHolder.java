@@ -1,11 +1,13 @@
 package com.keyboardr.bluejay.ui.recycler;
 
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,6 +19,7 @@ import com.bumptech.glide.Glide;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.util.MathUtil;
+import com.keyboardr.bluejay.util.TooltipHelper;
 
 /**
  * ViewHolder for media items
@@ -28,6 +31,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     @DrawableRes
     int getIconForItem(@NonNull MediaItem mediaItem);
+
+    @StringRes
+    int getDescriptionForIcon(@DrawableRes int icon);
 
     void onDecoratorSelected(@NonNull MediaItem mediaItem, @NonNull View view);
 
@@ -57,6 +63,19 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
   private final MediaViewDecorator mediaViewDecorator;
   private final DragStartListener dragStartListener;
+
+  private static final ColorMatrixColorFilter albumArtDisabledFilter;
+
+  static {
+    ColorMatrix scaleMatrix = new ColorMatrix();
+    scaleMatrix.setScale(
+        .8f, .8f, .8f, 1
+    );
+    ColorMatrix satMatrix = new ColorMatrix();
+    satMatrix.setSaturation(.5f);
+    scaleMatrix.postConcat(satMatrix);
+    albumArtDisabledFilter = new ColorMatrixColorFilter(scaleMatrix);
+  }
 
   public MediaViewHolder(@NonNull ViewGroup parent,
                          @Nullable MediaViewDecorator mediaViewDecorator) {
@@ -106,6 +125,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     }
 
+    TooltipHelper.addTooltip(menu);
+
     if (dragStartListener != null) {
       icon.setOnTouchListener(new View.OnTouchListener() {
         @Override
@@ -125,12 +146,14 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
     this.mediaItem = mediaItem;
 
     title.setText(mediaItem.title);
-    CharSequence subtext = TextUtils.concat(mediaItem.artist, " - ",
+    CharSequence subtext = subText.getContext().getString(R.string.summary_format,
+        mediaItem.artist,
         MathUtil.getSongDuration(mediaItem.getDuration()));
     subText.setText(subtext);
 
-    Glide.with(albumArt.getContext()).load(mediaItem.thumbnailUri).crossFade()
-        .fallback(R.drawable.album_art_empty).into(albumArt);
+    Glide.with(albumArt.getContext()).load(mediaItem).crossFade()
+        .fallback(R.drawable.album_art_empty).placeholder(R.drawable.album_art_empty)
+        .into(albumArt);
 
     if (dragStartListener == null) {
       if (mediaViewDecorator != null) {
@@ -140,6 +163,11 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         } else {
           icon.setVisibility(View.VISIBLE);
           icon.setImageResource(iconForItem);
+          int descriptionForIcon = mediaViewDecorator.getDescriptionForIcon(iconForItem);
+          if (descriptionForIcon > 0) {
+            icon.setContentDescription(icon.getContext().getText(descriptionForIcon));
+            TooltipHelper.addTooltip(icon);
+          }
         }
 
         if (mediaViewDecorator.showMoreOption()) {
@@ -169,6 +197,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   public void bindMediaItemPartial(boolean activated, boolean enabled) {
     itemView.setActivated(activated);
     itemView.setEnabled(enabled);
+
+    albumArt.setColorFilter(enabled ? null : albumArtDisabledFilter);
 
     if (dragStartListener != null) {
       if (dragStartListener.canDrag(mediaItem, activated, enabled)) {

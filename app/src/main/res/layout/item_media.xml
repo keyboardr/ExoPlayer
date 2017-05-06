@@ -61,6 +61,7 @@
         android:background="?android:selectableItemBackgroundBorderless"
         android:padding="8dp"
         android:tint="?android:colorForeground"
+        android:tintMode="src_in"
         app:layout_constraintEnd_toStartOf="@+id/media_item_menu"
         app:layout_constraintTop_toTopOf="@+id/media_item_title"
         app:layout_goneMarginEnd="24dp"
@@ -71,9 +72,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="?android:selectableItemBackgroundBorderless"
+        android:contentDescription="@string/edit_metadata"
         android:padding="8dp"
         android:src="@drawable/ic_more_vert_black"
         android:tint="?android:colorForeground"
+        android:tintMode="src_in"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/media_item_icon"/>
 </android.support.constraint.ConstraintLayout>

@@ -12,19 +12,15 @@ import android.support.v7.graphics.Palette;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.player.MonitorPlayer;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
-import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.CachedLoader;
-import com.keyboardr.bluejay.util.FragmentUtils;
 
-public class MonitorControlsFragment extends Fragment
-    implements PlayerControlsUpdater.OnAlbumArtListener, AudioSelectionManager.DefaultDeviceSelector {
+public class MonitorControlsFragment extends Fragment implements AudioSelectionManager.Callback {
 
   @SuppressWarnings("unused")
   public static MonitorControlsFragment newInstance() {
@@ -50,9 +46,8 @@ public class MonitorControlsFragment extends Fragment
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, this);
-    uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager(), this);
+    audioSelectionManager = new AudioSelectionManager(getContext(), this);
+    uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager());
   }
 
   @Override
@@ -73,22 +68,6 @@ public class MonitorControlsFragment extends Fragment
     player.release();
   }
 
-  @Override
-  public void onAlbumArtReset() {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setMonitorAlbumArt(null);
-    }
-  }
-
-  @Override
-  public void onAlbumArtReady(@Nullable Icon albumArt) {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setMonitorAlbumArt(albumArt);
-    }
-  }
-
   @Nullable
   public MediaItem getCurrentTrack() {
     return player.getCurrentMediaItem();
@@ -101,6 +80,12 @@ public class MonitorControlsFragment extends Fragment
 
   @Override
   public void onNoDeviceFound() {
+    player.setAudioOutput(null);
+  }
+
+  @Override
+  public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    player.setAudioOutput(audioDeviceInfo);
   }
 
   public static class AlbumArtLoader extends CachedLoader<Pair<Icon, Palette>> {
@@ -118,7 +103,8 @@ public class MonitorControlsFragment extends Fragment
       if (mediaItem == null) {
         return null;
       }
-      return mediaItem.getAlbumArt(getContext());
+      return mediaItem.getAlbumArt(getContext(), getContext().getResources()
+          .getDimensionPixelSize(R.dimen.controls_album_art_size));
     }
   }
 }

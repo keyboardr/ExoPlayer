@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@color/colorPrimaryDark"
+        android:elevation="@dimen/controls_elevation"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@+id/controls_marker"
+        app:layout_constraintEnd_toEndOf="@+id/controls_marker"
+        app:layout_constraintStart_toStartOf="@+id/controls_marker"
+        app:layout_constraintTop_toTopOf="@+id/controls_marker">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="16dp"
+            android:text="@string/setlist_label"/>
+
+        <Spinner
+            android:id="@+id/setlist_selector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            tools:listitem="@layout/item_history_spinner"/>
+
+        <TextView
+            android:id="@+id/setlist_empty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            android:text="@string/no_setlists_found"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:visibility="gone"/>
+
+        <TextView
+            android:id="@+id/setlist_summary"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8sp"
+            android:layout_weight="1"
+            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+            tools:text="10 Tracks \u2022 1:20:10"/>
+
+        <LinearLayout
+            style="?android:buttonBarStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageButton
+                android:id="@+id/rename"
+                style="?android:buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/rename"
+                android:src="@drawable/ic_edit"
+                android:text="@string/rename"
+                android:tint="?attr/colorControlNormal"
+                android:tintMode="src_in"/>
+
+            <ImageButton
+                android:id="@+id/share"
+                style="?android:buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/share"
+                android:src="@drawable/ic_share"
+                android:text="@string/share"
+                android:tint="?attr/colorControlNormal"
+                android:tintMode="src_in"/>
+
+            <ImageButton
+                android:id="@+id/delete"
+                style="?android:buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/delete"
+                android:src="@drawable/ic_delete"
+                android:text="@string/delete"
+                android:tint="?attr/colorControlNormal"
+                android:tintMode="src_in"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/controls_marker"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include layout="@layout/fragment_monitor_controls"/>
+    </FrameLayout>
+
+    <fragment
+        android:id="@+id/history_library"
+        android:name="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/controls_marker"
+        tools:layout="@layout/fragment_library"/>
+
+</android.support.constraint.ConstraintLayout>

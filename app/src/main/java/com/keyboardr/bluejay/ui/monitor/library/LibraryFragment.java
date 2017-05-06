@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -39,6 +40,8 @@ import android.widget.ImageView;
 import android.widget.ViewAnimator;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.MediaConnectedEvent;
 import com.keyboardr.bluejay.model.FilterInfo;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.provider.ShortlistManager;
@@ -47,14 +50,15 @@ import com.keyboardr.bluejay.ui.MonitorContainer;
 import com.keyboardr.bluejay.ui.recycler.MediaViewHolder;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.List;
 
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
   public interface Holder extends MonitorContainer {
-
-    boolean canAddToQueue();
 
     void addToQueue(@NonNull MediaItem mediaItem);
 
@@ -73,8 +77,12 @@ public class LibraryFragment extends android.support.v4.app.Fragment
       = new LoaderManager.LoaderCallbacks<List<MediaItem>>() {
     @Override
     public Loader<List<MediaItem>> onCreateLoader(int i, Bundle bundle) {
-      return new LibraryLoader(getContext(), bundle == null ? null : ((FilterInfo) bundle
-          .getParcelable(ARG_FILTER)), shortlistManager);
+      FilterInfo filterInfo = bundle == null ? null : ((FilterInfo) bundle
+          .getParcelable(ARG_FILTER));
+      if (filterInfo == null) {
+        filterInfo = FilterInfo.EMPTY;
+      }
+      return new LibraryLoader(getContext(), filterInfo, shortlistManager);
     }
 
     @Override
@@ -109,7 +117,16 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @Override
     @DrawableRes
     public int getIconForItem(@NonNull MediaItem mediaItem) {
-      return getParent().canAddToQueue() ? R.drawable.ic_playlist_add : 0;
+      return MediaConnectedEvent.isConnected() ? R.drawable.ic_playlist_add : 0;
+    }
+
+    @Override
+    @StringRes
+    public int getDescriptionForIcon(@DrawableRes int icon) {
+      if (icon == R.drawable.ic_playlist_add) {
+        return R.string.description_add_track;
+      }
+      return 0;
     }
 
     @Override
@@ -163,6 +180,18 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   }
 
   @Override
+  public void onStart() {
+    super.onStart();
+    Buses.PLAYLIST.register(this);
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    Buses.PLAYLIST.unregister(this);
+  }
+
+  @Override
   public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                          @NonNull int[] grantResults) {
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -204,7 +233,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   }
 
   @Override
-  public void setLibraryFilter(FilterInfo filter) {
+  public void setLibraryFilter(@NonNull FilterInfo filter) {
     Bundle args = new Bundle();
     args.putParcelable(ARG_FILTER, filter);
     getLoaderManager().restartLoader(0, args, mediaLoaderCallbacks);
@@ -217,7 +246,8 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     return FragmentUtils.getParent(this, Holder.class);
   }
 
-  public void notifyConnectionChanged() {
+  @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+  public void onMediaConnectedEvent(MediaConnectedEvent event) {
     adapter.notifyDataSetChanged();
   }
 

@@ -6,10 +6,7 @@
     <string name="audio_output_builtin_speaker">Speaker</string>
     <string name="audio_output_wired_headset">Wired headset</string>
     <string name="audio_output_builtin_earpiece">Earpice</string>
-    <string name="show_playlist">Show playlist</string>
-    <string name="hide_playlist">Hide playlist</string>
-    <string name="playlist_empty">Playlist empty</string>
-    <string name="start_new_setlist">Start new setlist</string>
+    <string name="setlist_empty"><big>Setlist empty</big>\nAdd tracks from your library</string>
     <string name="end_set">End set</string>
     <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
     <string name="title_sort">Sort:</string>
@@ -18,13 +15,20 @@
     <string name="shortlists_label">Tags:</string>
     <string name="no_media_playing">No tracks playing</string>
     <string name="monitor">Monitor</string>
-    <string name="playlist">Playlist</string>
+    <string name="setlist">Setlist</string>
+    <string name="history">History</string>
     <string name="filter">Filter</string>
     <string name="done">Done</string>
     <string name="confirm_add_title">Track already in setlist</string>
     <string name="confirm_add_message">Are you sure you want to add %s to the setlist
         again?</string>
     <string name="add_track">Add track</string>
+    <string name="description_add_track">Add track to setlist</string>
+    <string name="name">Name</string>
+    <string name="start_new_setlist">Start new setlist</string>
+    <string name="sound_check">Sound check</string>
+    <string name="end_sound_check">End sound check</string>
+    <string name="new_setlist">New setlist</string>
     <string name="edit_metadata">Edit metadata</string>
     <string name="edit_tags">Edit tags</string>
     <string name="close">Close</string>
@@ -37,12 +41,34 @@
     <string name="title_shortlists">Tags</string>
     <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to
         delete.</string>
-    <string name="edit_shortlist_title">Rename %s</string>
+    <string name="rename_title">Rename %s</string>
+    <string name="error_no_usb_audio">No USB output device found</string>
+    <string name="setlist_label">Setlist:</string>
+
+    <string name="shared_element_bottom_bar" translatable="false">bottomBar</string>
+    <string name="shared_element_setlist_container" translatable="false">setlistContainer</string>
+    <string name="rename">Rename</string>
+    <string name="share">Share</string>
+    <string name="delete">Delete</string>
+    <string name="delete_setlist">Delete setlist</string>
+    <string name="confirm_delete_setlist">Are you sure you want to delete %s?</string>
+    <string name="no_setlists_found">No setlists found</string>
+    <string name="summary_format">%1$s \u2022 %2$s</string>
+    <string name="share_formatted">Share %s</string>
+    <string name="description_cancel_fadeout">Cancel fade out</string>
+    <string name="description_slide_to_fadeout">Drag slider to fade out</string>
+    <string name="title_fade">Fade</string>
 
     <string-array name="sort_methods">
         <item>Default</item>
         <item>Title</item>
         <item>Artist</item>
         <item>Duration</item>
+        <item>Shuffle</item>
     </string-array>
+
+    <plurals name="tracks">
+        <item quantity="one">%d Track</item>
+        <item quantity="other">%d Tracks</item>
+    </plurals>
 </resources>

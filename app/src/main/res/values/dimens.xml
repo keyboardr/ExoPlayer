@@ -3,4 +3,5 @@
     <dimen name="min_filter_dialog_height">320dp</dimen>
     <bool name="allow_library_editor">false</bool>
     <dimen name="play_button_size">48dp</dimen>
+    <dimen name="controls_album_art_size">60dp</dimen>
 </resources>

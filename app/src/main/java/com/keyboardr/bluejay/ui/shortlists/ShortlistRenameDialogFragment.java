@@ -39,7 +39,7 @@ public class ShortlistRenameDialogFragment extends DialogFragment {
     AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
     @SuppressLint("InflateParams")
     View view = LayoutInflater.from(builder.getContext())
-        .inflate(R.layout.fragment_shortlist_rename, null);
+        .inflate(R.layout.fragment_rename, null);
     final EditText editText = (EditText) view.findViewById(R.id.rename_edit_text);
     if (savedInstanceState == null) {
       editText.setText(getShortlist().getName());
@@ -54,7 +54,7 @@ public class ShortlistRenameDialogFragment extends DialogFragment {
       }
     });
     builder.setView(view);
-    builder.setTitle(getString(R.string.edit_shortlist_title, getShortlist().getName()));
+    builder.setTitle(getString(R.string.rename_title, getShortlist().getName()));
     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
       @Override
       public void onClick(DialogInterface dialogInterface, int i) {

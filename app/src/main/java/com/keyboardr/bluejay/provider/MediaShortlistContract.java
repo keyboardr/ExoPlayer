@@ -1,6 +1,5 @@
 package com.keyboardr.bluejay.provider;
 
-import android.content.ContentResolver;
 import android.net.Uri;
 
 import com.tjeannin.provigen.ProviGenBaseContract;
@@ -15,8 +14,7 @@ public interface MediaShortlistContract extends ProviGenBaseContract {
     String TABLE = "media_shortlist";
 
     @ContentUri
-    Uri CONTENT_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://" +
-            BluejayProvider.AUTHORITY + "/" + TABLE);
+    Uri CONTENT_URI = BluejayProvider.generateContentUri(TABLE);
 
     @Column(Column.Type.INTEGER)
     String SHORTLIST_ID = "shortlist_id";

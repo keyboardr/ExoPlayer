@@ -1,7 +1,6 @@
 package com.keyboardr.bluejay.ui.playlist;
 
 import android.content.Context;
-import android.graphics.drawable.Icon;
 import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,22 +11,20 @@ import android.support.v4.media.session.MediaSessionCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Spinner;
-import android.widget.Toast;
 
 import com.keyboardr.bluejay.R;
+import com.keyboardr.bluejay.bus.Buses;
+import com.keyboardr.bluejay.bus.event.PlaylistErrorEvent;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.AudioSelectionManager;
-import com.keyboardr.bluejay.ui.BottomNavHolder;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 import java.util.Collections;
 import java.util.List;
 
-public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager
-    .DefaultDeviceSelector, PlayerControlsUpdater.OnAlbumArtListener {
+public class PlaylistControlsFragment extends Fragment implements AudioSelectionManager.Callback {
 
   @Override
   public boolean canBeDefault(AudioDeviceInfo deviceInfo) {
@@ -36,24 +33,13 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   @Override
   public void onNoDeviceFound() {
-    // TODO: 11/6/2016 replace with error bar
-    Toast.makeText(getContext(), "No USB Audio found", Toast.LENGTH_LONG).show();
+    PlaylistErrorEvent.addError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
   }
 
   @Override
-  public void onAlbumArtReset() {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setPlaylistAlbumArt(null);
-    }
-  }
-
-  @Override
-  public void onAlbumArtReady(@Nullable Icon albumArt) {
-    BottomNavHolder parent = FragmentUtils.getParent(this, BottomNavHolder.class);
-    if (parent != null) {
-      parent.setPlaylistAlbumArt(albumArt);
-    }
+  public void onDeviceSelected(AudioDeviceInfo audioDeviceInfo) {
+    PlaylistErrorEvent.removeError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
+    player.setAudioOutput(audioDeviceInfo);
   }
 
   public interface Holder {
@@ -85,12 +71,8 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    if (!AudioSelectionManager.SPINNER_ENABLED) {
-      view.findViewById(R.id.controls_spinner).setVisibility(View.GONE);
-    }
-    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager(), this);
-    audioSelectionManager = new AudioSelectionManager(getContext(),
-        (Spinner) view.findViewById(R.id.controls_spinner), player, this);
+    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
+    audioSelectionManager = new AudioSelectionManager(getContext(), this);
   }
 
   @Override
@@ -100,6 +82,7 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     uiUpdater = null;
     audioSelectionManager.detach();
     audioSelectionManager = null;
+    PlaylistErrorEvent.removeError(Buses.PLAYLIST, PlaylistErrorEvent.ErrorCode.NO_USB_OUTPUT);
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {

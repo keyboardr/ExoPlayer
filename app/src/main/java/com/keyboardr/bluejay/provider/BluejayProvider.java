@@ -1,5 +1,6 @@
 package com.keyboardr.bluejay.provider;
 
+import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,8 +20,15 @@ public class BluejayProvider extends ProviGenProvider {
 
   private static final String DB_NAME = "bluejaydb";
   private static final Class[] CLASSES = {ShortlistsContract.class, MediaShortlistContract.class,
-      MetadataContract.class};
-  public static final int VERSION = 4;
+      MetadataContract.class, SetlistContract.class, SetlistItemContract.class};
+  public static final int VERSION = 6;
+
+  public static final String PARAM_GROUP_BY = "groupBy";
+
+  static Uri generateContentUri(@NonNull String table) {
+    return Uri.parse(ContentResolver.SCHEME_CONTENT + "://" + BluejayProvider.AUTHORITY + "/"
+        + table);
+  }
 
   @Override
   public SQLiteOpenHelper openHelper(Context context) {
@@ -52,7 +60,9 @@ public class BluejayProvider extends ProviGenProvider {
     table = swapQueryTableIfNecessary(table);
     switch (uriMatcher.match(uri)) {
       case ITEM:
-        cursor = database.query(table, projection, selection, selectionArgs, "", "", sortOrder);
+        String groupBy = uri.getQueryParameter(PARAM_GROUP_BY);
+        cursor = database.query(table, projection, selection, selectionArgs,
+            groupBy == null ? "" : groupBy, "", sortOrder);
         break;
       case ITEM_ID:
         String itemId = String.valueOf(ContentUris.parseId(uri));
@@ -86,7 +96,7 @@ public class BluejayProvider extends ProviGenProvider {
       case MediaShortlistContract.TABLE:
         return MediaShortlistContract.TABLE + " LEFT JOIN "
             + ShortlistsContract.TABLE + " ON "
-            + MediaShortlistContract.MEDIA_ID + " = " +
+            + MediaShortlistContract.SHORTLIST_ID + " = " +
             ShortlistsContract.TABLE + "." + ShortlistsContract._ID;
       default:
         return table;
