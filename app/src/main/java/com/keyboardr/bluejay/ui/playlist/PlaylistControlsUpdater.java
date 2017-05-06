@@ -14,6 +14,7 @@ import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.service.PlaylistServiceClient;
 import com.keyboardr.bluejay.ui.PlayerControlsUpdater;
+import com.keyboardr.bluejay.util.TooltipHelper;
 
 public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServiceClient> {
 
@@ -54,6 +55,9 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
         popupWindow.dismiss();
       }
     });
+    TooltipHelper.addTooltip(cancelButton, true);
+    cancelButton.setContentDescription(playPause.getContext()
+        .getText(R.string.description_cancel_fadeout));
     SeekBar seekBar = (SeekBar) content.findViewById(R.id.fader);
     seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       private int lastProgress = 100;
@@ -67,7 +71,9 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
           lastProgress = progress;
         }
         if (progress < 95) {
-          cancelButton.setClickable(false);
+          cancelButton.setContentDescription(cancelButton.getContext()
+              .getText(R.string.description_slide_to_fadeout));
+          cancelButton.setOnClickListener(null);
           cancelButton.setActivated(true);
           cancelButton.setPressed(true);
         }
