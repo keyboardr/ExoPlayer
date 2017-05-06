@@ -1,5 +1,7 @@
 package com.keyboardr.bluejay.ui.recycler;
 
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -61,6 +63,19 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
   private final MediaViewDecorator mediaViewDecorator;
   private final DragStartListener dragStartListener;
+
+  private static final ColorMatrixColorFilter albumArtDisabledFilter;
+
+  static {
+    ColorMatrix scaleMatrix = new ColorMatrix();
+    scaleMatrix.setScale(
+        .8f, .8f, .8f, 1
+    );
+    ColorMatrix satMatrix = new ColorMatrix();
+    satMatrix.setSaturation(.5f);
+    scaleMatrix.postConcat(satMatrix);
+    albumArtDisabledFilter = new ColorMatrixColorFilter(scaleMatrix);
+  }
 
   public MediaViewHolder(@NonNull ViewGroup parent,
                          @Nullable MediaViewDecorator mediaViewDecorator) {
@@ -182,6 +197,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
   public void bindMediaItemPartial(boolean activated, boolean enabled) {
     itemView.setActivated(activated);
     itemView.setEnabled(enabled);
+
+    albumArt.setColorFilter(enabled ? null : albumArtDisabledFilter);
 
     if (dragStartListener != null) {
       if (dragStartListener.canDrag(mediaItem, activated, enabled)) {
