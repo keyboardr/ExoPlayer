@@ -73,7 +73,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
         if (progress < 95) {
           cancelButton.setContentDescription(cancelButton.getContext()
               .getText(R.string.description_slide_to_fadeout));
-          cancelButton.setOnClickListener(null);
+          TooltipHelper.showTooltipOnClick(cancelButton, true);
           cancelButton.setActivated(true);
           cancelButton.setPressed(true);
         }

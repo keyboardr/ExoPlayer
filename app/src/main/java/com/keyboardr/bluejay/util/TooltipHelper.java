@@ -21,18 +21,36 @@ public class TooltipHelper {
   }
 
   public static void addTooltip(@NonNull View view, boolean below) {
-    view.setOnLongClickListener(new TooltipLongPressListener(below));
+    view.setOnLongClickListener(new TooltipClickListener(below));
   }
 
-  private static class TooltipLongPressListener implements View.OnLongClickListener {
+  public static void showTooltipOnClick(@NonNull View view) {
+    showTooltipOnClick(view, false);
+  }
+
+  public static void showTooltipOnClick(@NonNull View view, boolean below) {
+    view.setOnClickListener(new TooltipClickListener(below));
+  }
+
+  private static class TooltipClickListener implements View.OnLongClickListener, View
+      .OnClickListener {
     final boolean below;
 
-    private TooltipLongPressListener(boolean below) {
+    private TooltipClickListener(boolean below) {
       this.below = below;
     }
 
     @Override
     public boolean onLongClick(View view) {
+      return showTooltip(view);
+    }
+
+    @Override
+    public void onClick(View view) {
+      showTooltip(view);
+    }
+
+    private boolean showTooltip(View view) {
       CharSequence description = view.getContentDescription();
 
       final int[] screenPos = new int[2];
