@@ -1,26 +1,19 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent"
-             tools:context="com.keyboardr.bluejay.ui.monitor.library.LibraryFragment">
+<ViewAnimator xmlns:android="http://schemas.android.com/apk/res/android"
+              android:id="@+id/playlist_switcher"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
 
-    <ViewAnimator
-        android:id="@+id/playlist_switcher"
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="24dp"
+        android:gravity="center"
+        android:text="@string/setlist_empty"
+        android:textAppearance="?android:textAppearanceMedium"/>
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/playlist_recycler"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_margin="24dp"
-            android:gravity="center"
-            android:text="@string/setlist_empty"
-            android:textAppearance="?android:textAppearanceMedium"/>
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/playlist_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-    </ViewAnimator>
-</FrameLayout>
+        android:layout_height="match_parent"/>
+</ViewAnimator>
