@@ -47,10 +47,10 @@
             android:id="@+id/setlist_summary"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
-            android:layout_marginTop="8sp"
             android:layout_marginEnd="24dp"
             android:layout_marginStart="24dp"
+            android:layout_marginTop="8sp"
+            android:layout_weight="1"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             tools:text="10 Tracks \u2022 1:20:10"/>
 
@@ -59,21 +59,38 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <Button
+            <ImageButton
                 android:id="@+id/rename"
                 style="?android:buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/rename"/>
+                android:contentDescription="@string/rename"
+                android:src="@drawable/ic_edit"
+                android:text="@string/rename"
+                android:tint="?android:textColorPrimary"/>
 
-            <Button
+            <ImageButton
+                android:id="@+id/share"
+                style="?android:buttonBarButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:contentDescription="@string/share"
+                android:src="@drawable/ic_share"
+                android:text="@string/share"
+                android:tint="?android:textColorPrimary"/>
+
+            <ImageButton
                 android:id="@+id/delete"
                 style="?android:buttonBarButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="@string/delete"/>
+                android:contentDescription="@string/delete"
+                android:src="@drawable/ic_delete"
+                android:text="@string/delete"
+                android:tint="?android:textColorPrimary"/>
         </LinearLayout>
     </LinearLayout>
 

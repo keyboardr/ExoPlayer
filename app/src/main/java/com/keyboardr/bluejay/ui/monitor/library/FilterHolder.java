@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.FilterInfo;
+import com.keyboardr.bluejay.ui.history.HistoryFragment;
 import com.keyboardr.bluejay.util.FragmentUtils;
 
 public class FilterHolder extends Fragment implements FilterFragment.Holder,

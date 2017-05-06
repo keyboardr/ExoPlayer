@@ -28,6 +28,7 @@ import com.keyboardr.bluejay.provider.SetlistContract;
 import com.keyboardr.bluejay.provider.SetlistItemContract;
 import com.keyboardr.bluejay.ui.monitor.library.LibraryFragment;
 import com.keyboardr.bluejay.util.MathUtil;
+import com.keyboardr.bluejay.util.TooltipHelper;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -43,6 +44,7 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
   private Spinner spinner;
   private TextView setlistSummary;
   private View renameButton;
+  private View shareButton;
   private View deleteButton;
 
   private AsyncQueryHandler setlistDataHandler;
@@ -62,24 +64,23 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
 
     setlistSummary = (TextView) view.findViewById(R.id.setlist_summary);
 
+    View.OnClickListener menuItemClickListener = new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        HistoryItemUtil.onMenuItemClick(HistoryDisplayFragment.this, getSelectedSetlistName(),
+            spinner.getSelectedItemId(), v.getId());
+      }
+    };
+
     renameButton = view.findViewById(R.id.rename);
-    renameButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        SetlistRenameDialogFragment.newInstance(
-            getSelectedSetlistName(), spinner.getSelectedItemId())
-            .show(getChildFragmentManager(), null);
-      }
-    });
+    renameButton.setOnClickListener(menuItemClickListener);
+    TooltipHelper.addTooltip(renameButton);
+    shareButton = view.findViewById(R.id.share);
+    shareButton.setOnClickListener(menuItemClickListener);
+    TooltipHelper.addTooltip(shareButton);
     deleteButton = view.findViewById(R.id.delete);
-    deleteButton.setOnClickListener(new View.OnClickListener() {
-      @Override
-      public void onClick(View v) {
-        DeleteSetlistDialogFragment.newInstance(
-            getSelectedSetlistName(), spinner.getSelectedItemId())
-            .show(getChildFragmentManager(), null);
-      }
-    });
+    deleteButton.setOnClickListener(menuItemClickListener);
+    TooltipHelper.addTooltip(deleteButton);
     return view;
   }
 
@@ -197,6 +198,7 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
         null);
     getLibraryFragment().setLibraryFilter(new FilterInfo(id));
     renameButton.setEnabled(true);
+    shareButton.setEnabled(true);
     deleteButton.setEnabled(true);
     getChildFragmentManager().beginTransaction().show(getLibraryFragment()).commit();
   }
@@ -205,6 +207,7 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
   public void onNothingSelected(AdapterView<?> parent) {
     getLibraryFragment().setLibraryFilter(new FilterInfo(-1));
     renameButton.setEnabled(false);
+    shareButton.setEnabled(false);
     deleteButton.setEnabled(false);
     setlistDataHandler.removeCallbacksAndMessages(null);
     setlistSummary.setVisibility(View.INVISIBLE);
