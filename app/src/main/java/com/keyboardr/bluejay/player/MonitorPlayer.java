@@ -32,7 +32,7 @@ public class MonitorPlayer extends AbsPlayer {
   }
 
 
-  public void play(MediaItem mediaItem, boolean playWhenReady) {
+  public void play(@NonNull MediaItem mediaItem, boolean playWhenReady) {
     SimpleExoPlayer player = ensurePlayer();
     player.prepare(getMediaSource(mediaItem));
     currentItem = mediaItem;

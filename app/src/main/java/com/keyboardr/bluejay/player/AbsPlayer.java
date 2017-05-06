@@ -169,7 +169,7 @@ public abstract class AbsPlayer implements Player {
   }
 
   @NonNull
-  protected MediaSource getMediaSource(MediaItem mediaItem) {
+  protected MediaSource getMediaSource(@NonNull MediaItem mediaItem) {
     return new ExtractorMediaSource(mediaItem.toUri(), defaultDataSourceFactory,
         defaultExtractorsFactory, mainHandler, extractorListener);
   }

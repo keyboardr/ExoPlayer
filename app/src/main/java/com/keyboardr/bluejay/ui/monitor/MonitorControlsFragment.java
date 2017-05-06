@@ -27,6 +27,8 @@ public class MonitorControlsFragment extends Fragment implements AudioSelectionM
     return new MonitorControlsFragment();
   }
 
+  private static final String STATE_MEDIA_ITEM = "mediaItem";
+
   private PlayerControlsUpdater uiUpdater;
   private MonitorPlayer player;
   private AudioSelectionManager audioSelectionManager;
@@ -48,6 +50,20 @@ public class MonitorControlsFragment extends Fragment implements AudioSelectionM
     super.onViewCreated(view, savedInstanceState);
     audioSelectionManager = new AudioSelectionManager(getContext(), this);
     uiUpdater = new MonitorControlsUpdater(view, player, getLoaderManager());
+
+    if (savedInstanceState != null) {
+      MediaItem mediaItem = savedInstanceState.getParcelable(STATE_MEDIA_ITEM);
+      if (mediaItem != null) {
+        player.play(mediaItem, false);
+        uiUpdater.onMetaData();
+      }
+    }
+  }
+
+  @Override
+  public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putParcelable(STATE_MEDIA_ITEM, getCurrentTrack());
   }
 
   @Override
@@ -57,15 +73,15 @@ public class MonitorControlsFragment extends Fragment implements AudioSelectionM
     super.onDestroyView();
   }
 
-  public void playMedia(MediaItem mediaItem) {
-    player.play(mediaItem, true);
-    uiUpdater.onMetaData();
-  }
-
   @Override
   public void onDestroy() {
     super.onDestroy();
     player.release();
+  }
+
+  public void playMedia(@NonNull MediaItem mediaItem) {
+    player.play(mediaItem, true);
+    uiUpdater.onMetaData();
   }
 
   @Nullable
