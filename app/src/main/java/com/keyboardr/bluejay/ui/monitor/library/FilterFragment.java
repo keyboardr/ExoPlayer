@@ -87,7 +87,7 @@ public class FilterFragment extends DialogFragment {
   public static FilterFragment newInstance(@Nullable FilterInfo filterInfo) {
     FilterFragment filterFragment = new FilterFragment();
     Bundle args = new Bundle();
-    args.putParcelable(ARG_FILTER_INFO, filterInfo);
+    args.putParcelable(ARG_FILTER_INFO, filterInfo == null ? FilterInfo.EMPTY : filterInfo);
     filterFragment.setArguments(args);
     return filterFragment;
   }
@@ -148,34 +148,23 @@ public class FilterFragment extends DialogFragment {
       dialog.setView(view);
     }
     sortSpinner = ((Spinner) view.findViewById(R.id.sort));
-    sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-      @Override
-      public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-        if (i == FilterInfo.SortMethod.SHUFFLE) {
-          int currentTextColor = sortToggle.getCurrentTextColor();
-          if (Color.alpha(currentTextColor) != 0) {
-            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
-                ColorUtils.setAlphaComponent(currentTextColor, 0));
-            objectAnimator.setEvaluator(new ArgbEvaluator());
-            objectAnimator.start();
-          }
-          sortToggle.setActivated(true);
-        } else {
-          int currentTextColor = sortToggle.getCurrentTextColor();
-          if (Color.alpha(currentTextColor) != 0xFF) {
-            ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
-                ColorUtils.setAlphaComponent(currentTextColor, 0xFF));
-            objectAnimator.setEvaluator(new ArgbEvaluator());
-            objectAnimator.start();
-          }
-          sortToggle.setActivated(false);
-        }
-        updateFilterInfo();
-      }
+    sortSpinner.post(new Runnable() {
 
       @Override
-      public void onNothingSelected(AdapterView<?> adapterView) {
+      public void run() {
+        sortSpinner.setOnItemSelectedListener(new AdapterView
+            .OnItemSelectedListener
+            () {
+          @Override
+          public void onItemSelected(AdapterView<?> adapterView, View view, int position, long id) {
+            applyShuffleIconTreatment(position);
+            updateFilterInfo();
+          }
 
+          @Override
+          public void onNothingSelected(AdapterView<?> adapterView) {
+          }
+        });
       }
     });
 
@@ -236,7 +225,30 @@ public class FilterFragment extends DialogFragment {
         sortToggle.setChecked(filterInfo.sortAscending);
       }
     }
+    applyShuffleIconTreatment(sortSpinner.getSelectedItemPosition());
     updateReady = true;
+  }
+
+  private void applyShuffleIconTreatment(int sortMethod) {
+    if (sortMethod == FilterInfo.SortMethod.SHUFFLE) {
+      int currentTextColor = sortToggle.getCurrentTextColor();
+      if (Color.alpha(currentTextColor) != 0) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+            ColorUtils.setAlphaComponent(currentTextColor, 0));
+        objectAnimator.setEvaluator(new ArgbEvaluator());
+        objectAnimator.start();
+      }
+      sortToggle.setActivated(true);
+    } else {
+      int currentTextColor = sortToggle.getCurrentTextColor();
+      if (Color.alpha(currentTextColor) != 0xFF) {
+        ObjectAnimator objectAnimator = ObjectAnimator.ofInt(sortToggle, "textColor",
+            ColorUtils.setAlphaComponent(currentTextColor, 0xFF));
+        objectAnimator.setEvaluator(new ArgbEvaluator());
+        objectAnimator.start();
+      }
+      sortToggle.setActivated(false);
+    }
   }
 
   @Override

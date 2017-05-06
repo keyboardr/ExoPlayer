@@ -20,7 +20,7 @@ import java.util.Set;
 
 public class FilterInfo implements Parcelable {
 
-  public static final FilterInfo EMPTY = new FilterInfo(SortMethod.ID, true,
+  public static final FilterInfo EMPTY = new FilterInfo(SortMethod.ID, false,
       Collections.<Shortlist>emptySet(), Collections.<Shortlist>emptySet(), null);
 
   @Retention(RetentionPolicy.SOURCE)
