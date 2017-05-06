@@ -58,7 +58,6 @@ import java.util.List;
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
-
   private static final String STATE_FILTER = "filter";
 
   public interface Holder extends MonitorContainer {
@@ -233,13 +232,20 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     getActivity().invalidateOptionsMenu();
-    if (savedInstanceState == null) {
+    FilterInfo savedFilterInfo = getSavedFilterInfo(savedInstanceState);
+    if (savedFilterInfo == null) {
       getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
     } else {
-      FilterInfo filterInfo = savedInstanceState.getParcelable(STATE_FILTER);
-      if (filterInfo != null) {
-        setLibraryFilter(filterInfo);
-      }
+      setLibraryFilter(savedFilterInfo);
+    }
+  }
+
+  @Nullable
+  private FilterInfo getSavedFilterInfo(@Nullable Bundle savedInstanceState) {
+    if (savedInstanceState == null) {
+      return null;
+    } else {
+      return savedInstanceState.getParcelable(STATE_FILTER);
     }
   }
 
