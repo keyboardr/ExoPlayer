@@ -46,7 +46,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_column="1"
-                android:layout_columnWeight="1"
+                android:layout_gravity="fill_horizontal"
                 android:layout_row="0"
                 android:entries="@array/sort_methods"
                 android:padding="8dp"/>
@@ -74,7 +74,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_column="1"
-                android:layout_columnWeight="1"
+                android:layout_gravity="fill_horizontal"
                 android:layout_row="1"
                 android:focusable="true"
                 android:focusableInTouchMode="true"/>
@@ -85,8 +85,8 @@
                 android:layout_width="0dp"
                 android:layout_column="1"
                 android:layout_columnSpan="2"
-                android:layout_columnWeight="1"
                 android:layout_row="1"
+                android:layout_gravity="fill_horizontal"
                 android:drawableTint="@android:color/transparent"
                 android:inputType="text"
                 android:nextFocusLeft="@+id/sort"

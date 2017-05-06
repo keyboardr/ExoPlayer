@@ -1,5 +1,6 @@
 <resources>
     <dimen name="controls_elevation">16dp</dimen>
+    <dimen name="min_filter_dialog_width">320dp</dimen>
     <dimen name="min_filter_dialog_height">320dp</dimen>
     <bool name="allow_library_editor">false</bool>
     <dimen name="play_button_size">48dp</dimen>

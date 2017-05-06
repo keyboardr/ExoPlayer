@@ -24,6 +24,8 @@ public class FilterHolder extends Fragment implements FilterFragment.Holder,
   private FilterInfo historyFilter;
   private TabLayout tabLayout;
 
+// TODO: 5/6/2017 Save state properly
+
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
@@ -36,7 +38,7 @@ public class FilterHolder extends Fragment implements FilterFragment.Holder,
     super.onViewCreated(view, savedInstanceState);
     ViewPager pager = (ViewPager) view.findViewById(R.id.filter_pager);
     pager.setAdapter(new FragmentPagerAdapter(getChildFragmentManager()) {
-      FilterFragment libraryFilterFragment = new FilterFragment();
+      FilterFragment libraryFilterFragment = FilterFragment.newInstance(libraryFilter);
       HistoryFragment historyFilterFragment = new HistoryFragment();
 
       @Override

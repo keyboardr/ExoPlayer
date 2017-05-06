@@ -2,7 +2,6 @@ package com.keyboardr.bluejay.ui.monitor.library;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -13,9 +12,11 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RestrictTo;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.graphics.ColorUtils;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -27,7 +28,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.Spinner;
 import android.widget.ToggleButton;
 
@@ -46,6 +46,9 @@ public class FilterFragment extends DialogFragment {
 
   private static final String STATE_SHORTLISTS = "shortlists";
   private static final String STATE_DESELECTED_SHORTLISTS = "deselected_shortlists";
+  private static final String ARG_FILTER_INFO = "filterInfo";
+
+  private boolean updateReady;
 
   private Spinner sortSpinner;
   private ToggleButton sortToggle;
@@ -75,9 +78,23 @@ public class FilterFragment extends DialogFragment {
       }
     }
   };
+  private AlertDialog dialog;
 
   public interface Holder {
     void setLibraryFilter(FilterInfo filter);
+  }
+
+  public static FilterFragment newInstance(@Nullable FilterInfo filterInfo) {
+    FilterFragment filterFragment = new FilterFragment();
+    Bundle args = new Bundle();
+    args.putParcelable(ARG_FILTER_INFO, filterInfo);
+    filterFragment.setArguments(args);
+    return filterFragment;
+  }
+
+  @RestrictTo(RestrictTo.Scope.SUBCLASSES)
+  public FilterFragment() {
+    super();
   }
 
   @Override
@@ -93,13 +110,20 @@ public class FilterFragment extends DialogFragment {
       if (deselected != null) {
         deselectedShortlists.addAll(deselected);
       }
+    } else if (getArguments().containsKey(ARG_FILTER_INFO)) {
+      FilterInfo existing = getArguments().getParcelable(ARG_FILTER_INFO);
+      if (existing != null) {
+        selectedShortlists.addAll(existing.requiredShortlists);
+        deselectedShortlists.addAll(existing.disallowedShortlists);
+        filterText = existing.filterString;
+      }
     }
   }
 
   @Nullable
   @Override
-  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable
-      Bundle savedInstanceState) {
+  public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
+                           @Nullable Bundle savedInstanceState) {
     return inflater.inflate(R.layout.fragment_filter, container, false);
   }
 
@@ -113,21 +137,16 @@ public class FilterFragment extends DialogFragment {
         dialogInterface.dismiss();
       }
     });
-    FrameLayout frameLayout = new FrameLayout(builder.getContext());
-    frameLayout.setMinimumHeight(
-        getResources().getDimensionPixelSize(R.dimen.min_filter_dialog_height));
-    View contentView = onCreateView(LayoutInflater.from(builder.getContext()), frameLayout,
-        savedInstanceState);
-    builder.setView(frameLayout);
-    frameLayout.addView(contentView);
-    //noinspection ConstantConditions
-    onViewCreated(contentView, savedInstanceState);
-    return builder.create();
+    dialog = builder.create();
+    return dialog;
   }
 
   @Override
-  public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+  public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
+    if (dialog != null) {
+      dialog.setView(view);
+    }
     sortSpinner = ((Spinner) view.findViewById(R.id.sort));
     sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
       @Override
@@ -208,6 +227,16 @@ public class FilterFragment extends DialogFragment {
             updateFilterInfo();
           }
         });
+
+    if (savedInstanceState == null && getArguments().containsKey(ARG_FILTER_INFO)) {
+      FilterInfo filterInfo = getArguments().getParcelable(ARG_FILTER_INFO);
+      if (filterInfo != null) {
+        filterTextInput.setText(filterText);
+        sortSpinner.setSelection(filterInfo.sortMethod);
+        sortToggle.setChecked(filterInfo.sortAscending);
+      }
+    }
+    updateReady = true;
   }
 
   @Override
@@ -258,6 +287,9 @@ public class FilterFragment extends DialogFragment {
   }
 
   private void updateFilterInfo() {
+    if (!updateReady) {
+      return;
+    }
     //noinspection WrongConstant
     getParent().setLibraryFilter(new FilterInfo(sortSpinner.getSelectedItemPosition(),
         sortToggle.isChecked(),

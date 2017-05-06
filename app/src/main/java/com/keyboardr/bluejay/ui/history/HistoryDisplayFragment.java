@@ -153,7 +153,6 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
 
   @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
   public void onSetMetadataEvent(SetMetadataEvent event) {
-    getLoaderManager().destroyLoader(0);
     getLoaderManager().restartLoader(0, null, this);
   }
 

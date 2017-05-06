@@ -58,6 +58,9 @@ import java.util.List;
 public class LibraryFragment extends android.support.v4.app.Fragment
     implements FilterFragment.Holder, MetadataFragment.Holder {
 
+
+  private static final String STATE_FILTER = "filter";
+
   public interface Holder extends MonitorContainer {
 
     void addToQueue(@NonNull MediaItem mediaItem);
@@ -153,6 +156,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   private final MediaAdapter adapter = new MediaAdapter(decorator);
 
   private ShortlistManager shortlistManager;
+  private FilterInfo currentFilter;
 
   private BroadcastReceiver shortlistsReadyReceiver = new BroadcastReceiver() {
     @Override
@@ -229,11 +233,25 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
     getActivity().invalidateOptionsMenu();
-    getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
+    if (savedInstanceState == null) {
+      getLoaderManager().initLoader(0, null, mediaLoaderCallbacks);
+    } else {
+      FilterInfo filterInfo = savedInstanceState.getParcelable(STATE_FILTER);
+      if (filterInfo != null) {
+        setLibraryFilter(filterInfo);
+      }
+    }
+  }
+
+  @Override
+  public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putParcelable(STATE_FILTER, currentFilter);
   }
 
   @Override
   public void setLibraryFilter(@NonNull FilterInfo filter) {
+    currentFilter = filter;
     Bundle args = new Bundle();
     args.putParcelable(ARG_FILTER, filter);
     getLoaderManager().restartLoader(0, args, mediaLoaderCallbacks);
@@ -266,7 +284,7 @@ public class LibraryFragment extends android.support.v4.app.Fragment
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.filter_library) {
-      new FilterFragment().show(getChildFragmentManager(), null);
+      FilterFragment.newInstance(currentFilter).show(getChildFragmentManager(), null);
       return true;
     }
     return super.onOptionsItemSelected(item);
