@@ -6,7 +6,7 @@
     <string name="audio_output_builtin_speaker">Speaker</string>
     <string name="audio_output_wired_headset">Wired headset</string>
     <string name="audio_output_builtin_earpiece">Earpice</string>
-    <string name="setlist_empty">Setlist empty</string>
+    <string name="setlist_empty"><big>Setlist empty</big>\nAdd tracks from your library</string>
     <string name="end_set">End set</string>
     <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
     <string name="title_sort">Sort:</string>
