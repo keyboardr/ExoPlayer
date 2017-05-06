@@ -54,7 +54,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:drawableTop="@drawable/ic_queue_music"
-            android:text="@string/playlist"
+            android:text="@string/setlist"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/bottom_tab_history"
             app:layout_constraintHorizontal_weight="1"

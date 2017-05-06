@@ -18,6 +18,7 @@ import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
@@ -117,6 +118,15 @@ public class LibraryFragment extends android.support.v4.app.Fragment
     @DrawableRes
     public int getIconForItem(@NonNull MediaItem mediaItem) {
       return MediaConnectedEvent.isConnected() ? R.drawable.ic_playlist_add : 0;
+    }
+
+    @Override
+    @StringRes
+    public int getDescriptionForIcon(@DrawableRes int icon) {
+      if (icon == R.drawable.ic_playlist_add) {
+        return R.string.description_add_track;
+      }
+      return 0;
     }
 
     @Override

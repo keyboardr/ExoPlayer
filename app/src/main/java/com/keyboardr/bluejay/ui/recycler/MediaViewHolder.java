@@ -3,6 +3,7 @@ package com.keyboardr.bluejay.ui.recycler;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import com.bumptech.glide.Glide;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.model.MediaItem;
 import com.keyboardr.bluejay.util.MathUtil;
+import com.keyboardr.bluejay.util.TooltipHelper;
 
 /**
  * ViewHolder for media items
@@ -27,6 +29,9 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     @DrawableRes
     int getIconForItem(@NonNull MediaItem mediaItem);
+
+    @StringRes
+    int getDescriptionForIcon(@DrawableRes int icon);
 
     void onDecoratorSelected(@NonNull MediaItem mediaItem, @NonNull View view);
 
@@ -105,6 +110,8 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
 
     }
 
+    TooltipHelper.addTooltip(menu);
+
     if (dragStartListener != null) {
       icon.setOnTouchListener(new View.OnTouchListener() {
         @Override
@@ -141,6 +148,11 @@ public class MediaViewHolder extends RecyclerView.ViewHolder {
         } else {
           icon.setVisibility(View.VISIBLE);
           icon.setImageResource(iconForItem);
+          int descriptionForIcon = mediaViewDecorator.getDescriptionForIcon(iconForItem);
+          if (descriptionForIcon > 0) {
+            icon.setContentDescription(icon.getContext().getText(descriptionForIcon));
+            TooltipHelper.addTooltip(icon);
+          }
         }
 
         if (mediaViewDecorator.showMoreOption()) {

@@ -14,7 +14,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="24dp"
             android:layout_gravity="center_horizontal"
-            android:text="@string/playlist_empty"
+            android:text="@string/setlist_empty"
             android:textAppearance="?android:textAppearanceLarge"/>
 
         <android.support.v7.widget.RecyclerView
