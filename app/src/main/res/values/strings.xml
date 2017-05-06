@@ -8,7 +8,7 @@
     <string name="audio_output_builtin_earpiece">Earpice</string>
     <string name="setlist_empty"><big>Setlist empty</big>\nAdd tracks from your library</string>
     <string name="end_set">End set</string>
-    <string name="end_set_dialog_message">Are you sure you want to end this set?</string>
+    <string name="end_set_dialog_message">Are you sure you want to end this\u00A0set?</string>
     <string name="title_sort">Sort:</string>
     <string name="title_filter">Filter:</string>
     <string name="new_shortlist">New tag</string>
@@ -20,8 +20,7 @@
     <string name="filter">Filter</string>
     <string name="done">Done</string>
     <string name="confirm_add_title">Track already in setlist</string>
-    <string name="confirm_add_message">Are you sure you want to add %s to the setlist
-        again?</string>
+    <string name="confirm_add_message">Are you sure you want to add %s to the setlist\u00A0again?</string>
     <string name="add_track">Add track</string>
     <string name="description_add_track">Add track to setlist</string>
     <string name="name">Name</string>
@@ -32,15 +31,14 @@
     <string name="edit_metadata">Edit metadata</string>
     <string name="edit_tags">Edit tags</string>
     <string name="close">Close</string>
-    <string name="external_storage_rationale">BlueJay needs permission to load your music library</string>
+    <string name="external_storage_rationale">BlueJay needs permission to load your music\u00A0library</string>
     <string name="grant_permission">Grant permission</string>
     <string name="up">Up</string>
     <string name="down">Down</string>
     <string name="info_track_count">Track: %1$d/%2$d</string>
     <string name="info_end_time">End time: %s</string>
     <string name="title_shortlists">Tags</string>
-    <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to
-        delete.</string>
+    <string name="shortlist_editor_instructions">Click to rename, drag to reorder, swipe to\u00A0delete.</string>
     <string name="rename_title">Rename %s</string>
     <string name="error_no_usb_audio">No USB output device found</string>
     <string name="setlist_label">Setlist:</string>
@@ -58,6 +56,7 @@
     <string name="description_cancel_fadeout">Cancel fade out</string>
     <string name="description_slide_to_fadeout">Drag slider to fade out</string>
     <string name="title_fade">Fade</string>
+    <string name="setlist_empty_summary">Your setlists will show here after they\'re\u00A0done.</string>
 
     <string-array name="sort_methods">
         <item>Default</item>

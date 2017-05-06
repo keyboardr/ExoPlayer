@@ -210,7 +210,7 @@ public class HistoryDisplayFragment extends Fragment implements LoaderManager
     shareButton.setEnabled(false);
     deleteButton.setEnabled(false);
     setlistDataHandler.removeCallbacksAndMessages(null);
-    setlistSummary.setVisibility(View.INVISIBLE);
+    setlistSummary.setText(R.string.setlist_empty_summary);
     getChildFragmentManager().beginTransaction().hide(getLibraryFragment()).commit();
   }
 
