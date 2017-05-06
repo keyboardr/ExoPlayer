@@ -27,6 +27,7 @@
         android:background="?android:attr/selectableItemBackgroundBorderless"
         android:padding="8dp"
         android:src="@drawable/ic_close"
-        android:tint="?android:attr/colorForeground"/>
+        android:tint="?android:attr/colorForeground"
+        android:tintMode="src_in"/>
 
 </FrameLayout>

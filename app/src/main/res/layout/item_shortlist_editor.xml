@@ -14,7 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:src="@drawable/ic_drag_handle"
-        android:tint="?android:textColorPrimary"/>
+        android:tint="?android:textColorPrimary"
+        android:tintMode="src_in"/>
 
     <TextView
         android:id="@android:id/text1"

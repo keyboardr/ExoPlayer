@@ -24,5 +24,6 @@
         android:background="?selectableItemBackgroundBorderless"
         android:padding="8dp"
         android:src="@drawable/ic_more_vert_black"
-        android:tint="?android:colorForeground"/>
+        android:tint="?android:colorForeground"
+        android:tintMode="src_in"/>
 </com.keyboardr.bluejay.util.CheckableLinearLayout>

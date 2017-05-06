@@ -30,5 +30,6 @@
         android:layout_height="36dp"
         android:background="?selectableItemBackgroundBorderless"
         android:src="@drawable/asl_close_skip"
-        android:tint="@android:color/white"/>
+        android:tint="@android:color/white"
+        android:tintMode="src_in"/>
 </LinearLayout>
