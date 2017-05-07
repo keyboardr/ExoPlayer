@@ -410,6 +410,9 @@ public class ShortlistManager {
                   Log.d(TAG, "onQueryComplete: Finished init pairs");
                 }
               }.execute(cursor);
+            } else {
+              // No pairs
+              manager.setShortlistPairs(new LongSparseArray<Set<Long>>());
             }
             break;
           case TOKEN_SHORTLIST_ADDED:
