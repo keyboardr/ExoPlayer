@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/DanceDJ.iml" filepath="$PROJECT_DIR$/DanceDJ.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/dancedj.iml" filepath="$PROJECT_DIR$/dancedj.iml" />
       <module fileurl="file://$PROJECT_DIR$/exoplayer/exoplayer.iml" filepath="$PROJECT_DIR$/exoplayer/exoplayer.iml" />
