@@ -146,6 +146,9 @@ public class ShortlistManager {
       return;
     }
     Set<Long> shortlists = shortlistMap.get(mediaItem.getTransientId());
+    if (shortlists == null) {
+      shortlists = new ArraySet<>();
+    }
 
     if (!shortlists.contains(mediaItem.getTransientId())) {
       shortlists.add(shortlist.getId());
