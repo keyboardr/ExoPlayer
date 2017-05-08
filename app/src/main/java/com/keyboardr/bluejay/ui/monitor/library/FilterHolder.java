@@ -24,8 +24,6 @@ public class FilterHolder extends Fragment implements FilterFragment.Holder,
   private FilterInfo historyFilter;
   private TabLayout tabLayout;
 
-// TODO: 5/6/2017 Save state properly
-
   @Nullable
   @Override
   public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,

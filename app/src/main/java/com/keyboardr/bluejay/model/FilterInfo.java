@@ -16,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 public class FilterInfo implements Parcelable {
@@ -47,6 +48,8 @@ public class FilterInfo implements Parcelable {
   @Nullable
   public final Long setlistId;
 
+  private double randomSeed;
+
   public FilterInfo(@SortMethod int sortMethod, boolean sortAscending,
                     @NonNull Set<Shortlist> requiredShortlists,
                     @NonNull Set<Shortlist> disallowedShortlists, @Nullable String filterString) {
@@ -71,7 +74,12 @@ public class FilterInfo implements Parcelable {
     StringBuilder builder;
     switch (sortMethod) {
       case SortMethod.SHUFFLE:
-        return "RANDOM()"; // returns instead of breaks since it doesn't need asc or desc
+        while (randomSeed == 0) {
+          // while instead of if to make sure we don't accidentally get 0 as a random choice
+          randomSeed = new Random().nextDouble();
+        }
+        // returns instead of breaks since it doesn't need asc or desc
+        return "(substr(_id * " + randomSeed + ", length(_id) + 2))";
       case SortMethod.ID:
         builder = new StringBuilder(MediaStore.Audio.Media._ID);
         break;
@@ -148,6 +156,7 @@ public class FilterInfo implements Parcelable {
     } else {
       dest.writeInt(0);
     }
+    dest.writeDouble(randomSeed);
   }
 
   protected FilterInfo(Parcel in) {
@@ -166,6 +175,7 @@ public class FilterInfo implements Parcelable {
     } else {
       setlistId = null;
     }
+    randomSeed = in.readDouble();
   }
 
   public static final Parcelable.Creator<FilterInfo> CREATOR = new Parcelable.Creator<FilterInfo>
