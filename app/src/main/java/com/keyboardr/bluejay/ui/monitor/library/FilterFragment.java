@@ -225,7 +225,6 @@ public class FilterFragment extends DialogFragment {
         sortToggle.setChecked(filterInfo.sortAscending);
       }
     }
-    applyShuffleIconTreatment(sortSpinner.getSelectedItemPosition());
   }
 
   @Override
@@ -234,6 +233,7 @@ public class FilterFragment extends DialogFragment {
     getView().post(new Runnable() {
       @Override
       public void run() {
+        applyShuffleIconTreatment(sortSpinner.getSelectedItemPosition());
         updateReady = true;
       }
     });
