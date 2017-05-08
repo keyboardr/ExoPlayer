@@ -82,11 +82,14 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
       }
       if (!(existingFrag instanceof SetFragment)) {
         SetFragment newFragment = SetFragment.newInstance(mediaBrowser.getSessionToken());
-        ChangeBounds sharedTransition = new ChangeBounds();
-        sharedTransition.setStartDelay(100);
-        newFragment.setSharedElementEnterTransition(sharedTransition);
-        newFragment.setEnterTransition(new Explode());
-        existingFrag.setExitTransition(new Slide());
+        if (pendingMetadata != null) {
+          // This was started as a result of calling #startNewSetlist(SetMetadata) so animate it
+          ChangeBounds sharedTransition = new ChangeBounds();
+          sharedTransition.setStartDelay(100);
+          newFragment.setSharedElementEnterTransition(sharedTransition);
+          newFragment.setEnterTransition(new Explode());
+          existingFrag.setExitTransition(new Slide());
+        }
 
         getSupportFragmentManager().beginTransaction()
             .replace(R.id.playlist, newFragment)
@@ -94,6 +97,7 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
                 getString(R.string.shared_element_bottom_bar))
             .commit();
       }
+      pendingMetadata = null;
       Buses.PLAYLIST.postSticky(new MediaConnectedEvent(true));
     }
 
