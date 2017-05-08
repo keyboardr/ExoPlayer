@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.LongSparseArray;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.data.DataFetcher;
@@ -53,8 +52,6 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
     return new AlbumArtUriFetcher(model, width, height, contentResolver, streamLoader);
   }
 
-  public static final LongSparseArray<Uri> albumArtUriCache = new LongSparseArray<>();
-
   private static class AlbumArtUriFetcher implements DataFetcher<InputStream> {
 
     private final MediaItem mediaItem;
@@ -82,12 +79,6 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
         return null;
       }
 
-      Uri cachedUri = albumArtUriCache.get(albumId);
-      if (cachedUri != null) {
-        resourceFetcher = streamLoader.getResourceFetcher(cachedUri, width, height);
-        return resourceFetcher.loadData(priority);
-      }
-
       try (Cursor cursor = contentResolver.query(
           MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI,
           new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
@@ -101,7 +92,6 @@ public class AlbumArtUriLoader implements ModelLoader<MediaItem, InputStream> {
             return null;
           }
           Uri artUri = new Uri.Builder().scheme(ContentResolver.SCHEME_FILE).path(artPath).build();
-          albumArtUriCache.put(albumId, artUri);
           resourceFetcher = streamLoader.getResourceFetcher(artUri, width, height);
           return resourceFetcher.loadData(priority);
         }
