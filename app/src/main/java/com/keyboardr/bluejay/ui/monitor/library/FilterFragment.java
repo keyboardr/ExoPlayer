@@ -226,7 +226,17 @@ public class FilterFragment extends DialogFragment {
       }
     }
     applyShuffleIconTreatment(sortSpinner.getSelectedItemPosition());
-    updateReady = true;
+  }
+
+  @Override
+  public void onActivityCreated(Bundle savedInstanceState) {
+    super.onActivityCreated(savedInstanceState);
+    getView().post(new Runnable() {
+      @Override
+      public void run() {
+        updateReady = true;
+      }
+    });
   }
 
   private void applyShuffleIconTreatment(int sortMethod) {

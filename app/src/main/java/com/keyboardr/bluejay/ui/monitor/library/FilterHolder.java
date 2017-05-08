@@ -18,11 +18,29 @@ import com.keyboardr.bluejay.util.FragmentUtils;
 public class FilterHolder extends Fragment implements FilterFragment.Holder,
     HistoryFragment.Holder {
 
+  private static final String STATE_LIBRARY_FILTER = "libraryFilter";
+  private static final String STATE_HISTORY_FILTER = "historyFilter";
   private static final int INDEX_LIBRARY_FILTER = 0;
   private static final int INDEX_HISTORY_FILTER = 1;
   private FilterInfo libraryFilter;
   private FilterInfo historyFilter;
   private TabLayout tabLayout;
+
+  @Override
+  public void onCreate(@Nullable Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    if (savedInstanceState != null) {
+      libraryFilter = savedInstanceState.getParcelable(STATE_LIBRARY_FILTER);
+      historyFilter = savedInstanceState.getParcelable(STATE_HISTORY_FILTER);
+    }
+  }
+
+  @Override
+  public void onSaveInstanceState(Bundle outState) {
+    super.onSaveInstanceState(outState);
+    outState.putParcelable(STATE_LIBRARY_FILTER, libraryFilter);
+    outState.putParcelable(STATE_HISTORY_FILTER, historyFilter);
+  }
 
   @Nullable
   @Override
