@@ -95,10 +95,15 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
             .replace(R.id.playlist, newFragment)
             .addSharedElement(findViewById(R.id.new_setlist_container),
                 getString(R.string.shared_element_bottom_bar))
-            .commit();
+            .commitNow();
       }
       pendingMetadata = null;
       Buses.PLAYLIST.postSticky(new MediaConnectedEvent(true));
+
+      View playlistContainer = findViewById(R.id.playlist);
+      if (playlistContainer != null) {
+        playlistContainer.setVisibility(View.VISIBLE);
+      }
     }
 
     @Override
@@ -195,6 +200,11 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
       public void onReceive(Context context, Intent intent) {
         if (getResultCode() == RESULT_OK) {
           mediaBrowser.connect();
+
+          View playlistContainer = findViewById(R.id.playlist);
+          if (playlistContainer != null) {
+            playlistContainer.setVisibility(View.INVISIBLE);
+          }
         }
       }
     }, null, RESULT_CANCELED, null, null);
