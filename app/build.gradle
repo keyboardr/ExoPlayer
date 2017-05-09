@@ -16,7 +16,7 @@ android {
         minSdkVersion 23
         targetSdkVersion project.ext.targetSdkVersion
         resConfigs "en"
-        versionCode 1
+        versionCode 22
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
