@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:width="18dp"
     android:height="18dp"
     android:tint="?attr/colorControlNormal"
     android:viewportHeight="18"
-    android:viewportWidth="18">
+    android:viewportWidth="18"
+    tools:height="64dp"
+    tools:tint="?attr/colorControlActivated"
+    tools:width="64dp">
 
     <group
         android:name="iconGroup"
@@ -21,28 +25,18 @@
     </group>
     <group
         android:name="arrow"
-        android:pivotX="12"
-        android:pivotY="12"
-        android:scaleX=".5"
-        android:scaleY=".5">
-        <clip-path
-            android:name="arrow_mask"
-            android:pathData="@string/mask_arrow_full"/>
-        <path
-            android:name="strike_thru"
-            android:pathData="@string/path_strike_thru"
-            android:strokeColor="@android:color/white"
-            android:strokeLineCap="square"
-            android:strokeWidth=".8"
-            android:trimPathEnd="0"/>
+        android:pivotX="14"
+        android:pivotY="14"
+        android:scaleX=".3"
+        android:scaleY=".3">
         <group>
             <clip-path
-                android:name="mask"
-                android:pathData="@string/mask_no_strike_thru"/>
+                android:name="arrow_mask"
+                android:pathData="@string/mask_arrow_full"/>
             <path
                 android:name="arrow_path"
                 android:fillColor="@android:color/white"
-                android:pathData="@string/path_arrow_small"/>
+                android:pathData="@string/path_arrow_continue"/>
         </group>
     </group>
 </vector>

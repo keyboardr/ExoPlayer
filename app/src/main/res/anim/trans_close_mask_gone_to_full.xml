@@ -2,9 +2,9 @@
 <set xmlns:android="http://schemas.android.com/apk/res/android">
     <objectAnimator
         android:duration="@android:integer/config_shortAnimTime"
-        android:interpolator="@android:interpolator/fast_out_linear_in"
+        android:interpolator="@android:interpolator/fast_out_slow_in"
         android:propertyName="pathData"
-        android:valueFrom="@string/mask_strike_thru"
-        android:valueTo="@string/mask_no_strike_thru"
+        android:valueFrom="@string/mask_close_gone"
+        android:valueTo="@string/mask_arrow_full"
         android:valueType="pathType"/>
 </set>
