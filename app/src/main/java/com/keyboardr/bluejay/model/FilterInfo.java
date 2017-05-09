@@ -24,7 +24,9 @@ public class FilterInfo implements Parcelable {
 
   public static final FilterInfo EMPTY = new FilterInfo(SortMethod.ID, false,
       Collections.<Shortlist>emptySet(), Collections.<Shortlist>emptySet(), null);
-  public static final String RANDOMIZATION_ORDER = "((_id * %1$f) - cast((_id * %1$f) as int))";
+  private static final int M = 0x9E3779B9;
+  public static final String RANDOMIZATION_ORDER =
+      "((~(_id & %1$d) & (_id | %1$d)) * " + M + " %% (1 << 32)) >> 5";
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION,
@@ -50,7 +52,7 @@ public class FilterInfo implements Parcelable {
   @Nullable
   public final Long setlistId;
 
-  private double randomSeed;
+  private int randomSeed;
 
   public FilterInfo(@SortMethod int sortMethod, boolean sortAscending,
                     @NonNull Set<Shortlist> requiredShortlists,
@@ -78,7 +80,7 @@ public class FilterInfo implements Parcelable {
       case SortMethod.SHUFFLE:
         while (randomSeed == 0) {
           // while instead of if to make sure we don't accidentally get 0 as a random choice
-          randomSeed = new Random().nextDouble();
+          randomSeed = new Random().nextInt();
         }
         // returns instead of breaks since it doesn't need asc or desc
         return String.format(Locale.US, RANDOMIZATION_ORDER, randomSeed);
@@ -159,7 +161,7 @@ public class FilterInfo implements Parcelable {
     } else {
       dest.writeInt(0);
     }
-    dest.writeDouble(randomSeed);
+    dest.writeInt(randomSeed);
   }
 
   protected FilterInfo(Parcel in) {
@@ -178,7 +180,7 @@ public class FilterInfo implements Parcelable {
     } else {
       setlistId = null;
     }
-    randomSeed = in.readDouble();
+    randomSeed = in.readInt();
   }
 
   public static final Parcelable.Creator<FilterInfo> CREATOR = new Parcelable.Creator<FilterInfo>
