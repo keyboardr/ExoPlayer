@@ -4,7 +4,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.graphics.drawable.Icon;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
@@ -30,6 +29,8 @@ import com.keyboardr.bluejay.ui.monitor.MonitorControlsFragment;
 import com.keyboardr.bluejay.util.MathUtil;
 
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -64,14 +65,20 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
   @NonNull
   protected final P player;
 
-  private final Handler seekHandler = new Handler();
+  private Timer seekTimer;
 
-  @NonNull
+  private class SeekTask extends TimerTask {
+
+    @Override
+    public void run() {
+      view.post(seekRunnable);
+    }
+  }
+
   private final Runnable seekRunnable = new Runnable() {
     @Override
     public void run() {
       onSeekComplete(player);
-      seekHandler.postDelayed(this, 1000 - (player.getCurrentPosition() % 1000));
     }
   };
 
@@ -292,14 +299,22 @@ public abstract class PlayerControlsUpdater<P extends Player> implements AbsPlay
 
   public void detach() {
     player.setPlaybackListener(null);
-    seekHandler.removeCallbacks(seekRunnable);
+    if (seekTimer != null) {
+      seekTimer.cancel();
+      seekTimer = null;
+    }
   }
 
   public void updatePlayState() {
     updatePlayPauseButton();
-    seekHandler.removeCallbacks(seekRunnable);
     if (player.isPlaying()) {
-      seekHandler.post(seekRunnable);
+      if (seekTimer == null) {
+        seekTimer = new Timer();
+        seekTimer.scheduleAtFixedRate(new SeekTask(), 0, 1000);
+      }
+    } else if (seekTimer != null) {
+      seekTimer.cancel();
+      seekTimer = null;
     }
   }
 
