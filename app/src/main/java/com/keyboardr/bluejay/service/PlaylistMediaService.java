@@ -242,7 +242,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
         .setContentText(subtitle)
         .setLargeIcon(iconBitmap)
         .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-        .setSmallIcon(R.drawable.ic_play_arrow) // TODO: 1/10/2017 Update this icon when I have one
+        .setSmallIcon(R.drawable.ic_stat_bluejay)
         .setColor(ContextCompat.getColor(this, R.color.colorPrimaryDark))
         .setContentIntent(controller.getSessionActivity())
         .setStyle(new NotificationCompat.MediaStyle()
