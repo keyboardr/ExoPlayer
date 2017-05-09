@@ -16,6 +16,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -23,6 +24,7 @@ public class FilterInfo implements Parcelable {
 
   public static final FilterInfo EMPTY = new FilterInfo(SortMethod.ID, false,
       Collections.<Shortlist>emptySet(), Collections.<Shortlist>emptySet(), null);
+  public static final String RANDOMIZATION_ORDER = "((_id * %1$f) - cast((_id * %1$f) as int))";
 
   @Retention(RetentionPolicy.SOURCE)
   @IntDef({SortMethod.ID, SortMethod.TITLE, SortMethod.ARTIST, SortMethod.DURATION,
@@ -79,7 +81,8 @@ public class FilterInfo implements Parcelable {
           randomSeed = new Random().nextDouble();
         }
         // returns instead of breaks since it doesn't need asc or desc
-        return "(substr(_id * " + randomSeed + ", length(_id) + 2))";
+        return String.format(Locale.US, RANDOMIZATION_ORDER, randomSeed);
+
       case SortMethod.ID:
         builder = new StringBuilder(MediaStore.Audio.Media._ID);
         break;
