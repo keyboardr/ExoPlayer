@@ -213,11 +213,9 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
     setSessionToken(mediaSession.getSessionToken());
 
     updateOutputType();
-    updateMetadata();
     updatePlaybackState();
 
     registerReceiver(isAliveReceiver, new IntentFilter(ACTION_CHECK_IS_ALIVE));
-    startService(new Intent(this, PlaylistMediaService.class));
   }
 
   private Notification getNotification() {
@@ -400,6 +398,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
       } else {
 
         MediaMetadataCompat metadata = metadataBuilder
+            .putText(MediaMetadataCompat.METADATA_KEY_DISPLAY_DESCRIPTION, setMetadata.name)
             .putText(MediaMetadataCompat.METADATA_KEY_TITLE, mediaItem.title)
             .putText(MediaMetadataCompat.METADATA_KEY_ARTIST, mediaItem.artist)
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI, mediaItem.toUri().toString())
@@ -495,6 +494,8 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
             metadataValues, null, null);
       }
     }
+
+    updateMetadata();
   }
 
   private void deleteSetlist() {
