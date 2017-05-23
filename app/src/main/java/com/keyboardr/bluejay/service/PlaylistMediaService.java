@@ -114,6 +114,7 @@ public class PlaylistMediaService extends MediaBrowserServiceCompat
           if (metadataBundle == null) {
             throw new IllegalArgumentException("No SetMetadata in extras");
           }
+          startService(new Intent(PlaylistMediaService.this, PlaylistMediaService.class));
           SetMetadata setMetadata = new SetMetadata(metadataBundle);
           updateSetMetadata(setMetadata);
           break;
