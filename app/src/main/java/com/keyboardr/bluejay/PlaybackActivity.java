@@ -101,7 +101,9 @@ public class PlaybackActivity extends AppCompatActivity implements LibraryFragme
       Buses.PLAYLIST.postSticky(new MediaConnectedEvent(true));
 
       View playlistContainer = findViewById(R.id.playlist);
-      if (playlistContainer != null) {
+      boolean displayPlaylist = monitorPlaylistSwitcher == null
+          || monitorPlaylistSwitcher.getDisplayedChild() == INDEX_PLAYLIST;
+      if (playlistContainer != null && displayPlaylist) {
         playlistContainer.setVisibility(View.VISIBLE);
       }
     }
