@@ -58,7 +58,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
     TooltipHelper.addTooltip(cancelButton, true);
     cancelButton.setContentDescription(playPause.getContext()
         .getText(R.string.description_cancel_fadeout));
-    SeekBar seekBar = (SeekBar) content.findViewById(R.id.fader);
+    SeekBar seekBar = content.findViewById(R.id.fader);
     seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
       private int lastProgress = 100;
 
@@ -108,7 +108,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
         popupWindow = null;
       }
     });
-    popupWindow.showAsDropDown(playPause, (int) (-16 * density), (int) (-12 * density));
+    popupWindow.showAsDropDown(playPause, (int) (-12 * density), (int) (-32 * density));
   }
 
   @Override
