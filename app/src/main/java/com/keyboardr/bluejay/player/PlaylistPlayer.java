@@ -24,7 +24,7 @@ import java.util.List;
 
 public class PlaylistPlayer extends AbsPlayer {
 
-  private static final boolean DEBUG_SHORT_SONGS = true;
+  private static final boolean DEBUG_SHORT_SONGS = false;
 
   private List<PlaylistItem> mediaItems = new ArrayList<>();
   private int currentIndex;
