@@ -57,6 +57,7 @@
     <string name="description_slide_to_fadeout">Drag slider to fade out</string>
     <string name="title_fade">Fade</string>
     <string name="setlist_empty_summary">Your setlists will show here after they\'re\u00A0done.</string>
+    <string name="fade_out_track">Fade out track</string>
 
     <string-array name="sort_methods">
         <item>Default</item>

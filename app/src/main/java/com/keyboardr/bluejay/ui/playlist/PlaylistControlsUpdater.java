@@ -3,10 +3,14 @@ package com.keyboardr.bluejay.ui.playlist;
 import android.annotation.SuppressLint;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.PopupMenu;
 import android.widget.PopupWindow;
 import android.widget.SeekBar;
 
@@ -18,11 +22,53 @@ import com.keyboardr.bluejay.util.TooltipHelper;
 
 public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServiceClient> {
 
-  private PopupWindow popupWindow;
+  @NonNull private final FragmentManager childFragmentManager;
+  private PopupWindow fadeOutWindow;
+  private PopupMenu menu;
+
+  private final PopupMenu.OnMenuItemClickListener menuListener = new PopupMenu
+      .OnMenuItemClickListener() {
+
+    @Override
+    public boolean onMenuItemClick(MenuItem menuItem) {
+      switch (menuItem.getItemId()) {
+        case R.id.end_set:
+          new PlaylistControlsFragment.EndSetDialogFragment().show(childFragmentManager, null);
+          return true;
+        case R.id.fade_out:
+          showFadeOut();
+          return true;
+      }
+      return false;
+    }
+  };
 
   public PlaylistControlsUpdater(@NonNull View view, @NonNull PlaylistServiceClient player,
-                                 @NonNull LoaderManager loaderManager) {
+                                 @NonNull LoaderManager loaderManager,
+                                 @NonNull FragmentManager childFragmentManager) {
     super(view, player, loaderManager);
+    this.childFragmentManager = childFragmentManager;
+
+    view.findViewById(R.id.controls_menu).setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        menu = new PopupMenu(view.getContext(), view);
+        menu.inflate(R.menu.frag_set);
+        menu.setOnMenuItemClickListener(menuListener);
+        menu.setOnDismissListener(new PopupMenu.OnDismissListener() {
+          @Override
+          public void onDismiss(PopupMenu popupMenu) {
+            menu = null;
+          }
+        });
+        populateMenu(menu.getMenu());
+        menu.show();
+      }
+    });
+  }
+
+  private void populateMenu(Menu menu) {
+    menu.findItem(R.id.fade_out).setEnabled(player.isPlaying());
   }
 
   @Override
@@ -43,7 +89,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
   }
 
   private void showFadeOut() {
-    popupWindow = new PopupWindow(playPause.getContext());
+    fadeOutWindow = new PopupWindow(playPause.getContext());
     @SuppressLint("InflateParams") final
     View content = LayoutInflater.from(playPause.getContext()).inflate(R.layout.popup_fadeout,
         null);
@@ -52,7 +98,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
       @Override
       public void onClick(View view) {
         player.setVolume(1);
-        popupWindow.dismiss();
+        fadeOutWindow.dismiss();
       }
     });
     TooltipHelper.addTooltip(cancelButton, true);
@@ -81,7 +127,7 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
           seekBar.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK,
               HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
           player.pause();
-          popupWindow.dismiss();
+          fadeOutWindow.dismiss();
         }
       }
 
@@ -98,17 +144,17 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
       }
     });
 
-    popupWindow.setContentView(content);
-    popupWindow.setOverlapAnchor(true);
+    fadeOutWindow.setContentView(content);
+    fadeOutWindow.setOverlapAnchor(true);
     float density = content.getResources().getDisplayMetrics().density;
-    popupWindow.setElevation(24f * density);
-    popupWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
+    fadeOutWindow.setElevation(24f * density);
+    fadeOutWindow.setOnDismissListener(new PopupWindow.OnDismissListener() {
       @Override
       public void onDismiss() {
-        popupWindow = null;
+        fadeOutWindow = null;
       }
     });
-    popupWindow.showAsDropDown(playPause, (int) (-12 * density), (int) (-32 * density));
+    fadeOutWindow.showAsDropDown(playPause, (int) (-12 * density), (int) (-32 * density));
   }
 
   @Override
@@ -125,12 +171,15 @@ public class PlaylistControlsUpdater extends PlayerControlsUpdater<PlaylistServi
           new int[]{R.attr.state_continuous},
           true);
     }
+    if (menu != null) {
+      populateMenu(menu.getMenu());
+    }
   }
 
   @Override
   protected void onItemChanged(@Nullable MediaItem mediaItem) {
-    if (popupWindow != null) {
-      popupWindow.dismiss();
+    if (fadeOutWindow != null) {
+      fadeOutWindow.dismiss();
     }
   }
 

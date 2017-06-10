@@ -32,7 +32,7 @@ public class PlaylistErrorEvent {
       @Override
       public void performRecoveryAction(PlaybackActivity activity) {
         //noinspection ConstantConditions
-        activity.getSetlistFragment().endSetConfirmed();
+        activity.getSetlistFragment().endSet();
       }
     };
 

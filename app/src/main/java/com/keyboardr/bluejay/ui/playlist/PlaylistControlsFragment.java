@@ -1,10 +1,14 @@
 package com.keyboardr.bluejay.ui.playlist;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.media.AudioDeviceInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -44,6 +48,8 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
 
   public interface Holder {
     MediaControllerCompat getMediaController();
+
+    void endSet();
   }
 
   private PlaylistServiceClient player;
@@ -71,7 +77,8 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
   @Override
   public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
     super.onViewCreated(view, savedInstanceState);
-    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager());
+    uiUpdater = new PlaylistControlsUpdater(view, player, getLoaderManager(),
+        getChildFragmentManager());
     audioSelectionManager = new AudioSelectionManager(getContext(), this);
   }
 
@@ -117,4 +124,33 @@ public class PlaylistControlsFragment extends Fragment implements AudioSelection
     return FragmentUtils.getParentChecked(this, Holder.class);
   }
 
+  public void endSetConfirmed() {
+    getParent().endSet();
+  }
+
+  public static class EndSetDialogFragment extends DialogFragment {
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+      return new AlertDialog.Builder(getContext()).setTitle(R.string.end_set)
+          .setMessage(R.string.end_set_dialog_message)
+          .setPositiveButton(android.R.string.yes,
+              new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  //noinspection ConstantConditions
+                  FragmentUtils.getParent(EndSetDialogFragment.this, PlaylistControlsFragment.class)
+                      .endSetConfirmed();
+                  dialogInterface.dismiss();
+                }
+              }).setNegativeButton(android.R.string.cancel,
+              new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  dialogInterface.cancel();
+                }
+              }).create();
+    }
+
+  }
 }

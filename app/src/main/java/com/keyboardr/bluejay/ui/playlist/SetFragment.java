@@ -1,20 +1,13 @@
 package com.keyboardr.bluejay.ui.playlist;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.media.session.MediaControllerCompat;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -55,7 +48,6 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     } catch (RemoteException e) {
       throw new RuntimeException(e);
     }
-    setHasOptionsMenu(true);
   }
 
   public void addToQueue(@NonNull MediaItem mediaItem) {
@@ -127,23 +119,6 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     getPlaylistControlsFragment().moveItem(oldIndex, newIndex);
   }
 
-  @Override
-  public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-    super.onCreateOptionsMenu(menu, inflater);
-    inflater.inflate(R.menu.frag_set, menu);
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    switch (item.getItemId()) {
-      case R.id.end_set:
-        new EndSetDialogFragment().show(getChildFragmentManager(), null);
-        return true;
-    }
-    return super.onOptionsItemSelected(item);
-  }
-
-
   public boolean queueContains(MediaItem mediaItem) {
     for (MediaSessionCompat.QueueItem queueItem : getPlaylist()) {
       if (Long.valueOf(queueItem.getDescription().getMediaId()).equals(
@@ -154,35 +129,10 @@ public class SetFragment extends Fragment implements PlaylistFragment.Holder,
     return false;
   }
 
-  public void endSetConfirmed() {
+  @Override
+  public void endSet() {
     mediaController.getTransportControls().stop();
     //noinspection ConstantConditions
     FragmentUtils.getParent(this, Holder.class).endSet();
-  }
-
-  public static class EndSetDialogFragment extends DialogFragment {
-    @NonNull
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-      return new AlertDialog.Builder(getContext()).setTitle(R.string.end_set)
-          .setMessage(R.string.end_set_dialog_message)
-          .setPositiveButton(android.R.string.yes,
-              new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  //noinspection ConstantConditions
-                  FragmentUtils.getParent(EndSetDialogFragment.this, SetFragment.class)
-                      .endSetConfirmed();
-                  dialogInterface.dismiss();
-                }
-              }).setNegativeButton(android.R.string.cancel,
-              new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                  dialogInterface.cancel();
-                }
-              }).create();
-    }
-
   }
 }
