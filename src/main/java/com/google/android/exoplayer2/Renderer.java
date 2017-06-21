@@ -18,6 +18,7 @@ package com.google.android.exoplayer2;
 import com.google.android.exoplayer2.ExoPlayer.ExoPlayerComponent;
 import com.google.android.exoplayer2.source.SampleStream;
 import com.google.android.exoplayer2.util.MediaClock;
+
 import java.io.IOException;
 
 /**

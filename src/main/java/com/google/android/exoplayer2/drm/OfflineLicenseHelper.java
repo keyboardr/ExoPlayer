@@ -21,25 +21,20 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Pair;
+
 import com.google.android.exoplayer2.C;
-import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager.EventListener;
 import com.google.android.exoplayer2.drm.DefaultDrmSessionManager.Mode;
 import com.google.android.exoplayer2.drm.DrmSession.DrmSessionException;
-import com.google.android.exoplayer2.source.dash.DashUtil;
-import com.google.android.exoplayer2.source.dash.manifest.AdaptationSet;
-import com.google.android.exoplayer2.source.dash.manifest.DashManifest;
-import com.google.android.exoplayer2.source.dash.manifest.Period;
-import com.google.android.exoplayer2.source.dash.manifest.Representation;
 import com.google.android.exoplayer2.upstream.HttpDataSource;
 import com.google.android.exoplayer2.upstream.HttpDataSource.Factory;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * Helper class to download, renew and release offline licenses. It utilizes {@link
- * DefaultDrmSessionManager}.
+ * Helper class to download, renew and release offline licenses.
  */
 public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
 
@@ -48,8 +43,8 @@ public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
   private final HandlerThread handlerThread;
 
   /**
-   * Instantiates a new instance which uses Widevine CDM. Call {@link #releaseResources()} when
-   * you're done with the helper instance.
+   * Instantiates a new instance which uses Widevine CDM. Call {@link #release()} when the instance
+   * is no longer required.
    *
    * @param licenseUrl The default license URL.
    * @param httpDataSourceFactory A factory from which to obtain {@link HttpDataSource} instances.
@@ -64,8 +59,8 @@ public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
   }
 
   /**
-   * Instantiates a new instance which uses Widevine CDM. Call {@link #releaseResources()} when
-   * you're done with the helper instance.
+   * Instantiates a new instance which uses Widevine CDM. Call {@link #release()} when the instance
+   * is no longer required.
    *
    * @param callback Performs key and provisioning requests.
    * @param optionalKeyRequestParameters An optional map of parameters to pass as the last argument
@@ -84,7 +79,7 @@ public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
   }
 
   /**
-   * Constructs an instance. Call {@link #releaseResources()} when you're done with it.
+   * Constructs an instance. Call {@link #release()} when the instance is no longer required.
    *
    * @param mediaDrm An underlying {@link ExoMediaDrm} for use by the manager.
    * @param callback Performs key and provisioning requests.
@@ -97,7 +92,6 @@ public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
       HashMap<String, String> optionalKeyRequestParameters) {
     handlerThread = new HandlerThread("OfflineLicenseHelper");
     handlerThread.start();
-
     conditionVariable = new ConditionVariable();
     EventListener eventListener = new EventListener() {
       @Override
@@ -124,131 +118,98 @@ public final class OfflineLicenseHelper<T extends ExoMediaCrypto> {
         optionalKeyRequestParameters, new Handler(handlerThread.getLooper()), eventListener);
   }
 
-  /** Releases the used resources. */
-  public void releaseResources() {
+  /** Releases the helper. Should be called when the helper is no longer required. */
+  public void release() {
     handlerThread.quit();
   }
 
   /**
    * Downloads an offline license.
    *
-   * @param dataSource The {@link HttpDataSource} to be used for download.
-   * @param manifestUriString The URI of the manifest to be read.
-   * @return The downloaded offline license key set id.
+   * @param drmInitData The {@link DrmInitData} for the content whose license is to be downloaded.
+   * @return The key set id for the downloaded license.
    * @throws IOException If an error occurs reading data from the stream.
    * @throws InterruptedException If the thread has been interrupted.
-   * @throws DrmSessionException Thrown when there is an error during DRM session.
+   * @throws DrmSessionException Thrown when a DRM session error occurs.
    */
-  public byte[] download(HttpDataSource dataSource, String manifestUriString)
-      throws IOException, InterruptedException, DrmSessionException {
-    return download(dataSource, DashUtil.loadManifest(dataSource, manifestUriString));
-  }
-
-  /**
-   * Downloads an offline license.
-   *
-   * @param dataSource The {@link HttpDataSource} to be used for download.
-   * @param dashManifest The {@link DashManifest} of the DASH content.
-   * @return The downloaded offline license key set id.
-   * @throws IOException If an error occurs reading data from the stream.
-   * @throws InterruptedException If the thread has been interrupted.
-   * @throws DrmSessionException Thrown when there is an error during DRM session.
-   */
-  public byte[] download(HttpDataSource dataSource, DashManifest dashManifest)
-      throws IOException, InterruptedException, DrmSessionException {
-    // Get DrmInitData
-    // Prefer drmInitData obtained from the manifest over drmInitData obtained from the stream,
-    // as per DASH IF Interoperability Recommendations V3.0, 7.5.3.
-    if (dashManifest.getPeriodCount() < 1) {
-      return null;
-    }
-    Period period = dashManifest.getPeriod(0);
-    int adaptationSetIndex = period.getAdaptationSetIndex(C.TRACK_TYPE_VIDEO);
-    if (adaptationSetIndex == C.INDEX_UNSET) {
-      adaptationSetIndex = period.getAdaptationSetIndex(C.TRACK_TYPE_AUDIO);
-      if (adaptationSetIndex == C.INDEX_UNSET) {
-        return null;
-      }
-    }
-    AdaptationSet adaptationSet = period.adaptationSets.get(adaptationSetIndex);
-    if (adaptationSet.representations.isEmpty()) {
-      return null;
-    }
-    Representation representation = adaptationSet.representations.get(0);
-    DrmInitData drmInitData = representation.format.drmInitData;
-    if (drmInitData == null) {
-      Format sampleFormat = DashUtil.loadSampleFormat(dataSource, representation);
-      if (sampleFormat != null) {
-        drmInitData = sampleFormat.drmInitData;
-      }
-      if (drmInitData == null) {
-        return null;
-      }
-    }
-    blockingKeyRequest(DefaultDrmSessionManager.MODE_DOWNLOAD, null, drmInitData);
-    return drmSessionManager.getOfflineLicenseKeySetId();
+  public synchronized byte[] downloadLicense(DrmInitData drmInitData) throws IOException,
+      InterruptedException, DrmSessionException {
+    Assertions.checkArgument(drmInitData != null);
+    return blockingKeyRequest(DefaultDrmSessionManager.MODE_DOWNLOAD, null, drmInitData);
   }
 
   /**
    * Renews an offline license.
    *
    * @param offlineLicenseKeySetId The key set id of the license to be renewed.
-   * @return Renewed offline license key set id.
-   * @throws DrmSessionException Thrown when there is an error during DRM session.
+   * @return The renewed offline license key set id.
+   * @throws DrmSessionException Thrown when a DRM session error occurs.
    */
-  public byte[] renew(byte[] offlineLicenseKeySetId) throws DrmSessionException {
+  public synchronized byte[] renewLicense(byte[] offlineLicenseKeySetId)
+      throws DrmSessionException {
     Assertions.checkNotNull(offlineLicenseKeySetId);
-    blockingKeyRequest(DefaultDrmSessionManager.MODE_DOWNLOAD, offlineLicenseKeySetId, null);
-    return drmSessionManager.getOfflineLicenseKeySetId();
+    return blockingKeyRequest(DefaultDrmSessionManager.MODE_DOWNLOAD, offlineLicenseKeySetId, null);
   }
 
   /**
    * Releases an offline license.
    *
    * @param offlineLicenseKeySetId The key set id of the license to be released.
-   * @throws DrmSessionException Thrown when there is an error during DRM session.
+   * @throws DrmSessionException Thrown when a DRM session error occurs.
    */
-  public void release(byte[] offlineLicenseKeySetId) throws DrmSessionException {
+  public synchronized void releaseLicense(byte[] offlineLicenseKeySetId)
+      throws DrmSessionException {
     Assertions.checkNotNull(offlineLicenseKeySetId);
     blockingKeyRequest(DefaultDrmSessionManager.MODE_RELEASE, offlineLicenseKeySetId, null);
   }
 
   /**
-   * Returns license and playback durations remaining in seconds of the given offline license.
+   * Returns the remaining license and playback durations in seconds, for an offline license.
    *
    * @param offlineLicenseKeySetId The key set id of the license.
+   * @return The remaining license and playback durations, in seconds.
+   * @throws DrmSessionException Thrown when a DRM session error occurs.
    */
-  public Pair<Long, Long> getLicenseDurationRemainingSec(byte[] offlineLicenseKeySetId)
+  public synchronized Pair<Long, Long> getLicenseDurationRemainingSec(byte[] offlineLicenseKeySetId)
       throws DrmSessionException {
     Assertions.checkNotNull(offlineLicenseKeySetId);
-    DrmSession<T> session = openBlockingKeyRequest(DefaultDrmSessionManager.MODE_QUERY,
+    DrmSession<T> drmSession = openBlockingKeyRequest(DefaultDrmSessionManager.MODE_QUERY,
         offlineLicenseKeySetId, null);
+    DrmSessionException error = drmSession.getError();
     Pair<Long, Long> licenseDurationRemainingSec =
-        WidevineUtil.getLicenseDurationRemainingSec(drmSessionManager);
-    drmSessionManager.releaseSession(session);
+        WidevineUtil.getLicenseDurationRemainingSec(drmSession);
+    drmSessionManager.releaseSession(drmSession);
+    if (error != null) {
+      if (error.getCause() instanceof KeysExpiredException) {
+        return Pair.create(0L, 0L);
+      }
+      throw error;
+    }
     return licenseDurationRemainingSec;
   }
 
-  private void blockingKeyRequest(@Mode int licenseMode, byte[] offlineLicenseKeySetId,
+  private byte[] blockingKeyRequest(@Mode int licenseMode, byte[] offlineLicenseKeySetId,
       DrmInitData drmInitData) throws DrmSessionException {
-    DrmSession<T> session = openBlockingKeyRequest(licenseMode, offlineLicenseKeySetId,
+    DrmSession<T> drmSession = openBlockingKeyRequest(licenseMode, offlineLicenseKeySetId,
         drmInitData);
-    DrmSessionException error = session.getError();
+    DrmSessionException error = drmSession.getError();
+    byte[] keySetId = drmSession.getOfflineLicenseKeySetId();
+    drmSessionManager.releaseSession(drmSession);
     if (error != null) {
       throw error;
     }
-    drmSessionManager.releaseSession(session);
+    return keySetId;
   }
 
   private DrmSession<T> openBlockingKeyRequest(@Mode int licenseMode, byte[] offlineLicenseKeySetId,
       DrmInitData drmInitData) {
     drmSessionManager.setMode(licenseMode, offlineLicenseKeySetId);
     conditionVariable.close();
-    DrmSession<T> session = drmSessionManager.acquireSession(handlerThread.getLooper(),
+    DrmSession<T> drmSession = drmSessionManager.acquireSession(handlerThread.getLooper(),
         drmInitData);
     // Block current thread until key loading is finished
     conditionVariable.block();
-    return session;
+    return drmSession;
   }
 
 }

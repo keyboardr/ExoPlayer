@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.text.webvtt;
 
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.text.Layout.Alignment;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -30,8 +31,10 @@ import android.text.style.StyleSpan;
 import android.text.style.TypefaceSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
+
 import com.google.android.exoplayer2.text.Cue;
 import com.google.android.exoplayer2.util.ParsableByteArray;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -476,7 +479,7 @@ import java.util.regex.Pattern;
     }
 
     @Override
-    public int compareTo(StyleMatch another) {
+    public int compareTo(@NonNull StyleMatch another) {
       return this.score - another.score;
     }
 

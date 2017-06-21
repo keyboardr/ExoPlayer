@@ -18,6 +18,7 @@ package com.google.android.exoplayer2.trackselection;
 import android.content.Context;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.RendererCapabilities;
@@ -25,6 +26,7 @@ import com.google.android.exoplayer2.RendererConfiguration;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.util.Util;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;

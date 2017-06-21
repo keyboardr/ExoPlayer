@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.audio;
 
 import com.google.android.exoplayer2.C;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -116,8 +117,8 @@ public interface AudioProcessor {
   void flush();
 
   /**
-   * Releases any resources associated with this instance.
+   * Resets the processor to its initial state.
    */
-  void release();
+  void reset();
 
 }

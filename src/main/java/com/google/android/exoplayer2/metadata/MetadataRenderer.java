@@ -19,12 +19,14 @@ import android.os.Handler;
 import android.os.Handler.Callback;
 import android.os.Looper;
 import android.os.Message;
+
 import com.google.android.exoplayer2.BaseRenderer;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.util.Arrays;
 
 /**
@@ -153,7 +155,6 @@ public final class MetadataRenderer extends BaseRenderer implements Callback {
   protected void onDisabled() {
     flushPendingMetadata();
     decoder = null;
-    super.onDisabled();
   }
 
   @Override
