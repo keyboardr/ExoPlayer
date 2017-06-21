@@ -46,10 +46,10 @@ public final class Id3Decoder implements MetadataDecoder {
      * Returns whether a frame with the specified parameters should be decoded.
      *
      * @param majorVersion The major version of the ID3 tag.
-     * @param id0 The first byte of the frame ID.
-     * @param id1 The second byte of the frame ID.
-     * @param id2 The third byte of the frame ID.
-     * @param id3 The fourth byte of the frame ID.
+     * @param id0          The first byte of the frame ID.
+     * @param id1          The second byte of the frame ID.
+     * @param id2          The third byte of the frame ID.
+     * @param id3          The fourth byte of the frame ID.
      * @return Whether the frame should be decoded.
      */
     boolean evaluate(int majorVersion, int id0, int id1, int id2, int id3);
@@ -263,6 +263,7 @@ public final class Id3Decoder implements MetadataDecoder {
     }
   }
 
+  @Nullable
   private static Id3Frame decodeFrame(int majorVersion, ParsableByteArray id3Data,
       boolean unsignedIntFrameSizeHack, int frameHeaderSize, FramePredicate framePredicate) {
     int frameId0 = id3Data.readUnsignedByte();
@@ -386,6 +387,11 @@ public final class Id3Decoder implements MetadataDecoder {
       return frame;
     } catch (UnsupportedEncodingException e) {
       Log.w(TAG, "Unsupported character encoding");
+      return null;
+    } catch (RuntimeException e) {
+      Log.w(TAG, "Failed to decode frame: id="
+          + getFrameId(majorVersion, frameId0, frameId1, frameId2, frameId3) + ", frameSize="
+          + frameSize, e);
       return null;
     } finally {
       id3Data.setPosition(nextFramePosition);
