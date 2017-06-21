@@ -15,6 +15,7 @@
  */
 package com.google.android.exoplayer2.metadata.id3;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.google.android.exoplayer2.C;
@@ -496,6 +497,7 @@ public final class Id3Decoder implements MetadataDecoder {
     return new PrivFrame(owner, privateData);
   }
 
+  @Nullable
   private static GeobFrame decodeGeobFrame(ParsableByteArray id3Data, int frameSize)
       throws UnsupportedEncodingException {
     int encoding = id3Data.readUnsignedByte();
@@ -518,7 +520,8 @@ public final class Id3Decoder implements MetadataDecoder {
         descriptionEndIndex - descriptionStartIndex, charset);
 
     int objectDataStartIndex = descriptionEndIndex + delimiterLength(encoding);
-    byte[] objectData = Arrays.copyOfRange(data, objectDataStartIndex, data.length);
+    byte[] objectData = Arrays.copyOfRange(data, Math.min(objectDataStartIndex, data.length),
+        data.length);
 
     return new GeobFrame(mimeType, filename, description, objectData);
   }
