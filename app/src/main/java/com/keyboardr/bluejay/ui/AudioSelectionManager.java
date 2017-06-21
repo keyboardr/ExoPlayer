@@ -15,7 +15,7 @@ import android.widget.BaseAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.android.exoplayer2.BuildConfig;
+import com.keyboardr.bluejay.BuildConfig;
 import com.keyboardr.bluejay.R;
 import com.keyboardr.bluejay.player.Player;
 
