@@ -16,10 +16,13 @@
 package com.google.android.exoplayer2.upstream.crypto;
 
 import android.net.Uri;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DataSpec;
+
 import java.io.IOException;
+
 import javax.crypto.Cipher;
 
 /**

@@ -16,8 +16,10 @@
 package com.google.android.exoplayer2.upstream.cache;
 
 import android.os.ConditionVariable;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -286,7 +288,9 @@ public final class SimpleCache implements Cache {
 
   private void removeSpan(CacheSpan span, boolean removeEmptyCachedContent) throws CacheException {
     CachedContent cachedContent = index.get(span.key);
-    Assertions.checkState(cachedContent.removeSpan(span));
+    if (cachedContent == null || !cachedContent.removeSpan(span)) {
+      return;
+    }
     totalSpace -= span.length;
     if (removeEmptyCachedContent && cachedContent.isEmpty()) {
       index.removeEmpty(cachedContent.key);

@@ -20,6 +20,7 @@ import android.os.Parcelable;
 
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.util.Util;
+
 import java.util.Arrays;
 
 /**

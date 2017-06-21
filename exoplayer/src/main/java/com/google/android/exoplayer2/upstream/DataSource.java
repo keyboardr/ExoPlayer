@@ -16,7 +16,9 @@
 package com.google.android.exoplayer2.upstream;
 
 import android.net.Uri;
+
 import com.google.android.exoplayer2.C;
+
 import java.io.IOException;
 
 /**

@@ -18,33 +18,31 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        // Important: ExoPlayerLib specifies a minSdkVersion of 9 because
-        // various components provided by the library may be of use on older
-        // devices. However, please note that the core video playback
-        // functionality provided by the library requires API level 16 or
-        // greater.
-        minSdkVersion 9
+        minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
     }
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+    sourceSets {
+        androidTest {
+            java.srcDirs += "../../testutils/src/main/java/"
         }
-        // Re-enable test coverage when the following issue is fixed:
-        // https://code.google.com/p/android/issues/detail?id=226070
-        // debug {
-        //     testCoverageEnabled = true
-        // }
     }
 
-    lintOptions {
-        abortOnError false
+    buildTypes {
+        debug {
+            testCoverageEnabled = true
+        }
     }
-    buildToolsVersion '25.0.0'
 }
 
 dependencies {
-    compile 'com.android.support:support-annotations:25.0.1'
+    compile 'com.android.support:support-annotations:25.2.0'
+}
+
+ext {
+    javadocTitle = 'Core module'
+}
+ext {
+    releaseArtifact = 'exoplayer-core'
+    releaseDescription = 'The ExoPlayer library core module.'
 }

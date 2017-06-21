@@ -18,6 +18,7 @@ package com.google.android.exoplayer2.source;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
+
 import java.io.IOException;
 
 /**
@@ -66,10 +67,11 @@ public interface SampleStream {
   int readData(FormatHolder formatHolder, DecoderInputBuffer buffer, boolean formatRequired);
 
   /**
-   * Attempts to skip to the keyframe before the specified time.
+   * Attempts to skip to the keyframe before the specified position, or to the end of the stream if
+   * {@code positionUs} is beyond it.
    *
-   * @param timeUs The specified time.
+   * @param positionUs The specified time.
    */
-  void skipToKeyframeBefore(long timeUs);
+  void skipData(long positionUs);
 
 }

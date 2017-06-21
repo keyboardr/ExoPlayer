@@ -17,8 +17,10 @@ package com.google.android.exoplayer2.upstream;
 
 import android.support.annotation.IntDef;
 import android.text.TextUtils;
+
 import com.google.android.exoplayer2.util.Predicate;
 import com.google.android.exoplayer2.util.Util;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

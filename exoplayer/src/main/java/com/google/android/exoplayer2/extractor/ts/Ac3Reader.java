@@ -15,6 +15,8 @@
  */
 package com.google.android.exoplayer2.extractor.ts;
 
+import android.support.annotation.IntDef;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.audio.Ac3Util;
@@ -24,11 +26,17 @@ import com.google.android.exoplayer2.extractor.ts.TsPayloadReader.TrackIdGenerat
 import com.google.android.exoplayer2.util.ParsableBitArray;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * Parses a continuous (E-)AC-3 byte stream and extracts individual samples.
  */
 public final class Ac3Reader implements ElementaryStreamReader {
 
+  @Retention(RetentionPolicy.SOURCE)
+  @IntDef({STATE_FINDING_SYNC, STATE_READING_HEADER, STATE_READING_SAMPLE})
+  private @interface State {}
   private static final int STATE_FINDING_SYNC = 0;
   private static final int STATE_READING_HEADER = 1;
   private static final int STATE_READING_SAMPLE = 2;
@@ -42,7 +50,7 @@ public final class Ac3Reader implements ElementaryStreamReader {
   private String trackFormatId;
   private TrackOutput output;
 
-  private int state;
+  @State private int state;
   private int bytesRead;
 
   // Used to find the header.
@@ -52,7 +60,6 @@ public final class Ac3Reader implements ElementaryStreamReader {
   private long sampleDurationUs;
   private Format format;
   private int sampleSize;
-  private boolean isEac3;
 
   // Used when reading the samples.
   private long timeUs;
@@ -125,6 +132,8 @@ public final class Ac3Reader implements ElementaryStreamReader {
             state = STATE_FINDING_SYNC;
           }
           break;
+        default:
+          break;
       }
     }
   }
@@ -177,26 +186,22 @@ public final class Ac3Reader implements ElementaryStreamReader {
   /**
    * Parses the sample header.
    */
+  @SuppressWarnings("ReferenceEquality")
   private void parseHeader() {
-    if (format == null) {
-      // We read ahead to distinguish between AC-3 and E-AC-3.
-      headerScratchBits.skipBits(40);
-      isEac3 = headerScratchBits.readBits(5) == 16;
-      headerScratchBits.setPosition(headerScratchBits.getPosition() - 45);
-      format = isEac3
-          ? Ac3Util.parseEac3SyncframeFormat(headerScratchBits, trackFormatId, language , null)
-          : Ac3Util.parseAc3SyncframeFormat(headerScratchBits, trackFormatId, language, null);
+    headerScratchBits.setPosition(0);
+    Ac3Util.Ac3SyncFrameInfo frameInfo = Ac3Util.parseAc3SyncframeInfo(headerScratchBits);
+    if (format == null || frameInfo.channelCount != format.channelCount
+        || frameInfo.sampleRate != format.sampleRate
+        || frameInfo.mimeType != format.sampleMimeType) {
+      format = Format.createAudioSampleFormat(trackFormatId, frameInfo.mimeType, null,
+          Format.NO_VALUE, Format.NO_VALUE, frameInfo.channelCount, frameInfo.sampleRate, null,
+          null, 0, language);
       output.format(format);
     }
-    sampleSize = isEac3 ? Ac3Util.parseEAc3SyncframeSize(headerScratchBits.data)
-        : Ac3Util.parseAc3SyncframeSize(headerScratchBits.data);
-    int audioSamplesPerSyncframe = isEac3
-        ? Ac3Util.parseEAc3SyncframeAudioSampleCount(headerScratchBits.data)
-        : Ac3Util.getAc3SyncframeAudioSampleCount();
+    sampleSize = frameInfo.frameSize;
     // In this class a sample is an access unit (syncframe in AC-3), but the MediaFormat sample rate
     // specifies the number of PCM audio samples per second.
-    sampleDurationUs =
-        (int) (C.MICROS_PER_SECOND * audioSamplesPerSyncframe / format.sampleRate);
+    sampleDurationUs = C.MICROS_PER_SECOND * frameInfo.sampleCount / format.sampleRate;
   }
 
 }
