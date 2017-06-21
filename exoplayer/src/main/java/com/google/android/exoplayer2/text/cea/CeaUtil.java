@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.text.cea;
 
 import android.util.Log;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.extractor.TrackOutput;
 import com.google.android.exoplayer2.util.ParsableByteArray;

@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ParserException;
 import com.google.android.exoplayer2.extractor.TrackOutput;
 import com.google.android.exoplayer2.util.ParsableByteArray;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -80,8 +81,8 @@ import java.util.Map;
     }
     int type = readAmfType(data);
     if (type != AMF_TYPE_ECMA_ARRAY) {
-      // Should never happen.
-      throw new ParserException();
+      // We're not interested in this metadata.
+      return;
     }
     // Set the duration to the value contained in the metadata, if present.
     Map<String, Object> metadata = readAmfEcmaArray(data);

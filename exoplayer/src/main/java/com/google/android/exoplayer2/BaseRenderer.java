@@ -19,6 +19,7 @@ import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.source.SampleStream;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MediaClock;
+
 import java.io.IOException;
 
 /**
@@ -142,9 +143,9 @@ public abstract class BaseRenderer implements Renderer, RendererCapabilities {
   public final void disable() {
     Assertions.checkState(state == STATE_ENABLED);
     state = STATE_DISABLED;
-    onDisabled();
     stream = null;
     streamIsFinal = false;
+    onDisabled();
   }
 
   // RendererCapabilities implementation.
@@ -255,14 +256,6 @@ public abstract class BaseRenderer implements Renderer, RendererCapabilities {
   }
 
   /**
-   * Use {@link #readSource(FormatHolder, DecoderInputBuffer, boolean)} instead.
-   */
-  @Deprecated
-  protected final int readSource(FormatHolder formatHolder, DecoderInputBuffer buffer) {
-    return readSource(formatHolder, buffer, false);
-  }
-
-  /**
    * Reads from the enabled upstream source. If the upstream source has been read to the end then
    * {@link C#RESULT_BUFFER_READ} is only returned if {@link #setCurrentStreamFinal()} has been
    * called. {@link C#RESULT_NOTHING_READ} is returned otherwise.
@@ -297,21 +290,20 @@ public abstract class BaseRenderer implements Renderer, RendererCapabilities {
   }
 
   /**
-   * Returns whether the upstream source is ready.
+   * Attempts to skip to the keyframe before the specified position, or to the end of the stream if
+   * {@code positionUs} is beyond it.
    *
-   * @return Whether the source is ready.
+   * @param positionUs The position in microseconds.
    */
-  protected final boolean isSourceReady() {
-    return readEndOfStream ? streamIsFinal : stream.isReady();
+  protected void skipSource(long positionUs) {
+    stream.skipData(positionUs - streamOffsetUs);
   }
 
   /**
-   * Attempts to skip to the keyframe before the specified time.
-   *
-   * @param timeUs The specified time.
+   * Returns whether the upstream source is ready.
    */
-  protected void skipToKeyframeBefore(long timeUs) {
-    stream.skipToKeyframeBefore(timeUs - streamOffsetUs);
+  protected final boolean isSourceReady() {
+    return readEndOfStream ? streamIsFinal : stream.isReady();
   }
 
 }

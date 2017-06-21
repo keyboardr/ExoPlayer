@@ -16,8 +16,10 @@
 package com.google.android.exoplayer2.metadata.id3;
 
 import android.os.Parcel;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Util;
+
 import java.util.Arrays;
 
 /**

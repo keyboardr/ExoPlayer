@@ -15,8 +15,11 @@
  */
 package com.google.android.exoplayer2.upstream;
 
+import android.support.annotation.NonNull;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -71,12 +74,12 @@ public final class DataSourceInputStream extends InputStream {
   }
 
   @Override
-  public int read(byte[] buffer) throws IOException {
+  public int read(@NonNull byte[] buffer) throws IOException {
     return read(buffer, 0, buffer.length);
   }
 
   @Override
-  public int read(byte[] buffer, int offset, int length) throws IOException {
+  public int read(@NonNull byte[] buffer, int offset, int length) throws IOException {
     Assertions.checkState(!closed);
     checkOpened();
     int bytesRead = dataSource.read(buffer, offset, length);

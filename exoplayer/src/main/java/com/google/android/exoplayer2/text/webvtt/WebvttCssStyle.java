@@ -18,7 +18,9 @@ package com.google.android.exoplayer2.text.webvtt;
 import android.graphics.Typeface;
 import android.support.annotation.IntDef;
 import android.text.Layout;
+
 import com.google.android.exoplayer2.util.Util;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;

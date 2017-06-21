@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.text;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.decoder.SimpleDecoder;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -67,7 +68,7 @@ public abstract class SimpleSubtitleDecoder extends
       SubtitleOutputBuffer outputBuffer, boolean reset) {
     try {
       ByteBuffer inputData = inputBuffer.data;
-      Subtitle subtitle = decode(inputData.array(), inputData.limit());
+      Subtitle subtitle = decode(inputData.array(), inputData.limit(), reset);
       outputBuffer.setContent(inputBuffer.timeUs, subtitle, inputBuffer.subsampleOffsetUs);
       // Clear BUFFER_FLAG_DECODE_ONLY (see [Internal: b/27893809]).
       outputBuffer.clearFlag(C.BUFFER_FLAG_DECODE_ONLY);
@@ -82,9 +83,11 @@ public abstract class SimpleSubtitleDecoder extends
    *
    * @param data An array holding the data to be decoded, starting at position 0.
    * @param size The size of the data to be decoded.
+   * @param reset Whether the decoder must be reset before decoding.
    * @return The decoded {@link Subtitle}.
    * @throws SubtitleDecoderException If a decoding error occurs.
    */
-  protected abstract Subtitle decode(byte[] data, int size) throws SubtitleDecoderException;
+  protected abstract Subtitle decode(byte[] data, int size, boolean reset)
+      throws SubtitleDecoderException;
 
 }
