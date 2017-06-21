@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.FormatHolder;
 import com.google.android.exoplayer2.decoder.DecoderInputBuffer;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.IOException;
 
 /**
@@ -262,8 +263,8 @@ public final class ClippingMediaPeriod implements MediaPeriod, MediaPeriod.Callb
     }
 
     @Override
-    public void skipToKeyframeBefore(long timeUs) {
-      stream.skipToKeyframeBefore(startUs + timeUs);
+    public void skipData(long positionUs) {
+      stream.skipData(startUs + positionUs);
     }
 
   }

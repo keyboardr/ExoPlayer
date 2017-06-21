@@ -15,6 +15,9 @@
  */
 package com.google.android.exoplayer2;
 
+import android.os.Looper;
+import android.support.annotation.Nullable;
+
 import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
 import com.google.android.exoplayer2.source.ConcatenatingMediaSource;
@@ -23,9 +26,6 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
 import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
-import com.google.android.exoplayer2.source.dash.DashMediaSource;
-import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.text.TextRenderer;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -47,12 +47,11 @@ import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
  * <ul>
  *   <li>A <b>{@link MediaSource}</b> that defines the media to be played, loads the media, and from
  *   which the loaded media can be read. A MediaSource is injected via {@link #prepare} at the start
- *   of playback. The library provides default implementations for regular media files
- *   ({@link ExtractorMediaSource}), DASH ({@link DashMediaSource}), SmoothStreaming
- *   ({@link SsMediaSource}) and HLS ({@link HlsMediaSource}), implementations for merging
- *   ({@link MergingMediaSource}) and concatenating ({@link ConcatenatingMediaSource}) other
- *   MediaSources, and an implementation for loading single samples
- *   ({@link SingleSampleMediaSource}) most often used for side-loaded subtitle and closed
+ *   of playback. The library modules provide default implementations for regular media files
+ *   ({@link ExtractorMediaSource}), DASH (DashMediaSource), SmoothStreaming (SsMediaSource) and HLS
+ *   (HlsMediaSource), implementations for merging ({@link MergingMediaSource}) and concatenating
+ *   ({@link ConcatenatingMediaSource}) other MediaSources, and an implementation for loading single
+ *   samples ({@link SingleSampleMediaSource}) most often used for side-loaded subtitle and closed
  *   caption files.</li>
  *   <li><b>{@link Renderer}</b>s that render individual components of the media. The library
  *   provides default implementations for common media types ({@link MediaCodecVideoRenderer},
@@ -91,7 +90,9 @@ import com.google.android.exoplayer2.video.MediaCodecVideoRenderer;
  * thread. The application's main thread is ideal. Accessing an instance from multiple threads is
  * discouraged, however if an application does wish to do this then it may do so provided that it
  * ensures accesses are synchronized.</li>
- * <li>Registered listeners are called on the thread that created the ExoPlayer instance.</li>
+ * <li>Registered listeners are called on the thread that created the ExoPlayer instance, unless
+ * the thread that created the ExoPlayer instance does not have a {@link Looper}. In that case,
+ * registered listeners will be called on the application's main thread.</li>
  * <li>An internal playback thread is responsible for playback. Injected player components such as
  * Renderers, MediaSources, TrackSelectors and LoadControls are called by the player on this
  * thread.</li>
@@ -116,8 +117,8 @@ public interface ExoPlayer {
      * Called when the timeline and/or manifest has been refreshed.
      * <p>
      * Note that if the timeline has changed then a position discontinuity may also have occurred.
-     * For example the current period index may have changed as a result of periods being added or
-     * removed from the timeline. The will <em>not</em> be reported via a separate call to
+     * For example, the current period index may have changed as a result of periods being added or
+     * removed from the timeline. This will <em>not</em> be reported via a separate call to
      * {@link #onPositionDiscontinuity()}.
      *
      * @param timeline The latest timeline. Never null, but may be empty.
@@ -171,6 +172,16 @@ public interface ExoPlayer {
      * <em>not</em> called. {@link #onTimelineChanged(Timeline, Object)} is called in this case.
      */
     void onPositionDiscontinuity();
+
+    /**
+     * Called when the current playback parameters change. The playback parameters may change due to
+     * a call to {@link ExoPlayer#setPlaybackParameters(PlaybackParameters)}, or the player itself
+     * may change them (for example, if audio playback switches to passthrough mode, where speed
+     * adjustment is no longer possible).
+     *
+     * @param playbackParameters The playback parameters.
+     */
+    void onPlaybackParametersChanged(PlaybackParameters playbackParameters);
 
   }
 
@@ -246,7 +257,8 @@ public interface ExoPlayer {
 
   /**
    * Register a listener to receive events from the player. The listener's methods will be called on
-   * the thread that was used to construct the player.
+   * the thread that was used to construct the player. However, if the thread used to construct the
+   * player does not have a {@link Looper}, then the listener will be called on the main thread.
    *
    * @param listener The listener to register.
    */
@@ -343,6 +355,28 @@ public interface ExoPlayer {
    *     the window's default position.
    */
   void seekTo(int windowIndex, long positionMs);
+
+  /**
+   * Attempts to set the playback parameters. Passing {@code null} sets the parameters to the
+   * default, {@link PlaybackParameters#DEFAULT}, which means there is no speed or pitch adjustment.
+   * <p>
+   * Playback parameters changes may cause the player to buffer.
+   * {@link EventListener#onPlaybackParametersChanged(PlaybackParameters)} will be called whenever
+   * the currently active playback parameters change. When that listener is called, the parameters
+   * passed to it may not match {@code playbackParameters}. For example, the chosen speed or pitch
+   * may be out of range, in which case they are constrained to a set of permitted values. If it is
+   * not possible to change the playback parameters, the listener will not be invoked.
+   *
+   * @param playbackParameters The playback parameters, or {@code null} to use the defaults.
+   */
+  void setPlaybackParameters(@Nullable PlaybackParameters playbackParameters);
+
+  /**
+   * Returns the currently active playback parameters.
+   *
+   * @see EventListener#onPlaybackParametersChanged(PlaybackParameters)
+   */
+  PlaybackParameters getPlaybackParameters();
 
   /**
    * Stops playback. Use {@code setPlayWhenReady(false)} rather than this method if the intention

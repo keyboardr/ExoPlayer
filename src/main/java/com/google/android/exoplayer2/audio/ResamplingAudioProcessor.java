@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.audio;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
@@ -168,9 +169,12 @@ import java.nio.ByteOrder;
   }
 
   @Override
-  public void release() {
+  public void reset() {
     flush();
     buffer = EMPTY_BUFFER;
+    sampleRateHz = Format.NO_VALUE;
+    channelCount = Format.NO_VALUE;
+    encoding = C.ENCODING_INVALID;
   }
 
 }

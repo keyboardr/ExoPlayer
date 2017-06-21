@@ -19,6 +19,7 @@ import android.support.annotation.IntDef;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.util.SparseIntArray;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.extractor.Extractor;
 import com.google.android.exoplayer2.extractor.ExtractorInput;
@@ -27,6 +28,8 @@ import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.extractor.PositionHolder;
 import com.google.android.exoplayer2.extractor.SeekMap;
 import com.google.android.exoplayer2.extractor.TrackOutput;
+import com.google.android.exoplayer2.extractor.ts.DefaultTsPayloadReaderFactory.Flags;
+import com.google.android.exoplayer2.extractor.ts.TsPayloadReader.DvbSubtitleInfo;
 import com.google.android.exoplayer2.extractor.ts.TsPayloadReader.EsInfo;
 import com.google.android.exoplayer2.extractor.ts.TsPayloadReader.TrackIdGenerator;
 import com.google.android.exoplayer2.util.Assertions;
@@ -34,6 +37,7 @@ import com.google.android.exoplayer2.util.ParsableBitArray;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.util.TimestampAdjuster;
 import com.google.android.exoplayer2.util.Util;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -63,13 +67,13 @@ public final class TsExtractor implements Extractor {
    * Modes for the extractor.
    */
   @Retention(RetentionPolicy.SOURCE)
-  @IntDef({MODE_NORMAL, MODE_SINGLE_PMT, MODE_HLS})
+  @IntDef({MODE_MULTI_PMT, MODE_SINGLE_PMT, MODE_HLS})
   public @interface Mode {}
 
   /**
    * Behave as defined in ISO/IEC 13818-1.
    */
-  public static final int MODE_NORMAL = 0;
+  public static final int MODE_MULTI_PMT = 0;
   /**
    * Assume only one PMT will be contained in the stream, even if more are declared by the PAT.
    */
@@ -92,6 +96,7 @@ public final class TsExtractor implements Extractor {
   public static final int TS_STREAM_TYPE_H265 = 0x24;
   public static final int TS_STREAM_TYPE_ID3 = 0x15;
   public static final int TS_STREAM_TYPE_SPLICE_INFO = 0x86;
+  public static final int TS_STREAM_TYPE_DVBSUBS = 0x59;
 
   private static final int TS_PACKET_SIZE = 188;
   private static final int TS_SYNC_BYTE = 0x47; // First byte of each TS packet.
@@ -121,11 +126,31 @@ public final class TsExtractor implements Extractor {
   private TsPayloadReader id3Reader;
 
   public TsExtractor() {
-    this(MODE_NORMAL, new TimestampAdjuster(0), new DefaultTsPayloadReaderFactory());
+    this(0);
   }
 
   /**
-   * @param mode Mode for the extractor. One of {@link #MODE_NORMAL}, {@link #MODE_SINGLE_PMT}
+   * @param defaultTsPayloadReaderFlags A combination of {@link DefaultTsPayloadReaderFactory}
+   *     {@code FLAG_*} values that control the behavior of the payload readers.
+   */
+  public TsExtractor(@Flags int defaultTsPayloadReaderFlags) {
+    this(MODE_SINGLE_PMT, defaultTsPayloadReaderFlags);
+  }
+
+  /**
+   * @param mode Mode for the extractor. One of {@link #MODE_MULTI_PMT}, {@link #MODE_SINGLE_PMT}
+   *     and {@link #MODE_HLS}.
+   * @param defaultTsPayloadReaderFlags A combination of {@link DefaultTsPayloadReaderFactory}
+   *     {@code FLAG_*} values that control the behavior of the payload readers.
+   */
+  public TsExtractor(@Mode int mode, @Flags int defaultTsPayloadReaderFlags) {
+    this(mode, new TimestampAdjuster(0),
+        new DefaultTsPayloadReaderFactory(defaultTsPayloadReaderFlags));
+  }
+
+
+  /**
+   * @param mode Mode for the extractor. One of {@link #MODE_MULTI_PMT}, {@link #MODE_SINGLE_PMT}
    *     and {@link #MODE_HLS}.
    * @param timestampAdjuster A timestamp adjuster for offsetting and scaling sample timestamps.
    * @param payloadReaderFactory Factory for injecting a custom set of payload readers.
@@ -356,12 +381,17 @@ public final class TsExtractor implements Extractor {
     private static final int TS_PMT_DESC_AC3 = 0x6A;
     private static final int TS_PMT_DESC_EAC3 = 0x7A;
     private static final int TS_PMT_DESC_DTS = 0x7B;
+    private static final int TS_PMT_DESC_DVBSUBS = 0x59;
 
     private final ParsableBitArray pmtScratch;
+    private final SparseArray<TsPayloadReader> trackIdToReaderScratch;
+    private final SparseIntArray trackIdToPidScratch;
     private final int pid;
 
     public PmtReader(int pid) {
       pmtScratch = new ParsableBitArray(new byte[5]);
+      trackIdToReaderScratch = new SparseArray<>();
+      trackIdToPidScratch = new SparseIntArray();
       this.pid = pid;
     }
 
@@ -406,12 +436,14 @@ public final class TsExtractor implements Extractor {
       if (mode == MODE_HLS && id3Reader == null) {
         // Setup an ID3 track regardless of whether there's a corresponding entry, in case one
         // appears intermittently during playback. See [Internal: b/20261500].
-        EsInfo dummyEsInfo = new EsInfo(TS_STREAM_TYPE_ID3, null, new byte[0]);
+        EsInfo dummyEsInfo = new EsInfo(TS_STREAM_TYPE_ID3, null, null, new byte[0]);
         id3Reader = payloadReaderFactory.createPayloadReader(TS_STREAM_TYPE_ID3, dummyEsInfo);
         id3Reader.init(timestampAdjuster, output,
             new TrackIdGenerator(programNumber, TS_STREAM_TYPE_ID3, MAX_PID_PLUS_ONE));
       }
 
+      trackIdToReaderScratch.clear();
+      trackIdToPidScratch.clear();
       int remainingEntriesLength = sectionData.bytesLeft();
       while (remainingEntriesLength > 0) {
         sectionData.readBytes(pmtScratch, 5);
@@ -430,23 +462,30 @@ public final class TsExtractor implements Extractor {
         if (trackIds.get(trackId)) {
           continue;
         }
-        trackIds.put(trackId, true);
 
-        TsPayloadReader reader;
-        if (mode == MODE_HLS && streamType == TS_STREAM_TYPE_ID3) {
-          reader = id3Reader;
-        } else {
-          reader = payloadReaderFactory.createPayloadReader(streamType, esInfo);
-          if (reader != null) {
+        TsPayloadReader reader = mode == MODE_HLS && streamType == TS_STREAM_TYPE_ID3 ? id3Reader
+            : payloadReaderFactory.createPayloadReader(streamType, esInfo);
+        if (mode != MODE_HLS
+            || elementaryPid < trackIdToPidScratch.get(trackId, MAX_PID_PLUS_ONE)) {
+          trackIdToPidScratch.put(trackId, elementaryPid);
+          trackIdToReaderScratch.put(trackId, reader);
+        }
+      }
+
+      int trackIdCount = trackIdToPidScratch.size();
+      for (int i = 0; i < trackIdCount; i++) {
+        int trackId = trackIdToPidScratch.keyAt(i);
+        trackIds.put(trackId, true);
+        TsPayloadReader reader = trackIdToReaderScratch.valueAt(i);
+        if (reader != null) {
+          if (reader != id3Reader) {
             reader.init(timestampAdjuster, output,
                 new TrackIdGenerator(programNumber, trackId, MAX_PID_PLUS_ONE));
           }
-        }
-
-        if (reader != null) {
-          tsPayloadReaders.put(elementaryPid, reader);
+          tsPayloadReaders.put(trackIdToPidScratch.valueAt(i), reader);
         }
       }
+
       if (mode == MODE_HLS) {
         if (!tracksEnded) {
           output.endTracks();
@@ -476,6 +515,7 @@ public final class TsExtractor implements Extractor {
       int descriptorsEndPosition = descriptorsStartPosition + length;
       int streamType = -1;
       String language = null;
+      List<DvbSubtitleInfo> dvbSubtitleInfos = null;
       while (data.getPosition() < descriptorsEndPosition) {
         int descriptorTag = data.readUnsignedByte();
         int descriptorLength = data.readUnsignedByte();
@@ -496,14 +536,25 @@ public final class TsExtractor implements Extractor {
         } else if (descriptorTag == TS_PMT_DESC_DTS) { // DTS_descriptor
           streamType = TS_STREAM_TYPE_DTS;
         } else if (descriptorTag == TS_PMT_DESC_ISO639_LANG) {
-          language = new String(data.data, data.getPosition(), 3).trim();
+          language = data.readString(3).trim();
           // Audio type is ignored.
+        } else if (descriptorTag == TS_PMT_DESC_DVBSUBS) {
+          streamType = TS_STREAM_TYPE_DVBSUBS;
+          dvbSubtitleInfos = new ArrayList<>();
+          while (data.getPosition() < positionOfNextDescriptor) {
+            String dvbLanguage = data.readString(3).trim();
+            int dvbSubtitlingType = data.readUnsignedByte();
+            byte[] initializationData = new byte[4];
+            data.readBytes(initializationData, 0, 4);
+            dvbSubtitleInfos.add(new DvbSubtitleInfo(dvbLanguage, dvbSubtitlingType,
+                initializationData));
+          }
         }
         // Skip unused bytes of current descriptor.
         data.skipBytes(positionOfNextDescriptor - data.getPosition());
       }
       data.setPosition(descriptorsEndPosition);
-      return new EsInfo(streamType, language,
+      return new EsInfo(streamType, language, dvbSubtitleInfos,
           Arrays.copyOfRange(data.data, descriptorsStartPosition, descriptorsEndPosition));
     }
 
