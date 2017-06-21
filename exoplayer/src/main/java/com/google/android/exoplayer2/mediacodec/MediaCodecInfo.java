@@ -24,6 +24,7 @@ import android.media.MediaCodecInfo.CodecProfileLevel;
 import android.media.MediaCodecInfo.VideoCapabilities;
 import android.util.Log;
 import android.util.Pair;
+
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
@@ -71,7 +72,7 @@ public final class MediaCodecInfo {
    * @return The created instance.
    */
   public static MediaCodecInfo newPassthroughInstance(String name) {
-    return new MediaCodecInfo(name, null, null);
+    return new MediaCodecInfo(name, null, null, false);
   }
 
   /**
@@ -84,18 +85,30 @@ public final class MediaCodecInfo {
    */
   public static MediaCodecInfo newInstance(String name, String mimeType,
       CodecCapabilities capabilities) {
-    return new MediaCodecInfo(name, mimeType, capabilities);
+    return new MediaCodecInfo(name, mimeType, capabilities, false);
   }
 
   /**
-   * @param name The name of the decoder.
-   * @param capabilities The capabilities of the decoder.
+   * Creates an instance.
+   *
+   * @param name The name of the {@link MediaCodec}.
+   * @param mimeType A mime type supported by the {@link MediaCodec}.
+   * @param capabilities The capabilities of the {@link MediaCodec} for the specified mime type.
+   * @param forceDisableAdaptive Whether {@link #adaptive} should be forced to {@code false}.
+   * @return The created instance.
    */
-  private MediaCodecInfo(String name, String mimeType, CodecCapabilities capabilities) {
+  public static MediaCodecInfo newInstance(String name, String mimeType,
+                                           CodecCapabilities capabilities,
+                                           boolean forceDisableAdaptive) {
+    return new MediaCodecInfo(name, mimeType, capabilities, forceDisableAdaptive);
+  }
+
+  private MediaCodecInfo(String name, String mimeType, CodecCapabilities capabilities,
+                         boolean forceDisableAdaptive) {
     this.name = Assertions.checkNotNull(name);
     this.mimeType = mimeType;
     this.capabilities = capabilities;
-    adaptive = capabilities != null && isAdaptive(capabilities);
+    adaptive = !forceDisableAdaptive && capabilities != null && isAdaptive(capabilities);
     tunneling = capabilities != null && isTunneling(capabilities);
   }
 

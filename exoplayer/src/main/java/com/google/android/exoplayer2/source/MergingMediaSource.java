@@ -16,9 +16,11 @@
 package com.google.android.exoplayer2.source;
 
 import android.support.annotation.IntDef;
+
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.upstream.Allocator;
+
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

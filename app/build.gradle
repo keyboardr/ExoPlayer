@@ -13,7 +13,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
     defaultConfig {
         applicationId "com.keyboardr.bluejay"
-        minSdkVersion 23
+        minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
         resConfigs "en"
         versionCode 22

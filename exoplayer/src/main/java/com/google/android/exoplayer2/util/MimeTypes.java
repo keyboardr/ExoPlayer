@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.util;
 
 import android.text.TextUtils;
+
 import com.google.android.exoplayer2.C;
 
 /**
@@ -61,6 +62,7 @@ public final class MimeTypes {
   public static final String AUDIO_AMR_WB = BASE_TYPE_AUDIO + "/amr-wb";
   public static final String AUDIO_FLAC = BASE_TYPE_AUDIO + "/x-flac";
   public static final String AUDIO_ALAC = BASE_TYPE_AUDIO + "/alac";
+  public static final String AUDIO_UNKNOWN = BASE_TYPE_AUDIO + "/x-unknown";
 
   public static final String TEXT_VTT = BASE_TYPE_TEXT + "/vtt";
 
@@ -81,6 +83,7 @@ public final class MimeTypes {
   public static final String APPLICATION_SCTE35 = BASE_TYPE_APPLICATION + "/x-scte35";
   public static final String APPLICATION_CAMERA_MOTION = BASE_TYPE_APPLICATION + "/x-camera-motion";
   public static final String APPLICATION_EMSG = BASE_TYPE_APPLICATION + "/x-emsg";
+  public static final String APPLICATION_DVBSUBS = BASE_TYPE_APPLICATION + "/dvbsubs";
 
   private MimeTypes() {}
 
@@ -222,7 +225,7 @@ public final class MimeTypes {
         || APPLICATION_SUBRIP.equals(mimeType) || APPLICATION_TTML.equals(mimeType)
         || APPLICATION_TX3G.equals(mimeType) || APPLICATION_MP4VTT.equals(mimeType)
         || APPLICATION_RAWCC.equals(mimeType) || APPLICATION_VOBSUB.equals(mimeType)
-        || APPLICATION_PGS.equals(mimeType)) {
+        || APPLICATION_PGS.equals(mimeType) || APPLICATION_DVBSUBS.equals(mimeType)) {
       return C.TRACK_TYPE_TEXT;
     } else if (APPLICATION_ID3.equals(mimeType)
         || APPLICATION_EMSG.equals(mimeType)

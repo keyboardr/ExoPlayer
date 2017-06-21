@@ -16,8 +16,10 @@
 package com.google.android.exoplayer2.extractor.mp4;
 
 import android.support.annotation.IntDef;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 

@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.source;
 
 import android.net.Uri;
 import android.os.Handler;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
@@ -26,6 +27,7 @@ import com.google.android.exoplayer2.extractor.ExtractorsFactory;
 import com.google.android.exoplayer2.upstream.Allocator;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.IOException;
 
 /**

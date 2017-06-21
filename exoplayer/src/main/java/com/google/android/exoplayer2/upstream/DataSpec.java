@@ -17,8 +17,10 @@ package com.google.android.exoplayer2.upstream;
 
 import android.net.Uri;
 import android.support.annotation.IntDef;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;

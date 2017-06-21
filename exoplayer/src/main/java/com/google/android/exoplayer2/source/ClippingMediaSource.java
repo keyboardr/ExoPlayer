@@ -20,6 +20,7 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.upstream.Allocator;
 import com.google.android.exoplayer2.util.Assertions;
+
 import java.io.IOException;
 import java.util.ArrayList;
 

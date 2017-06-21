@@ -18,12 +18,7 @@ android {
     buildToolsVersion project.ext.buildToolsVersion
 
     defaultConfig {
-        // Important: ExoPlayerLib specifies a minSdkVersion of 9 because
-        // various components provided by the library may be of use on older
-        // devices. However, please note that the core video playback
-        // functionality provided by the library requires API level 16 or
-        // greater.
-        minSdkVersion 9
+        minSdkVersion project.ext.minSdkVersion
         targetSdkVersion project.ext.targetSdkVersion
     }
 
@@ -32,11 +27,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
         }
-        // Re-enable test coverage when the following issue is fixed:
-        // https://code.google.com/p/android/issues/detail?id=226070
-        // debug {
-        //     testCoverageEnabled = true
-        // }
     }
 
     lintOptions {
