@@ -17,6 +17,7 @@ package com.google.android.exoplayer2.source;
 
 import android.net.Uri;
 import android.os.Handler;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.FormatHolder;
@@ -29,6 +30,7 @@ import com.google.android.exoplayer2.upstream.Loader;
 import com.google.android.exoplayer2.upstream.Loader.Loadable;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,8 +237,10 @@ import java.util.Arrays;
     }
 
     @Override
-    public void skipToKeyframeBefore(long timeUs) {
-      // Do nothing.
+    public void skipData(long positionUs) {
+      if (positionUs > 0) {
+        streamState = STREAM_STATE_END_OF_STREAM;
+      }
     }
 
   }

@@ -16,10 +16,14 @@
 package com.google.android.exoplayer2.extractor.ts;
 
 import android.util.SparseArray;
+
 import com.google.android.exoplayer2.extractor.ExtractorOutput;
 import com.google.android.exoplayer2.extractor.TrackOutput;
 import com.google.android.exoplayer2.util.ParsableByteArray;
 import com.google.android.exoplayer2.util.TimestampAdjuster;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Parses TS packet payload data.
@@ -60,18 +64,45 @@ public interface TsPayloadReader {
 
     public final int streamType;
     public final String language;
+    public final List<DvbSubtitleInfo> dvbSubtitleInfos;
     public final byte[] descriptorBytes;
 
     /**
      * @param streamType The type of the stream as defined by the
      *     {@link TsExtractor}{@code .TS_STREAM_TYPE_*}.
      * @param language The language of the stream, as defined by ISO/IEC 13818-1, section 2.6.18.
+     * @param dvbSubtitleInfos Information about DVB subtitles associated to the stream.
      * @param descriptorBytes The descriptor bytes associated to the stream.
      */
-    public EsInfo(int streamType, String language, byte[] descriptorBytes) {
+    public EsInfo(int streamType, String language, List<DvbSubtitleInfo> dvbSubtitleInfos,
+        byte[] descriptorBytes) {
       this.streamType = streamType;
       this.language = language;
+      this.dvbSubtitleInfos = dvbSubtitleInfos == null ? Collections.<DvbSubtitleInfo>emptyList()
+          : Collections.unmodifiableList(dvbSubtitleInfos);
       this.descriptorBytes = descriptorBytes;
+    }
+
+  }
+
+  /**
+   * Holds information about a DVB subtitle, as defined in ETSI EN 300 468 V1.11.1 section 6.2.41.
+   */
+  final class DvbSubtitleInfo {
+
+    public final String language;
+    public final int type;
+    public final byte[] initializationData;
+
+    /**
+     * @param language The ISO 639-2 three character language.
+     * @param type The subtitling type.
+     * @param initializationData The composition and ancillary page ids.
+     */
+    public DvbSubtitleInfo(String language, int type, byte[] initializationData) {
+      this.language = language;
+      this.type = type;
+      this.initializationData = initializationData;
     }
 
   }
