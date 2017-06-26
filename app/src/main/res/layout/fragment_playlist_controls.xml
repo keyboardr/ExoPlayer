@@ -32,6 +32,7 @@
         app:layout_constraintStart_toEndOf="@+id/controls_album_art_container"
         app:layout_constraintTop_toTopOf="@+id/controls_album_art_container"
         tools:enabled="true"
+        tools:ignore="MissingPrefix"
         tools:text="Song Name"/>
 
     <TextView
@@ -46,6 +47,7 @@
         app:layout_constraintEnd_toStartOf="@+id/controls_menu"
         app:layout_constraintStart_toStartOf="@+id/controls_title"
         app:layout_constraintTop_toBottomOf="@+id/controls_title"
+        tools:ignore="MissingPrefix"
         tools:text="Artist Name"
         tools:visibility="visible"/>
 
