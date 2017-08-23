@@ -17,6 +17,7 @@ package com.google.android.exoplayer2;
 
 import android.annotation.TargetApi;
 import android.graphics.SurfaceTexture;
+import android.media.AudioDeviceInfo;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
 import android.os.Handler;
@@ -29,6 +30,7 @@ import android.view.SurfaceView;
 import android.view.TextureView;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
+import com.google.android.exoplayer2.audio.MediaCodecAudioRenderer;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
 import com.google.android.exoplayer2.metadata.Metadata;
 import com.google.android.exoplayer2.metadata.MetadataRenderer;
@@ -486,6 +488,30 @@ public class SimpleExoPlayer implements ExoPlayer {
    */
   public void setMetadataOutput(MetadataRenderer.Output output) {
     metadataOutput = output;
+  }
+
+  /**
+   * Sets the preferred audio output.
+   *
+   * @param audioDeviceInfo The preferred audio output or null to use the default output.
+   */
+  public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    for (Renderer renderer : renderers) {
+      if (renderer instanceof MediaCodecAudioRenderer) {
+        ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
+      }
+    }
+  }
+
+  @Nullable
+  @TargetApi(23)
+  public AudioDeviceInfo getAudioOutput() {
+    for (Renderer renderer : renderers) {
+      if (renderer instanceof MediaCodecAudioRenderer) {
+        return ((MediaCodecAudioRenderer) renderer).getPreferredAudioOutput();
+      }
+    }
+    return null;
   }
 
   /**

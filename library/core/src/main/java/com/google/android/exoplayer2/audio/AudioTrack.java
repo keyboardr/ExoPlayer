@@ -17,11 +17,16 @@ package com.google.android.exoplayer2.audio;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioRouting;
 import android.media.AudioTimestamp;
+import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.PlaybackParameters;
@@ -348,6 +353,8 @@ public final class AudioTrack {
   private boolean hasData;
   private long lastFeedElapsedRealtimeMs;
 
+  private AudioDeviceInfoHolder preferredOutputDevice;
+
   /**
    * @param audioCapabilities The audio capabilities for playback on this device. May be null if the
    *     default capabilities (no encoded audio passthrough support) should be assumed.
@@ -634,6 +641,7 @@ public final class AudioTrack {
     releasingConditionVariable.block();
 
     audioTrack = initializeAudioTrack();
+    applyPreferredOutputDevice();
     int audioSessionId = audioTrack.getAudioSessionId();
     if (enablePreV21AudioSessionWorkaround) {
       if (Util.SDK_INT < 21) {
@@ -656,6 +664,68 @@ public final class AudioTrack {
     audioTrackUtil.reconfigure(audioTrack, needsPassthroughWorkarounds());
     setVolumeInternal();
     hasData = false;
+  }
+
+  @TargetApi(23)
+  public
+  @Nullable
+  AudioDeviceInfo getPreferredOutputDevice() {
+    return preferredOutputDevice == null ? null : preferredOutputDevice.audioDeviceInfo;
+  }
+
+  @TargetApi(23)
+  public void setPreferredOutputDevice(@Nullable AudioDeviceInfo preferredOutputDevice) {
+    this.preferredOutputDevice = new AudioDeviceInfoHolder(preferredOutputDevice);
+    applyPreferredOutputDevice();
+  }
+
+  private void applyPreferredOutputDevice() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && audioTrack != null) {
+      AudioDeviceInfo preferredOutputDevice = getPreferredOutputDevice();
+      Log.d(TAG, "applyPreferredOutputDevice: "
+          + (preferredOutputDevice == null ? "null" : preferredOutputDevice.getId()));
+      if (!audioTrack.setPreferredDevice(preferredOutputDevice)) {
+        Log.w(TAG, "applyPreferredOutputDevice: setPreferredDevice failed");
+      }
+      addListener();
+    }
+  }
+
+  @TargetApi(Build.VERSION_CODES.N)
+  private static class RoutingListener implements AudioRouting.OnRoutingChangedListener, android
+      .media.AudioTrack.OnRoutingChangedListener {
+
+    @Override
+    public void onRoutingChanged(@Nullable android.media.AudioTrack audioTrack) {
+      Log.d(TAG, "onRoutingChanged() called with: audioTrack = [" + audioTrack + "]");
+    }
+
+    @Override
+    @TargetApi(Build.VERSION_CODES.N)
+    public void onRoutingChanged(AudioRouting router) {
+      if (router instanceof android.media.AudioTrack) {
+        onRoutingChanged((android.media.AudioTrack) router);
+      } else {
+        onRoutingChanged(null);
+      }
+    }
+  }
+
+  private final RoutingListener routingListener = new RoutingListener();
+
+  @RequiresApi(23)
+  private void addListener() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+      audioTrack.removeOnRoutingChangedListener(
+          (AudioRouting.OnRoutingChangedListener) routingListener);
+      audioTrack.addOnRoutingChangedListener(
+          ((AudioRouting.OnRoutingChangedListener) routingListener), null);
+    } else {
+      //noinspection deprecation
+      audioTrack.removeOnRoutingChangedListener(routingListener);
+      //noinspection deprecation
+      audioTrack.addOnRoutingChangedListener(routingListener, null);
+    }
   }
 
   /**
@@ -1725,6 +1795,15 @@ public final class AudioTrack {
       this.positionUs = positionUs;
     }
 
+  }
+
+  @TargetApi(23)
+  private static class AudioDeviceInfoHolder {
+    public final AudioDeviceInfo audioDeviceInfo;
+
+    public AudioDeviceInfoHolder(@Nullable AudioDeviceInfo audioDeviceInfo) {
+      this.audioDeviceInfo = audioDeviceInfo;
+    }
   }
 
 }
