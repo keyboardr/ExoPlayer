@@ -1,5 +1,0 @@
-<root>
-    <item name='org.greenrobot.eventbus.EventBus T getStickyEvent(java.lang.Class&lt;T&gt;)'>
-        <annotation name='android.support.annotation.Nullable'/>
-    </item>
-</root>

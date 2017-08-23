@@ -1,7 +1,0 @@
-<root>
-  <item name='android.content.ContentProvider android.content.Context getContext()'>
-    <annotation name='org.jetbrains.annotations.Contract'>
-      <val val="&quot;-&gt; !null&quot;" />
-    </annotation>
-  </item>
-</root>
