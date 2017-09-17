@@ -679,6 +679,8 @@ public final class C {
    */
   public static final int MSG_CUSTOM_BASE = 10000;
 
+  public static final int MSG_SET_PREFERRED_AUDIO_OUTPUT = 10001;
+
   /**
    * The stereo mode for 360/3D/VR videos.
    */

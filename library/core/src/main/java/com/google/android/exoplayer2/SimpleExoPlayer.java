@@ -110,6 +110,7 @@ public class SimpleExoPlayer implements ExoPlayer {
   private DecoderCounters audioDecoderCounters;
   private int audioSessionId;
   private AudioAttributes audioAttributes;
+  private AudioDeviceInfo preferredAudioDevice;
   private float audioVolume;
 
   protected SimpleExoPlayer(RenderersFactory renderersFactory, TrackSelector trackSelector,
@@ -496,22 +497,22 @@ public class SimpleExoPlayer implements ExoPlayer {
    * @param audioDeviceInfo The preferred audio output or null to use the default output.
    */
   public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    this.preferredAudioDevice = audioDeviceInfo;
+    ExoPlayerMessage[] messages = new ExoPlayerMessage[audioRendererCount];
+    int count = 0;
     for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        ((MediaCodecAudioRenderer) renderer).setPreferredAudioOutput(audioDeviceInfo);
+      if (renderer.getTrackType() == C.TRACK_TYPE_AUDIO) {
+        messages[count++] = new ExoPlayerMessage(renderer, C.MSG_SET_PREFERRED_AUDIO_OUTPUT,
+            preferredAudioDevice);
       }
     }
+    player.sendMessages(messages);
   }
 
   @Nullable
   @TargetApi(23)
   public AudioDeviceInfo getAudioOutput() {
-    for (Renderer renderer : renderers) {
-      if (renderer instanceof MediaCodecAudioRenderer) {
-        return ((MediaCodecAudioRenderer) renderer).getPreferredAudioOutput();
-      }
-    }
-    return null;
+    return preferredAudioDevice;
   }
 
   /**

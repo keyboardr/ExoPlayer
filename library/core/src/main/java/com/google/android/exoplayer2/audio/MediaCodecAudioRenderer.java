@@ -415,6 +415,10 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
         AudioAttributes audioAttributes = (AudioAttributes) message;
         audioTrack.setAudioAttributes(audioAttributes);
         break;
+      case C.MSG_SET_PREFERRED_AUDIO_OUTPUT:
+        AudioDeviceInfo deviceInfo = (AudioDeviceInfo) message;
+        audioTrack.setPreferredOutputDevice(deviceInfo);
+        break;
       default:
         super.handleMessage(messageType, message);
         break;
