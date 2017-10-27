@@ -19,7 +19,7 @@ project.ext {
     minSdkVersion = 9
     compileSdkVersion = 26
     targetSdkVersion = 25
-    buildToolsVersion = '25'
+    buildToolsVersion = '26.0.2'
     testSupportLibraryVersion = '0.5'
     supportLibraryVersion = '25.4.0'
     dexmakerVersion = '1.2'
