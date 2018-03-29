@@ -498,6 +498,7 @@ public class SimpleExoPlayer implements ExoPlayer, Player.VideoComponent, Player
         PlayerMessage message = player.createMessage(renderer);
         message.setType(C.MSG_SET_PREFERRED_AUDIO_OUTPUT);
         message.setPayload(preferredAudioDevice);
+        message.send();
       }
     }
   }
