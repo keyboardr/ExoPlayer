@@ -1,22 +1,28 @@
 # ExoPlayer OkHttp extension #
 
-## Description ##
-
 The OkHttp extension is an [HttpDataSource][] implementation using Square's
 [OkHttp][].
 
 [HttpDataSource]: https://google.github.io/ExoPlayer/doc/reference/com/google/android/exoplayer2/upstream/HttpDataSource.html
 [OkHttp]: https://square.github.io/okhttp/
 
+## License note ##
+
+Please note that whilst the code in this repository is licensed under
+[Apache 2.0][], using this extension requires depending on OkHttp, which is
+licensed separately.
+
+[Apache 2.0]: https://github.com/google/ExoPlayer/blob/release-v2/LICENSE
+
 ## Getting the extension ##
 
 The easiest way to use the extension is to add it as a gradle dependency:
 
 ```gradle
-compile 'com.google.android.exoplayer:extension-okhttp:rX.X.X'
+implementation 'com.google.android.exoplayer:extension-okhttp:2.X.X'
 ```
 
-where `rX.X.X` is the version, which must match the version of the ExoPlayer
+where `2.X.X` is the version, which must match the version of the ExoPlayer
 library being used.
 
 Alternatively, you can clone the ExoPlayer repository and depend on the module
@@ -49,3 +55,10 @@ new DefaultDataSourceFactory(
     new OkHttpDataSourceFactory(...) /* baseDataSourceFactory argument */);
 ```
 respectively.
+
+## Links ##
+
+* [Javadoc][]: Classes matching `com.google.android.exoplayer2.ext.okhttp.*`
+  belong to this module.
+
+[Javadoc]: https://google.github.io/ExoPlayer/doc/reference/index.html
