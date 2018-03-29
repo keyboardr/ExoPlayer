@@ -15,10 +15,13 @@
  */
 package com.google.android.exoplayer2.audio;
 
+import android.media.AudioDeviceInfo;
 import android.media.AudioTrack;
 import android.support.annotation.Nullable;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.PlaybackParameters;
+
 import java.nio.ByteBuffer;
 
 /**
@@ -281,6 +284,10 @@ public interface AudioSink {
    * Sets the audio session id.
    */
   void setAudioSessionId(int audioSessionId);
+
+  AudioDeviceInfo getPreferredOutputDevice();
+
+  void setPreferredOutputDevice(AudioDeviceInfo deviceInfo);
 
   /**
    * Enables tunneling, if possible. The sink is reset if tunneling was previously disabled or if

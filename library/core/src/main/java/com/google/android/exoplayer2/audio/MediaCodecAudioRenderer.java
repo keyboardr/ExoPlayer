@@ -16,10 +16,12 @@
 package com.google.android.exoplayer2.audio;
 
 import android.annotation.TargetApi;
+import android.media.AudioDeviceInfo;
 import android.media.MediaCodec;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.media.audiofx.Virtualizer;
+import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import com.google.android.exoplayer2.C;
@@ -177,6 +179,16 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
     eventDispatcher = new EventDispatcher(eventHandler, eventListener);
     this.audioSink = audioSink;
     audioSink.setListener(new AudioSinkListener());
+  }
+
+  @TargetApi(23)
+  public void setPreferredAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    audioSink.setPreferredOutputDevice(audioDeviceInfo);
+  }
+
+  @TargetApi(23)
+  public @Nullable AudioDeviceInfo getPreferredAudioOutput() {
+    return audioSink.getPreferredOutputDevice();
   }
 
   @Override
@@ -487,6 +499,12 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
       case C.MSG_SET_AUDIO_ATTRIBUTES:
         AudioAttributes audioAttributes = (AudioAttributes) message;
         audioSink.setAudioAttributes(audioAttributes);
+        break;
+      case C.MSG_SET_PREFERRED_AUDIO_OUTPUT:
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+          AudioDeviceInfo deviceInfo = (AudioDeviceInfo) message;
+          audioSink.setPreferredOutputDevice(deviceInfo);
+        }
         break;
       default:
         super.handleMessage(messageType, message);

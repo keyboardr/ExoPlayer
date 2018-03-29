@@ -17,6 +17,7 @@ package com.google.android.exoplayer2;
 
 import android.annotation.TargetApi;
 import android.graphics.SurfaceTexture;
+import android.media.AudioDeviceInfo;
 import android.media.MediaCodec;
 import android.media.PlaybackParams;
 import android.os.Handler;
@@ -27,6 +28,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.TextureView;
+
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.audio.AudioRendererEventListener;
 import com.google.android.exoplayer2.decoder.DecoderCounters;
@@ -41,6 +43,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.Util;
 import com.google.android.exoplayer2.video.VideoRendererEventListener;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -82,6 +85,7 @@ public class SimpleExoPlayer implements ExoPlayer, Player.VideoComponent, Player
   private DecoderCounters audioDecoderCounters;
   private int audioSessionId;
   private AudioAttributes audioAttributes;
+  private AudioDeviceInfo preferredAudioDevice;
   private float audioVolume;
 
   /**
@@ -480,6 +484,28 @@ public class SimpleExoPlayer implements ExoPlayer, Player.VideoComponent, Player
   @Deprecated
   public void clearMetadataOutput(MetadataOutput output) {
     removeMetadataOutput(output);
+  }
+
+  /**
+   * Sets the preferred audio output.
+   *
+   * @param audioDeviceInfo The preferred audio output or null to use the default output.
+   */
+  public void setAudioOutput(@Nullable AudioDeviceInfo audioDeviceInfo) {
+    this.preferredAudioDevice = audioDeviceInfo;
+    for (Renderer renderer : renderers) {
+      if (renderer.getTrackType() == C.TRACK_TYPE_AUDIO) {
+        PlayerMessage message = player.createMessage(renderer);
+        message.setType(C.MSG_SET_PREFERRED_AUDIO_OUTPUT);
+        message.setPayload(preferredAudioDevice);
+      }
+    }
+  }
+
+  @Nullable
+  @TargetApi(23)
+  public AudioDeviceInfo getAudioOutput() {
+    return preferredAudioDevice;
   }
 
   /**

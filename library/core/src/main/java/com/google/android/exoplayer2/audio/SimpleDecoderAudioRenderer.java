@@ -15,7 +15,9 @@
  */
 package com.google.android.exoplayer2.audio;
 
+import android.media.AudioDeviceInfo;
 import android.media.audiofx.Virtualizer;
+import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.SystemClock;
@@ -563,6 +565,12 @@ public abstract class SimpleDecoderAudioRenderer extends BaseRenderer implements
       case C.MSG_SET_AUDIO_ATTRIBUTES:
         AudioAttributes audioAttributes = (AudioAttributes) message;
         audioSink.setAudioAttributes(audioAttributes);
+        break;
+      case C.MSG_SET_PREFERRED_AUDIO_OUTPUT:
+        if (android.os.Build.VERSION.SDK_INT >= VERSION_CODES.M) {
+          AudioDeviceInfo deviceInfo = (AudioDeviceInfo) message;
+          audioSink.setPreferredOutputDevice(deviceInfo);
+        }
         break;
       default:
         super.handleMessage(messageType, message);
