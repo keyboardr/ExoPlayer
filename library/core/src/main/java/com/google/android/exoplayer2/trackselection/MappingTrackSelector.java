@@ -16,6 +16,7 @@
 package com.google.android.exoplayer2.trackselection;
 
 import android.content.Context;
+import android.support.annotation.IntDef;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import com.google.android.exoplayer2.C;
@@ -27,6 +28,8 @@ import com.google.android.exoplayer2.RendererConfiguration;
 import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.util.Util;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,22 +84,25 @@ public abstract class MappingTrackSelector extends TrackSelector {
    */
   public static final class MappedTrackInfo {
 
-    /**
-     * The renderer does not have any associated tracks.
-     */
+    /** Levels of renderer support. Higher numerical values indicate higher levels of support. */
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+      RENDERER_SUPPORT_NO_TRACKS,
+      RENDERER_SUPPORT_UNSUPPORTED_TRACKS,
+      RENDERER_SUPPORT_EXCEEDS_CAPABILITIES_TRACKS,
+      RENDERER_SUPPORT_PLAYABLE_TRACKS
+    })
+    @interface RendererSupport {}
+    /** The renderer does not have any associated tracks. */
     public static final int RENDERER_SUPPORT_NO_TRACKS = 0;
-    /**
-     * The renderer has associated tracks, but all are of unsupported types.
-     */
+    /** The renderer has associated tracks, but all are of unsupported types. */
     public static final int RENDERER_SUPPORT_UNSUPPORTED_TRACKS = 1;
     /**
      * The renderer has associated tracks and at least one is of a supported type, but all of the
      * tracks whose types are supported exceed the renderer's capabilities.
      */
     public static final int RENDERER_SUPPORT_EXCEEDS_CAPABILITIES_TRACKS = 2;
-    /**
-     * The renderer has associated tracks and can play at least one of them.
-     */
+    /** The renderer has associated tracks and can play at least one of them. */
     public static final int RENDERER_SUPPORT_PLAYABLE_TRACKS = 3;
 
     /**
@@ -145,11 +151,11 @@ public abstract class MappingTrackSelector extends TrackSelector {
      * Returns the extent to which a renderer can play the tracks in the track groups mapped to it.
      *
      * @param rendererIndex The renderer index.
-     * @return One of {@link #RENDERER_SUPPORT_PLAYABLE_TRACKS},
-     *     {@link #RENDERER_SUPPORT_EXCEEDS_CAPABILITIES_TRACKS},
-     *     {@link #RENDERER_SUPPORT_UNSUPPORTED_TRACKS} and {@link #RENDERER_SUPPORT_NO_TRACKS}.
+     * @return One of {@link #RENDERER_SUPPORT_PLAYABLE_TRACKS}, {@link
+     *     #RENDERER_SUPPORT_EXCEEDS_CAPABILITIES_TRACKS}, {@link
+     *     #RENDERER_SUPPORT_UNSUPPORTED_TRACKS} and {@link #RENDERER_SUPPORT_NO_TRACKS}.
      */
-    public int getRendererSupport(int rendererIndex) {
+    public @RendererSupport int getRendererSupport(int rendererIndex) {
       int bestRendererSupport = RENDERER_SUPPORT_NO_TRACKS;
       int[][] rendererFormatSupport = formatSupport[rendererIndex];
       for (int i = 0; i < rendererFormatSupport.length; i++) {
@@ -573,6 +579,8 @@ public abstract class MappingTrackSelector extends TrackSelector {
       }
     }
 
+    boolean[] rendererEnabled = determineEnabledRenderers(rendererCapabilities, trackSelections);
+
     // Package up the track information and selections.
     MappedTrackInfo mappedTrackInfo = new MappedTrackInfo(rendererTrackTypes,
         rendererTrackGroupArrays, mixedMimeTypeAdaptationSupport, rendererFormatSupports,
@@ -583,14 +591,29 @@ public abstract class MappingTrackSelector extends TrackSelector {
     RendererConfiguration[] rendererConfigurations =
         new RendererConfiguration[rendererCapabilities.length];
     for (int i = 0; i < rendererCapabilities.length; i++) {
-      rendererConfigurations[i] = trackSelections[i] != null ? RendererConfiguration.DEFAULT : null;
+      rendererConfigurations[i] = rendererEnabled[i] ? RendererConfiguration.DEFAULT : null;
     }
     // Configure audio and video renderers to use tunneling if appropriate.
     maybeConfigureRenderersForTunneling(rendererCapabilities, rendererTrackGroupArrays,
         rendererFormatSupports, rendererConfigurations, trackSelections, tunnelingAudioSessionId);
 
-    return new TrackSelectorResult(trackGroups, new TrackSelectionArray(trackSelections),
-        mappedTrackInfo, rendererConfigurations);
+    return new TrackSelectorResult(
+        rendererEnabled,
+        new TrackSelectionArray(trackSelections),
+        mappedTrackInfo,
+        rendererConfigurations);
+  }
+
+  private boolean[] determineEnabledRenderers(RendererCapabilities[] rendererCapabilities,
+      TrackSelection[] trackSelections) {
+    boolean[] rendererEnabled = new boolean[trackSelections.length];
+    for (int i = 0; i < rendererEnabled.length; i++) {
+      boolean forceRendererDisabled = rendererDisabledFlags.get(i);
+      rendererEnabled[i] = !forceRendererDisabled
+          && (rendererCapabilities[i].getTrackType() == C.TRACK_TYPE_NONE
+          || trackSelections[i] != null);
+    }
+    return rendererEnabled;
   }
 
   @Override

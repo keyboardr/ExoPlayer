@@ -16,7 +16,6 @@
 package com.google.android.exoplayer2.trackselection;
 
 import com.google.android.exoplayer2.RendererConfiguration;
-import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.util.Util;
 
 /**
@@ -25,9 +24,9 @@ import com.google.android.exoplayer2.util.Util;
 public final class TrackSelectorResult {
 
   /**
-   * The track groups that were provided to the {@link TrackSelector}.
+   * An array containing whether each renderer is enabled after the track selection operation.
    */
-  public final TrackGroupArray groups;
+  public final boolean[] renderersEnabled;
   /**
    * A {@link TrackSelectionArray} containing the track selection for each renderer.
    */
@@ -38,21 +37,25 @@ public final class TrackSelectorResult {
    */
   public final Object info;
   /**
-   * A {@link RendererConfiguration} for each renderer, to be used with the selections.
+   * A {@link RendererConfiguration} for each enabled renderer, to be used with the selections.
    */
   public final RendererConfiguration[] rendererConfigurations;
 
   /**
-   * @param groups The track groups provided to the {@link TrackSelector}.
+   * @param renderersEnabled An array containing whether each renderer is enabled after the track
+   *     selection operation.
    * @param selections A {@link TrackSelectionArray} containing the selection for each renderer.
-   * @param info An opaque object that will be returned to
-   *     {@link TrackSelector#onSelectionActivated(Object)} should the selection be activated.
-   * @param rendererConfigurations A {@link RendererConfiguration} for each renderer, to be used
-   *     with the selections.
+   * @param info An opaque object that will be returned to {@link
+   *     TrackSelector#onSelectionActivated(Object)} should the selection be activated.
+   * @param rendererConfigurations A {@link RendererConfiguration} for each enabled renderer, to be
+   *     used with the selections.
    */
-  public TrackSelectorResult(TrackGroupArray groups, TrackSelectionArray selections, Object info,
+  public TrackSelectorResult(
+      boolean[] renderersEnabled,
+      TrackSelectionArray selections,
+      Object info,
       RendererConfiguration[] rendererConfigurations) {
-    this.groups = groups;
+    this.renderersEnabled = renderersEnabled;
     this.selections = selections;
     this.info = info;
     this.rendererConfigurations = rendererConfigurations;
@@ -66,7 +69,7 @@ public final class TrackSelectorResult {
    * @return Whether this result is equivalent to {@code other} for all renderers.
    */
   public boolean isEquivalent(TrackSelectorResult other) {
-    if (other == null) {
+    if (other == null || other.selections.length != selections.length) {
       return false;
     }
     for (int i = 0; i < selections.length; i++) {
@@ -79,8 +82,8 @@ public final class TrackSelectorResult {
 
   /**
    * Returns whether this result is equivalent to {@code other} for the renderer at the given index.
-   * The results are equivalent if they have equal track selections and configurations for the
-   * renderer.
+   * The results are equivalent if they have equal renderersEnabled array, track selections, and
+   * configurations for the renderer.
    *
    * @param other The other {@link TrackSelectorResult}. May be null, in which case {@code false}
    *     will be returned.
@@ -92,7 +95,8 @@ public final class TrackSelectorResult {
     if (other == null) {
       return false;
     }
-    return Util.areEqual(selections.get(index), other.selections.get(index))
+    return renderersEnabled[index] == other.renderersEnabled[index]
+        && Util.areEqual(selections.get(index), other.selections.get(index))
         && Util.areEqual(rendererConfigurations[index], other.rendererConfigurations[index]);
   }
 
