@@ -506,10 +506,6 @@ public class MediaCodecAudioRenderer extends MediaCodecRenderer implements Media
           audioSink.setPreferredOutputDevice(deviceInfo);
         }
         break;
-      case C.MSG_SET_PREFERRED_AUDIO_OUTPUT:
-        AudioDeviceInfo deviceInfo = (AudioDeviceInfo) message;
-        audioTrack.setPreferredOutputDevice(deviceInfo);
-        break;
       default:
         super.handleMessage(messageType, message);
         break;
